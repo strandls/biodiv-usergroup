@@ -42,8 +42,7 @@ public class UserGroupController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Find UserGroup by ID", notes = "Returns UserGroup details", response = UserGroup.class)
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success", response = UserGroup.class),
-			@ApiResponse(code = 404, message = "UserGroup not found", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup not found", response = String.class) })
 	public Response getUserGroup(@PathParam("objectId") String objectId) {
 		try {
 			Long id = Long.parseLong(objectId);
@@ -59,8 +58,7 @@ public class UserGroupController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Find UserGroup by ID", notes = "Returns UserGroup details for IBP", response = UserGroupIbp.class)
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success", response = UserGroupIbp.class),
-			@ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Traits not found", response = String.class) })
 	public Response getIbpData(@PathParam("objectId") String objectId) {
 		try {
 			Long id = Long.parseLong(objectId);
@@ -76,10 +74,8 @@ public class UserGroupController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find UserGroup by observation ID", notes = "Returns UserGroup Details", response = UserGroupIbp.class)
-	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Success", response = UserGroupIbp.class, responseContainer = "List"),
-			@ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+	@ApiOperation(value = "Find UserGroup by observation ID", notes = "Returns UserGroup Details", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Traits not found", response = String.class) })
 
 	public Response getObservationUserGroup(@PathParam("observationId") String observationId) {
 		try {
