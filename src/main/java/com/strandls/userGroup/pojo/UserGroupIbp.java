@@ -9,18 +9,28 @@ package com.strandls.userGroup.pojo;
  */
 public class UserGroupIbp {
 
+	private Long id;
 	private String name;
 	private String webAddress;
-	
 
 	/**
+	 * @param id
 	 * @param name
 	 * @param webAddress
 	 */
-	public UserGroupIbp(String name, String webAddress) {
+	public UserGroupIbp(Long id, String name, String webAddress) {
 		super();
+		this.id = id;
 		this.name = name;
 		this.webAddress = webAddress;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getName() {

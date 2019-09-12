@@ -19,4 +19,6 @@ public interface UserGroupSerivce {
 	public UserGroupIbp fetchByGroupIdIbp(Long id);
 	
 	public List<UserGroupIbp> fetchByObservationId(Long id);
+	
+	public List<UserGroupIbp> fetchByUserId(Long sUserId);
 }

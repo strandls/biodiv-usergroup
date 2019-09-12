@@ -58,7 +58,7 @@ public class UserGroupController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Find UserGroup by ID", notes = "Returns UserGroup details for IBP", response = UserGroupIbp.class)
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup not found", response = String.class) })
 	public Response getIbpData(@PathParam("objectId") String objectId) {
 		try {
 			Long id = Long.parseLong(objectId);
@@ -75,7 +75,7 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find UserGroup by observation ID", notes = "Returns UserGroup Details", response = UserGroupIbp.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup not found", response = String.class) })
 
 	public Response getObservationUserGroup(@PathParam("observationId") String observationId) {
 		try {
@@ -88,4 +88,22 @@ public class UserGroupController {
 
 	}
 
+	@GET
+	@Path(ApiConstants.GROUPLIST + "/{userId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find list of UserGroup based on UserId", notes = "Return UserGroup Details", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup Not Found ", response = String.class) })
+
+	public Response getUserGroupList(@PathParam("userId") String userId) {
+		try {
+			Long sUserId = Long.parseLong(userId);
+			List<UserGroupIbp> userGroupList = ugServices.fetchByUserId(sUserId);
+			return Response.status(Status.OK).entity(userGroupList).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+
+	}
 }
