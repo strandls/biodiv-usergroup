@@ -22,7 +22,7 @@
 		<openapi-generator-cli.version>4.0.3</openapi-generator-cli.version>
 
 		<!-- Project property -->
-		<war-name>userGroup-api</war-name>
+		<war-name>usergroup-api</war-name>
 		<srcDir>src/main/webapp</srcDir>
 		<base-path>/userGroup-api/api</base-path>
 		<location>com.strandls.userGroup</location>
