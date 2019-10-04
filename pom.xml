@@ -2,11 +2,11 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.strandls.usergroup</groupId>
-	<artifactId>usergroup-api</artifactId>
+	<groupId>com.strandls.userGroup</groupId>
+	<artifactId>userGroup-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>biodiv-usergroup-api</name>
+	<name>biodiv-userGroup-api</name>
 	<url>https://github.com/strandls/biodiv-usergroup</url>
 
 	<properties>
@@ -22,7 +22,7 @@
 		<openapi-generator-cli.version>4.0.3</openapi-generator-cli.version>
 
 		<!-- Project property -->
-		<war-name>usergroup-api</war-name>
+		<war-name>userGroup-api</war-name>
 		<srcDir>src/main/webapp</srcDir>
 		<base-path>/userGroup-api/api</base-path>
 		<location>com.strandls.userGroup</location>
