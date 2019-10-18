@@ -15,10 +15,12 @@ import com.strandls.userGroup.pojo.UserGroupIbp;
 public interface UserGroupSerivce {
 
 	public UserGroup fetchByGroupId(Long id);
-	
+
 	public UserGroupIbp fetchByGroupIdIbp(Long id);
-	
+
 	public List<UserGroupIbp> fetchByObservationId(Long id);
-	
+
 	public List<UserGroupIbp> fetchByUserId(Long sUserId);
+
+	public List<Long> createUserGroupObservationMapping(Long observationId, List<Long> userGroups);
 }
