@@ -23,6 +23,7 @@ import com.strandls.userGroup.service.UserGroupSerivce;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
@@ -117,7 +118,8 @@ public class UserGroupController {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup Not Found ", response = String.class),
 			@ApiResponse(code = 409, message = "UserGroup-Observation Mapping Cannot be Created", response = String.class) })
 
-	public Response createObservationUserGroupMapping(@PathParam("obsId") String obsId, List<Long> userGroups) {
+	public Response createObservationUserGroupMapping(@PathParam("obsId") String obsId,
+			@ApiParam(name = "userGroups") List<Long> userGroups) {
 		try {
 
 			Long observationId = Long.parseLong(obsId);
