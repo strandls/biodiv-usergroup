@@ -5,17 +5,23 @@ package com.strandls.userGroup.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.pac4j.core.profile.CommonProfile;
+
 import com.google.inject.Inject;
+import com.strandls.authentication_utility.filter.ValidateUser;
+import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
@@ -91,16 +97,18 @@ public class UserGroupController {
 	}
 
 	@GET
-	@Path(ApiConstants.GROUPLIST + "/{userId}")
+	@Path(ApiConstants.GROUPLIST)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
+	@ValidateUser
 	@ApiOperation(value = "Find list of UserGroup based on UserId", notes = "Return UserGroup Details", response = UserGroupIbp.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup Not Found ", response = String.class) })
 
-	public Response getUserGroupList(@PathParam("userId") String userId) {
+	public Response getUserGroupList(@Context HttpServletRequest request) {
 		try {
-			Long sUserId = Long.parseLong(userId);
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long sUserId = Long.parseLong(profile.getId());
 			List<UserGroupIbp> userGroupList = ugServices.fetchByUserId(sUserId);
 			return Response.status(Status.OK).entity(userGroupList).build();
 		} catch (Exception e) {
@@ -114,12 +122,13 @@ public class UserGroupController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
+	@ValidateUser
 	@ApiOperation(value = "Create Observation UserGroup Mapping", notes = "Returns List of UserGroup", response = Long.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup Not Found ", response = String.class),
 			@ApiResponse(code = 409, message = "UserGroup-Observation Mapping Cannot be Created", response = String.class) })
 
-	public Response createObservationUserGroupMapping(@PathParam("obsId") String obsId,
-			@ApiParam(name = "userGroups") List<Long> userGroups) {
+	public Response createObservationUserGroupMapping(@Context HttpServletRequest request,
+			@PathParam("obsId") String obsId, @ApiParam(name = "userGroups") List<Long> userGroups) {
 		try {
 
 			Long observationId = Long.parseLong(obsId);
