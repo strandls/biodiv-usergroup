@@ -23,4 +23,7 @@ public interface UserGroupSerivce {
 	public List<UserGroupIbp> fetchByUserId(Long sUserId);
 
 	public List<Long> createUserGroupObservationMapping(Long observationId, List<Long> userGroups);
+
+	public List<UserGroupIbp> updateUserGroupObservationMapping(Long observationId, List<Long> userGorups);
+
 }

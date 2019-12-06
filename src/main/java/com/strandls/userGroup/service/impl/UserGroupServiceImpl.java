@@ -85,4 +85,28 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		return resultList;
 	}
 
+	@Override
+	public List<UserGroupIbp> updateUserGroupObservationMapping(Long observationId, List<Long> userGorups) {
+
+		List<Long> previousUserGroup = new ArrayList<Long>();
+		List<UserGroupObservation> previousMapping = userGroupObvDao.findByObservationId(observationId);
+		for (UserGroupObservation ug : previousMapping) {
+			if (!(userGorups.contains(ug.getUserGroupId()))) {
+				userGroupObvDao.delete(ug);
+			}
+			previousUserGroup.add(ug.getUserGroupId());
+		}
+
+		for (Long userGroupId : userGorups) {
+			if (!(previousUserGroup.contains(userGroupId))) {
+				UserGroupObservation userGroupMapping = new UserGroupObservation(userGroupId, observationId);
+				userGroupObvDao.save(userGroupMapping);
+			}
+		}
+
+		List<UserGroupIbp> result = fetchByObservationId(observationId);
+
+		return result;
+	}
+
 }

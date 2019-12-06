@@ -17,5 +17,6 @@ public class ApiConstants {
 	public static final String OBSERVATION = "/observation";
 	public static final String GROUPLIST = "/grouplist";
 	public static final String CREATE = "/create";
+	public static final String UPDATE = "/update";
 
 }
