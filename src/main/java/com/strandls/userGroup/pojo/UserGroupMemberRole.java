@@ -26,6 +26,7 @@ public class UserGroupMemberRole implements Serializable {
 	 */
 	private static final long serialVersionUID = -5160519423395168068L;
 	private Long userGroupId;
+	private Long roleId;
 	private Long sUserId;
 
 	@Id
@@ -36,6 +37,15 @@ public class UserGroupMemberRole implements Serializable {
 
 	public void setUserGroupId(Long userGroupId) {
 		this.userGroupId = userGroupId;
+	}
+
+	@Column(name = "role_id")
+	public Long getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(Long roleId) {
+		this.roleId = roleId;
 	}
 
 	@Column(name = "s_user_id")

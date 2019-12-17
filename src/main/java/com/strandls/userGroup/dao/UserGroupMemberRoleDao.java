@@ -3,8 +3,11 @@
  */
 package com.strandls.userGroup.dao;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -23,6 +26,8 @@ import com.strandls.userGroup.util.AbstractDAO;
 public class UserGroupMemberRoleDao extends AbstractDAO<UserGroupMemberRole, Long> {
 
 	private final Logger logger = LoggerFactory.getLogger(UserGroupMemberRole.class);
+
+	InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
 
 	/**
 	 * @param sessionFactory
@@ -57,6 +62,35 @@ public class UserGroupMemberRoleDao extends AbstractDAO<UserGroupMemberRole, Lon
 			Query<UserGroupMemberRole> query = session.createQuery(qry);
 			query.setParameter("sUserId", sUserId);
 			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<UserGroupMemberRole> findUserGroupbyUserIdRole(Long userId) {
+
+		Properties properties = new Properties();
+		try {
+			properties.load(in);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String expert = properties.getProperty("userGroupExpert");
+		String founder = properties.getProperty("userGroupFounder");
+
+		String qry = "from UserGroupMemberRole where sUserId = :userId and roleId in ( " + founder + " , " + expert + ")";
+		Session session = sessionFactory.openSession();
+		List<UserGroupMemberRole> result = null;
+		try {
+			Query<UserGroupMemberRole> query = session.createQuery(qry);
+			query.setParameter("userId", userId);
+
+			result = query.getResultList();
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {

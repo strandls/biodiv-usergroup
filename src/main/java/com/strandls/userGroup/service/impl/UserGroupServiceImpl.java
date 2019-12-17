@@ -42,10 +42,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		UserGroup ug = userGroupDao.findById(id);
 		UserGroupIbp ibp;
 		if (ug.getDomianName() != null)
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getDomianName());
+			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName());
 		else {
 			String webAddress = "https://indiabiodiversity.org/group/" + ug.getWebAddress() + "/show";
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), webAddress);
+			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress);
 		}
 		return ibp;
 	}
@@ -106,6 +106,42 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 		List<UserGroupIbp> result = fetchByObservationId(observationId);
 
+		return result;
+	}
+
+	@Override
+	public List<UserGroupIbp> findFeaturableGroups(Long objectId, Long userId) {
+		List<UserGroupIbp> groupList = fetchByObservationId(objectId);
+		List<UserGroupMemberRole> userMemberrole = userGroupMemberRoleDao.findUserGroupbyUserIdRole(userId);
+		List<Long> userMemberGroup = new ArrayList<Long>();
+		List<UserGroupIbp> accessibleGroup = new ArrayList<UserGroupIbp>();
+		for (UserGroupMemberRole memberRole : userMemberrole) {
+			userMemberGroup.add(memberRole.getUserGroupId());
+		}
+		for (UserGroupIbp ug : groupList) {
+			if (userMemberGroup.contains(ug.getId())) {
+				accessibleGroup.add(ug);
+			}
+		}
+		return accessibleGroup;
+	}
+
+	@Override
+	public List<UserGroupIbp> fetchAllUserGroup() {
+		List<UserGroup> userGroupList = userGroupDao.findAll();
+		List<UserGroupIbp> result = new ArrayList<UserGroupIbp>();
+		UserGroupIbp ibp = null;
+		for (UserGroup userGroup : userGroupList) {
+
+			if (userGroup.getDomianName() != null)
+				ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(),
+						userGroup.getDomianName());
+			else {
+				String webAddress = "https://indiabiodiversity.org/group/" + userGroup.getWebAddress() + "/show";
+				ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(), webAddress);
+			}
+			result.add(ibp);
+		}
 		return result;
 	}
 

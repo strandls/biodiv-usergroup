@@ -11,17 +11,27 @@ public class UserGroupIbp {
 
 	private Long id;
 	private String name;
+	private String icon;
 	private String webAddress;
+
+	/**
+	 * 
+	 */
+	public UserGroupIbp() {
+		super();
+	}
 
 	/**
 	 * @param id
 	 * @param name
+	 * @param icon
 	 * @param webAddress
 	 */
-	public UserGroupIbp(Long id, String name, String webAddress) {
+	public UserGroupIbp(Long id, String name, String icon, String webAddress) {
 		super();
 		this.id = id;
 		this.name = name;
+		this.icon = icon;
 		this.webAddress = webAddress;
 	}
 
@@ -39,6 +49,14 @@ public class UserGroupIbp {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
 	}
 
 	public String getWebAddress() {

@@ -26,4 +26,8 @@ public interface UserGroupSerivce {
 
 	public List<UserGroupIbp> updateUserGroupObservationMapping(Long observationId, List<Long> userGorups);
 
+	public List<UserGroupIbp> findFeaturableGroups(Long objectId, Long userId);
+
+	public List<UserGroupIbp> fetchAllUserGroup();
+
 }

@@ -164,4 +164,44 @@ public class UserGroupController {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
+
+	@GET
+	@Path(ApiConstants.FEATURE + "/{objectId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+	@ApiOperation(value = "Search for all the featurable groups for the current user", notes = "Returns the groups in which the user can feature", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Unable to get the Info", response = String.class) })
+
+	public Response getFeaturableGroups(@Context HttpServletRequest request, @PathParam("objectId") String objectId) {
+		try {
+			Long objId = Long.parseLong(objectId);
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			List<UserGroupIbp> result = ugServices.findFeaturableGroups(objId, userId);
+
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.ALL)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find all the UserGroups", notes = "Returns all the UserGroups", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "Unable to fetch the UserGroups", response = String.class) })
+
+	public Response getAllUserGroup() {
+		try {
+			List<UserGroupIbp> result = ugServices.fetchAllUserGroup();
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
 }
