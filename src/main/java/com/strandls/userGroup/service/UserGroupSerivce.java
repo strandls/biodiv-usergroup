@@ -30,4 +30,6 @@ public interface UserGroupSerivce {
 
 	public List<UserGroupIbp> fetchAllUserGroup();
 
+	public List<Long> fetchUserAllowedGroupId(Long userId);
+
 }

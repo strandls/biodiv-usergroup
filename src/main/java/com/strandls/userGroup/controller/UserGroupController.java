@@ -188,6 +188,28 @@ public class UserGroupController {
 	}
 
 	@GET
+	@Path(ApiConstants.FEATURE)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+	@ApiOperation(value = "Check the user permission on Groups", notes = "Return the list of GroupId where he is Fouder or Expert", response = Long.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "Unable to fetch the userGroups", response = String.class) })
+
+	public Response checkUserRolePermission(@Context HttpServletRequest request) {
+
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			List<Long> result = ugServices.fetchUserAllowedGroupId(userId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
 	@Path(ApiConstants.ALL)
 	@Produces(MediaType.APPLICATION_JSON)
 

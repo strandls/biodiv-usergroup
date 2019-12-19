@@ -145,4 +145,14 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		return result;
 	}
 
+	@Override
+	public List<Long> fetchUserAllowedGroupId(Long userId) {
+		List<UserGroupMemberRole> userMomberRole = userGroupMemberRoleDao.findUserGroupbyUserIdRole(userId);
+		List<Long> userGroupId = new ArrayList<Long>();
+		for (UserGroupMemberRole userGroupMemberRole : userMomberRole) {
+			userGroupId.add(userGroupMemberRole.getUserGroupId());
+		}
+		return userGroupId;
+	}
+
 }
