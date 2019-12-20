@@ -27,8 +27,6 @@ public class UserGroupMemberRoleDao extends AbstractDAO<UserGroupMemberRole, Lon
 
 	private final Logger logger = LoggerFactory.getLogger(UserGroupMemberRole.class);
 
-	InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
-
 	/**
 	 * @param sessionFactory
 	 */
@@ -73,16 +71,18 @@ public class UserGroupMemberRoleDao extends AbstractDAO<UserGroupMemberRole, Lon
 	@SuppressWarnings("unchecked")
 	public List<UserGroupMemberRole> findUserGroupbyUserIdRole(Long userId) {
 
+		InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
 		Properties properties = new Properties();
 		try {
 			properties.load(in);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 		String expert = properties.getProperty("userGroupExpert");
 		String founder = properties.getProperty("userGroupFounder");
 
-		String qry = "from UserGroupMemberRole where sUserId = :userId and roleId in ( " + founder + " , " + expert + ")";
+		String qry = "from UserGroupMemberRole where sUserId = :userId and roleId in ( " + founder + " , " + expert
+				+ ")";
 		Session session = sessionFactory.openSession();
 		List<UserGroupMemberRole> result = null;
 		try {
@@ -95,6 +95,11 @@ public class UserGroupMemberRoleDao extends AbstractDAO<UserGroupMemberRole, Lon
 			logger.error(e.getMessage());
 		} finally {
 			session.close();
+			try {
+				in.close();
+			} catch (IOException e) {
+				logger.error(e.getMessage());
+			}
 		}
 		return result;
 	}
