@@ -44,7 +44,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		if (ug.getDomianName() != null)
 			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName());
 		else {
-			String webAddress = "https://indiabiodiversity.org/group/" + ug.getWebAddress() + "/show";
+			String webAddress = "/group/" + ug.getWebAddress() + "/show";
 			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress);
 		}
 		return ibp;
