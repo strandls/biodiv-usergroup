@@ -44,7 +44,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		if (ug.getDomianName() != null)
 			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName());
 		else {
-			String webAddress = "/group/" + ug.getWebAddress() + "/show";
+			String webAddress = "/group/" + ug.getWebAddress();
 			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress);
 		}
 		return ibp;
@@ -137,7 +137,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(),
 						userGroup.getDomianName());
 			else {
-				String webAddress = "/group/" + userGroup.getWebAddress() + "/show";
+				String webAddress = "/group/" + userGroup.getWebAddress();
 				ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(), webAddress);
 			}
 			result.add(ibp);
