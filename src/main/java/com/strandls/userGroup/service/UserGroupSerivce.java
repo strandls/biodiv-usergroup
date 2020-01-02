@@ -5,6 +5,8 @@ package com.strandls.userGroup.service;
 
 import java.util.List;
 
+import com.strandls.userGroup.pojo.Featured;
+import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 
@@ -31,5 +33,11 @@ public interface UserGroupSerivce {
 	public List<UserGroupIbp> fetchAllUserGroup();
 
 	public List<Long> fetchUserAllowedGroupId(Long userId);
+
+	public List<Featured> fetchFeatured(String objectType, Long id);
+
+	public List<Featured> createFeatured(Long userId, FeaturedCreate featuredCreate);
+
+	public List<Featured> removeFeatured(Long userId, String objectType, Long objectId, List<Long> userGroupList);
 
 }

@@ -3,16 +3,19 @@
  */
 package com.strandls.userGroup.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -24,6 +27,8 @@ import com.google.inject.Inject;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
+import com.strandls.userGroup.pojo.Featured;
+import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.service.UserGroupSerivce;
@@ -166,7 +171,7 @@ public class UserGroupController {
 	}
 
 	@GET
-	@Path(ApiConstants.FEATURE + "/{objectId}")
+	@Path(ApiConstants.FEATURED + "/{objectId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -188,7 +193,7 @@ public class UserGroupController {
 	}
 
 	@GET
-	@Path(ApiConstants.FEATURE)
+	@Path(ApiConstants.FEATURED)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -220,6 +225,75 @@ public class UserGroupController {
 	public Response getAllUserGroup() {
 		try {
 			List<UserGroupIbp> result = ugServices.fetchAllUserGroup();
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.FEATURED + "/{objectType}/{objectId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find Featured", notes = "Return list Featured", response = Featured.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Featured not Found", response = String.class) })
+
+	public Response getAllFeatured(@PathParam("objectType") String objectType, @PathParam("objectId") String objectId) {
+
+		try {
+			Long id = Long.parseLong(objectId);
+			List<Featured> featuredList = ugServices.fetchFeatured(objectType, id);
+			return Response.status(Status.OK).entity(featuredList).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.FEATURED)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ValidateUser
+
+	@ApiOperation(value = "Posting of Featured to a Group", notes = "Returns the Details of Featured", response = Featured.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "Unable to Feature in a Group", response = String.class) })
+	public Response createFeatured(@Context HttpServletRequest request,
+			@ApiParam(name = "featuredCreate") FeaturedCreate featuredCreate) {
+
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			List<Featured> result = ugServices.createFeatured(userId, featuredCreate);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@DELETE
+	@Path(ApiConstants.UNFEATURED + "/{objectType}/{objectId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+	@ApiOperation(value = "UnFeatures a Object from a UserGroup", notes = "Returns the Current Featured", response = Featured.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Unable to Unfeature", response = String.class) })
+	public Response unFeatured(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
+			@PathParam("objectId") String objectId, @QueryParam("userGroupList") String userGroupList) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			Long objId = Long.parseLong(objectId);
+			List<Long> userGroup = new ArrayList<Long>();
+			for (String group : userGroupList.split(",")) {
+				userGroup.add(Long.parseLong(group.trim()));
+			}
+
+			List<Featured> result = ugServices.removeFeatured(userId, objectType, objId, userGroup);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

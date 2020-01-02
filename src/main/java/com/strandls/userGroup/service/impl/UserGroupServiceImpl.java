@@ -4,12 +4,19 @@
 package com.strandls.userGroup.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
+import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupMemberRoleDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
+import com.strandls.userGroup.pojo.Featured;
+import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupMemberRole;
@@ -22,6 +29,8 @@ import com.strandls.userGroup.service.UserGroupSerivce;
  */
 public class UserGroupServiceImpl implements UserGroupSerivce {
 
+	private final Logger logger = LoggerFactory.getLogger(UserGroupServiceImpl.class);
+
 	@Inject
 	private UserGroupDao userGroupDao;
 
@@ -30,6 +39,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupMemberRoleDao userGroupMemberRoleDao;
+
+	@Inject
+	private FeaturedDao featuredDao;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -153,6 +165,84 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			userGroupId.add(userGroupMemberRole.getUserGroupId());
 		}
 		return userGroupId;
+	}
+
+	@Override
+	public List<Featured> fetchFeatured(String objectType, Long id) {
+		List<Featured> featuredList = featuredDao.fetchAllFeatured(objectType, id);
+		return featuredList;
+	}
+
+	@Override
+	public List<Featured> createFeatured(Long userId, FeaturedCreate featuredCreate) {
+
+		List<Featured> result = new ArrayList<Featured>();
+		try {
+			List<Long> userGroupIds = fetchUserAllowedGroupId(userId);
+
+			Featured featured;
+			if (featuredCreate.getObjectType().equalsIgnoreCase("observation"))
+				featuredCreate.setObjectType("species.participation.Observation");
+
+			List<Featured> featuredList = featuredDao.fetchAllFeatured(featuredCreate.getObjectType(),
+					featuredCreate.getObjectId());
+
+			for (Long userGroupId : featuredCreate.getUserGroup()) {
+				if (userGroupIds.contains(userGroupId)) {
+
+					int flag = 0;
+					for (Featured alreadyFeatured : featuredList) {
+						if (alreadyFeatured.getUserGroup() == userGroupId) {
+							alreadyFeatured.setCreatedOn(new Date());
+							alreadyFeatured.setNotes(featuredCreate.getNotes());
+							alreadyFeatured.setAuthorId(userId);
+							featuredDao.update(alreadyFeatured);
+							flag = 1;
+						}
+					}
+
+					if (flag == 0) {
+						featured = new Featured(null, 0L, userId, new Date(), featuredCreate.getNotes(),
+								featuredCreate.getObjectId(), featuredCreate.getObjectType(), userGroupId, 205L, null);
+						featured = featuredDao.save(featured);
+
+					}
+
+				}
+			}
+			result = featuredDao.fetchAllFeatured(featuredCreate.getObjectType(), featuredCreate.getObjectId());
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return result;
+	}
+
+	@Override
+	public List<Featured> removeFeatured(Long userId, String objectType, Long objectId, List<Long> userGroupList) {
+
+		List<Featured> resultList = null;
+		try {
+			if (objectType.equalsIgnoreCase("observation"))
+				objectType = "species.participation.Observation";
+			List<Featured> featuredList = featuredDao.fetchAllFeatured(objectType, objectId);
+			List<Long> userGroupIds = fetchUserAllowedGroupId(userId);
+
+			for (Long userGroupId : userGroupList) {
+				if (userGroupIds.contains(userGroupId)) {
+					for (Featured featured : featuredList) {
+						if (featured.getUserGroup() == userGroupId) {
+							featuredDao.delete(featured);
+							break;
+						}
+					}
+				}
+			}
+
+			resultList = featuredDao.fetchAllFeatured(objectType, objectId);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return resultList;
 	}
 
 }
