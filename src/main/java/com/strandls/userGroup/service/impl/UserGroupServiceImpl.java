@@ -13,13 +13,11 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
-import com.strandls.userGroup.dao.UserGroupMemberRoleDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
-import com.strandls.userGroup.pojo.UserGroupMemberRole;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.service.UserGroupSerivce;
 
@@ -36,9 +34,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupObservationDao userGroupObvDao;
-
-	@Inject
-	private UserGroupMemberRoleDao userGroupMemberRoleDao;
 
 	@Inject
 	private FeaturedDao featuredDao;
@@ -73,12 +68,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<UserGroupIbp> fetchByUserId(Long sUserId) {
-		List<UserGroupMemberRole> result = userGroupMemberRoleDao.getUserGroup(sUserId);
-
+	public List<UserGroupIbp> fetchByUserGroupDetails(List<Long> userGroupMember) {
 		List<UserGroupIbp> userGroupList = new ArrayList<UserGroupIbp>();
-		for (UserGroupMemberRole userGroup : result) {
-			userGroupList.add(fetchByGroupIdIbp(userGroup.getUserGroupId()));
+		for (Long userGroupId : userGroupMember) {
+			userGroupList.add(fetchByGroupIdIbp(userGroupId));
 		}
 		return userGroupList;
 	}
@@ -122,23 +115,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<UserGroupIbp> findFeaturableGroups(Long objectId, Long userId) {
-		List<UserGroupIbp> groupList = fetchByObservationId(objectId);
-		List<UserGroupMemberRole> userMemberrole = userGroupMemberRoleDao.findUserGroupbyUserIdRole(userId);
-		List<Long> userMemberGroup = new ArrayList<Long>();
-		List<UserGroupIbp> accessibleGroup = new ArrayList<UserGroupIbp>();
-		for (UserGroupMemberRole memberRole : userMemberrole) {
-			userMemberGroup.add(memberRole.getUserGroupId());
-		}
-		for (UserGroupIbp ug : groupList) {
-			if (userMemberGroup.contains(ug.getId())) {
-				accessibleGroup.add(ug);
-			}
-		}
-		return accessibleGroup;
-	}
-
-	@Override
 	public List<UserGroupIbp> fetchAllUserGroup() {
 		List<UserGroup> userGroupList = userGroupDao.findAll();
 		List<UserGroupIbp> result = new ArrayList<UserGroupIbp>();
@@ -158,16 +134,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<Long> fetchUserAllowedGroupId(Long userId) {
-		List<UserGroupMemberRole> userMomberRole = userGroupMemberRoleDao.findUserGroupbyUserIdRole(userId);
-		List<Long> userGroupId = new ArrayList<Long>();
-		for (UserGroupMemberRole userGroupMemberRole : userMomberRole) {
-			userGroupId.add(userGroupMemberRole.getUserGroupId());
-		}
-		return userGroupId;
-	}
-
-	@Override
 	public List<Featured> fetchFeatured(String objectType, Long id) {
 		List<Featured> featuredList = featuredDao.fetchAllFeatured(objectType, id);
 		return featuredList;
@@ -178,7 +144,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 		List<Featured> result = new ArrayList<Featured>();
 		try {
-			List<Long> userGroupIds = fetchUserAllowedGroupId(userId);
 
 			Featured featured;
 			if (featuredCreate.getObjectType().equalsIgnoreCase("observation"))
@@ -188,30 +153,31 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					featuredCreate.getObjectId());
 
 			for (Long userGroupId : featuredCreate.getUserGroup()) {
-				if (userGroupIds.contains(userGroupId)) {
 
-					int flag = 0;
-					for (Featured alreadyFeatured : featuredList) {
-						if (alreadyFeatured.getUserGroup() == userGroupId) {
-							alreadyFeatured.setCreatedOn(new Date());
-							alreadyFeatured.setNotes(featuredCreate.getNotes());
-							alreadyFeatured.setAuthorId(userId);
-							featuredDao.update(alreadyFeatured);
-							flag = 1;
-						}
+				int flag = 0;
+				for (Featured alreadyFeatured : featuredList) {
+					if (alreadyFeatured.getUserGroup() == userGroupId) {
+						alreadyFeatured.setCreatedOn(new Date());
+						alreadyFeatured.setNotes(featuredCreate.getNotes());
+						alreadyFeatured.setAuthorId(userId);
+						featuredDao.update(alreadyFeatured);
+						flag = 1;
 					}
+				}
 
-					if (flag == 0) {
-						featured = new Featured(null, 0L, userId, new Date(), featuredCreate.getNotes(),
-								featuredCreate.getObjectId(), featuredCreate.getObjectType(), userGroupId, 205L, null);
-						featured = featuredDao.save(featured);
-
-					}
+				if (flag == 0) {
+					featured = new Featured(null, 0L, userId, new Date(), featuredCreate.getNotes(),
+							featuredCreate.getObjectId(), featuredCreate.getObjectType(), userGroupId, 205L, null);
+					featured = featuredDao.save(featured);
 
 				}
+
 			}
+
 			result = featuredDao.fetchAllFeatured(featuredCreate.getObjectType(), featuredCreate.getObjectId());
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			logger.error(e.getMessage());
 		}
 		return result;
@@ -225,15 +191,13 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (objectType.equalsIgnoreCase("observation"))
 				objectType = "species.participation.Observation";
 			List<Featured> featuredList = featuredDao.fetchAllFeatured(objectType, objectId);
-			List<Long> userGroupIds = fetchUserAllowedGroupId(userId);
 
 			for (Long userGroupId : userGroupList) {
-				if (userGroupIds.contains(userGroupId)) {
-					for (Featured featured : featuredList) {
-						if (featured.getUserGroup() == userGroupId) {
-							featuredDao.delete(featured);
-							break;
-						}
+
+				for (Featured featured : featuredList) {
+					if (featured.getUserGroup() == userGroupId) {
+						featuredDao.delete(featured);
+						break;
 					}
 				}
 			}

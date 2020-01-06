@@ -16,7 +16,6 @@ public class UserGroupDaoModule extends AbstractModule {
 	protected void configure() {
 		bind(UserGroupDao.class).in(Scopes.SINGLETON);
 		bind(UserGroupObservationDao.class).in(Scopes.SINGLETON);
-		bind(UserGroupMemberRoleDao.class).in(Scopes.SINGLETON);
 		bind(FeaturedDao.class).in(Scopes.SINGLETON);
 	}
 

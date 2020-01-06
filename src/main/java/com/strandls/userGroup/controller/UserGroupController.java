@@ -107,15 +107,18 @@ public class UserGroupController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ValidateUser
-	@ApiOperation(value = "Find list of UserGroup based on UserId", notes = "Return UserGroup Details", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiOperation(value = "Find list of UserGroup based on List of UserGroupId", notes = "Return UserGroup Details", response = UserGroupIbp.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup Not Found ", response = String.class) })
 
-	public Response getUserGroupList(@Context HttpServletRequest request) {
+	public Response getUserGroupList(
+			@ApiParam(name = "userGroupMember") @QueryParam("userGroupMember") String userGroupMember) {
 		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			Long sUserId = Long.parseLong(profile.getId());
-			List<UserGroupIbp> userGroupList = ugServices.fetchByUserId(sUserId);
+			String[] userGroupRole = userGroupMember.split(",");
+			List<Long> memberList = new ArrayList<Long>();
+			for (String s : userGroupRole)
+				memberList.add(Long.parseLong(s.trim()));
+
+			List<UserGroupIbp> userGroupList = ugServices.fetchByUserGroupDetails(memberList);
 			return Response.status(Status.OK).entity(userGroupList).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
@@ -164,50 +167,6 @@ public class UserGroupController {
 			Long obvId = Long.parseLong(observationId);
 
 			List<UserGroupIbp> result = ugServices.updateUserGroupObservationMapping(obvId, userGroup);
-			return Response.status(Status.OK).entity(result).build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-		}
-	}
-
-	@GET
-	@Path(ApiConstants.FEATURED + "/{objectId}")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ValidateUser
-	@ApiOperation(value = "Search for all the featurable groups for the current user", notes = "Returns the groups in which the user can feature", response = UserGroupIbp.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "Unable to get the Info", response = String.class) })
-
-	public Response getFeaturableGroups(@Context HttpServletRequest request, @PathParam("objectId") String objectId) {
-		try {
-			Long objId = Long.parseLong(objectId);
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			Long userId = Long.parseLong(profile.getId());
-			List<UserGroupIbp> result = ugServices.findFeaturableGroups(objId, userId);
-
-			return Response.status(Status.OK).entity(result).build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-		}
-	}
-
-	@GET
-	@Path(ApiConstants.FEATURED)
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ValidateUser
-	@ApiOperation(value = "Check the user permission on Groups", notes = "Return the list of GroupId where he is Fouder or Expert", response = Long.class, responseContainer = "List")
-	@ApiResponses(value = {
-			@ApiResponse(code = 404, message = "Unable to fetch the userGroups", response = String.class) })
-
-	public Response checkUserRolePermission(@Context HttpServletRequest request) {
-
-		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			Long userId = Long.parseLong(profile.getId());
-			List<Long> result = ugServices.fetchUserAllowedGroupId(userId);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

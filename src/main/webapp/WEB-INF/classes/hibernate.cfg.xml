@@ -18,7 +18,6 @@
 		
 		<mapping class="com.strandls.userGroup.pojo.UserGroup"/>
 		<mapping class="com.strandls.userGroup.pojo.UserGroupObservation"/>
-		<mapping class="com.strandls.userGroup.pojo.UserGroupMemberRole"/>
 		<mapping class="com.strandls.userGroup.pojo.Featured"/>
 	</session-factory>
 </hibernate-configuration>

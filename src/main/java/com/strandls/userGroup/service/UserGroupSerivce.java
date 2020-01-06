@@ -22,17 +22,13 @@ public interface UserGroupSerivce {
 
 	public List<UserGroupIbp> fetchByObservationId(Long id);
 
-	public List<UserGroupIbp> fetchByUserId(Long sUserId);
+	public List<UserGroupIbp> fetchByUserGroupDetails(List<Long> userGroupMember);
 
 	public List<Long> createUserGroupObservationMapping(Long observationId, List<Long> userGroups);
 
 	public List<UserGroupIbp> updateUserGroupObservationMapping(Long observationId, List<Long> userGorups);
 
-	public List<UserGroupIbp> findFeaturableGroups(Long objectId, Long userId);
-
 	public List<UserGroupIbp> fetchAllUserGroup();
-
-	public List<Long> fetchUserAllowedGroupId(Long userId);
 
 	public List<Featured> fetchFeatured(String objectType, Long id);
 
