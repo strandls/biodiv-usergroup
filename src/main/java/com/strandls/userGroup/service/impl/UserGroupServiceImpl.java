@@ -30,6 +30,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	private final Logger logger = LoggerFactory.getLogger(UserGroupServiceImpl.class);
 
 	@Inject
+	private LogActivities logActivity;
+
+	@Inject
 	private UserGroupDao userGroupDao;
 
 	@Inject
@@ -77,15 +80,18 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<Long> createUserGroupObservationMapping(Long observatoinId, List<Long> userGroups) {
+	public List<Long> createUserGroupObservationMapping(Long observationId, List<Long> userGroups) {
 
 		List<Long> resultList = new ArrayList<Long>();
 
 		for (Long userGroup : userGroups) {
-			UserGroupObservation userGroupObs = new UserGroupObservation(userGroup, observatoinId);
+			UserGroupObservation userGroupObs = new UserGroupObservation(userGroup, observationId);
 			UserGroupObservation result = userGroupObvDao.save(userGroupObs);
-			if (result != null)
+			if (result != null) {
 				resultList.add(result.getUserGroupId());
+				logActivity.LogActivity("Posted observation to group", observationId, observationId, "observation",
+						result.getUserGroupId(), "Posted resource");
+			}
 		}
 		return resultList;
 	}
@@ -98,6 +104,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		for (UserGroupObservation ug : previousMapping) {
 			if (!(userGorups.contains(ug.getUserGroupId()))) {
 				userGroupObvDao.delete(ug);
+				logActivity.LogActivity("Removed observation from group", observationId, observationId, "observation",
+						ug.getUserGroupId(), "Removed resoruce");
 			}
 			previousUserGroup.add(ug.getUserGroupId());
 		}
@@ -106,6 +114,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (!(previousUserGroup.contains(userGroupId))) {
 				UserGroupObservation userGroupMapping = new UserGroupObservation(userGroupId, observationId);
 				userGroupObvDao.save(userGroupMapping);
+				logActivity.LogActivity("Posted observation to group", observationId, observationId, "observation",
+						userGroupId, "Posted resource");
 			}
 		}
 
@@ -172,6 +182,13 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				}
 
+				Long activityId = userGroupId;
+				if (userGroupId == null)
+					activityId = featuredCreate.getObjectId();
+
+				logActivity.LogActivity(featuredCreate.getNotes(), featuredCreate.getObjectId(),
+						featuredCreate.getObjectId(), "observation", activityId, "Featured");
+
 			}
 
 			result = featuredDao.fetchAllFeatured(featuredCreate.getObjectType(), featuredCreate.getObjectId());
@@ -197,6 +214,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				for (Featured featured : featuredList) {
 					if (featured.getUserGroup() == userGroupId) {
 						featuredDao.delete(featured);
+						Long activityId = userGroupId;
+						if (userGroupId == null)
+							activityId = objectId;
+						logActivity.LogActivity(featured.getNotes(), objectId, objectId, "observation", activityId,
+								"UnFeatured");
+
 						break;
 					}
 				}

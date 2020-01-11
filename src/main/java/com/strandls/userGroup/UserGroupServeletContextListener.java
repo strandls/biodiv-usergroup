@@ -23,7 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Scopes;
 import com.google.inject.servlet.GuiceServletContextListener;
+import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.authentication_utility.filter.FilterModule;
 import com.strandls.userGroup.controller.UserGroupControllerModule;
 import com.strandls.userGroup.dao.UserGroupDaoModule;
@@ -65,8 +67,10 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 				props.put("jersey.config.server.wadl.disableWadl", "true");
 
 				bind(SessionFactory.class).toInstance(sessionFactory);
+				bind(ActivitySerivceApi.class).in(Scopes.SINGLETON);
 
 				serve("/api/*").with(GuiceContainer.class, props);
+				filter("/*").through(SwaggerFilter.class);
 			}
 		}, new UserGroupControllerModule(), new FilterModule(), new UserGroupServiceModule(), new UserGroupDaoModule());
 

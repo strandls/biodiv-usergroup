@@ -11,10 +11,11 @@ import com.strandls.userGroup.service.UserGroupSerivce;
  * @author Abhishek Rudra
  *
  */
-public class UserGroupServiceModule extends AbstractModule{
+public class UserGroupServiceModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
 		bind(UserGroupSerivce.class).to(UserGroupServiceImpl.class).in(Scopes.SINGLETON);
+		bind(LogActivities.class).in(Scopes.SINGLETON);
 	}
 }
