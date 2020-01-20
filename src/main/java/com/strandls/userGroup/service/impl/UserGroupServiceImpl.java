@@ -3,14 +3,19 @@
  */
 package com.strandls.userGroup.service.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.strandls.activity.pojo.UserGroupActivity;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
@@ -28,6 +33,9 @@ import com.strandls.userGroup.service.UserGroupSerivce;
 public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	private final Logger logger = LoggerFactory.getLogger(UserGroupServiceImpl.class);
+
+	@Inject
+	private ObjectMapper objectMapper;
 
 	@Inject
 	private LogActivities logActivity;
@@ -89,7 +97,19 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			UserGroupObservation result = userGroupObvDao.save(userGroupObs);
 			if (result != null) {
 				resultList.add(result.getUserGroupId());
-				logActivity.LogActivity("Posted observation to group", observationId, observationId, "observation",
+				UserGroupActivity ugActivity = new UserGroupActivity();
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroup);
+				String description = null;
+				ugActivity.setFeatured(null);
+				ugActivity.setUserGroupId(ugIbp.getId());
+				ugActivity.setUserGroupName(ugIbp.getName());
+				ugActivity.setWebAddress(ugIbp.getWebAddress());
+				try {
+					description = objectMapper.writeValueAsString(ugActivity);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+				logActivity.LogActivity(description, observationId, observationId, "observation",
 						result.getUserGroupId(), "Posted resource");
 			}
 		}
@@ -104,8 +124,22 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		for (UserGroupObservation ug : previousMapping) {
 			if (!(userGorups.contains(ug.getUserGroupId()))) {
 				userGroupObvDao.delete(ug);
-				logActivity.LogActivity("Removed observation from group", observationId, observationId, "observation",
-						ug.getUserGroupId(), "Removed resoruce");
+
+				UserGroupActivity ugActivity = new UserGroupActivity();
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(ug.getUserGroupId());
+				String description = null;
+				ugActivity.setFeatured(null);
+				ugActivity.setUserGroupId(ugIbp.getId());
+				ugActivity.setUserGroupName(ugIbp.getName());
+				ugActivity.setWebAddress(ugIbp.getWebAddress());
+				try {
+					description = objectMapper.writeValueAsString(ugActivity);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+
+				logActivity.LogActivity(description, observationId, observationId, "observation", ug.getUserGroupId(),
+						"Removed resoruce");
 			}
 			previousUserGroup.add(ug.getUserGroupId());
 		}
@@ -114,8 +148,22 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (!(previousUserGroup.contains(userGroupId))) {
 				UserGroupObservation userGroupMapping = new UserGroupObservation(userGroupId, observationId);
 				userGroupObvDao.save(userGroupMapping);
-				logActivity.LogActivity("Posted observation to group", observationId, observationId, "observation",
-						userGroupId, "Posted resource");
+
+				UserGroupActivity ugActivity = new UserGroupActivity();
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
+				String description = null;
+				ugActivity.setFeatured(null);
+				ugActivity.setUserGroupId(ugIbp.getId());
+				ugActivity.setUserGroupName(ugIbp.getName());
+				ugActivity.setWebAddress(ugIbp.getWebAddress());
+				try {
+					description = objectMapper.writeValueAsString(ugActivity);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+
+				logActivity.LogActivity(description, observationId, observationId, "observation", userGroupId,
+						"Posted resource");
 			}
 		}
 
@@ -186,8 +234,43 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				if (userGroupId == null)
 					activityId = featuredCreate.getObjectId();
 
-				logActivity.LogActivity(featuredCreate.getNotes(), featuredCreate.getObjectId(),
-						featuredCreate.getObjectId(), "observation", activityId, "Featured");
+				UserGroupActivity ugActivity = new UserGroupActivity();
+				if (userGroupId != null) {
+					UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
+
+					ugActivity.setUserGroupId(ugIbp.getId());
+					ugActivity.setUserGroupName(ugIbp.getName());
+					ugActivity.setWebAddress(ugIbp.getWebAddress());
+				} else {
+					InputStream in = Thread.currentThread().getContextClassLoader()
+							.getResourceAsStream("config.properties");
+
+					Properties properties = new Properties();
+					try {
+						properties.load(in);
+					} catch (IOException e) {
+						logger.error(e.getMessage());
+					}
+					String portalName = properties.getProperty("portalName");
+					String portalWebAddress = properties.getProperty("portalAddress");
+					in.close();
+					ugActivity.setUserGroupId(null);
+					ugActivity.setUserGroupName(portalName);
+					ugActivity.setWebAddress(portalWebAddress);
+
+				}
+				ugActivity.setFeatured(featuredCreate.getNotes());
+
+				String description = null;
+
+				try {
+					description = objectMapper.writeValueAsString(ugActivity);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+
+				logActivity.LogActivity(description, featuredCreate.getObjectId(), featuredCreate.getObjectId(),
+						"observation", activityId, "Featured");
 
 			}
 
@@ -217,7 +300,42 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						Long activityId = userGroupId;
 						if (userGroupId == null)
 							activityId = objectId;
-						logActivity.LogActivity(featured.getNotes(), objectId, objectId, "observation", activityId,
+
+						UserGroupActivity ugActivity = new UserGroupActivity();
+						if (userGroupId != null) {
+							UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
+
+							ugActivity.setUserGroupId(ugIbp.getId());
+							ugActivity.setUserGroupName(ugIbp.getName());
+							ugActivity.setWebAddress(ugIbp.getWebAddress());
+						} else {
+							InputStream in = Thread.currentThread().getContextClassLoader()
+									.getResourceAsStream("config.properties");
+
+							Properties properties = new Properties();
+							try {
+								properties.load(in);
+							} catch (IOException e) {
+								logger.error(e.getMessage());
+							}
+							String portalName = properties.getProperty("portalName");
+							String portalWebAddress = properties.getProperty("portalAddress");
+							in.close();
+							ugActivity.setUserGroupId(null);
+							ugActivity.setUserGroupName(portalName);
+							ugActivity.setWebAddress(portalWebAddress);
+
+						}
+						ugActivity.setFeatured(featured.getNotes());
+
+						String description = null;
+						try {
+							description = objectMapper.writeValueAsString(ugActivity);
+						} catch (Exception e) {
+							logger.error(e.getMessage());
+						}
+
+						logActivity.LogActivity(description, objectId, objectId, "observation", activityId,
 								"UnFeatured");
 
 						break;
