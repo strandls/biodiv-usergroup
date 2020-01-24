@@ -46,6 +46,7 @@ public class UserGroup implements Serializable {
 	private Long languageId;
 	private Boolean sendDigestMail;
 	private Date startDate;
+	private String filterRule;
 
 	@Id
 	@GeneratedValue
@@ -209,6 +210,15 @@ public class UserGroup implements Serializable {
 
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
+	}
+
+	@Column(name = "filter_rule")
+	public String getFilterRule() {
+		return filterRule;
+	}
+
+	public void setFilterRule(String filterRule) {
+		this.filterRule = filterRule;
 	}
 
 }

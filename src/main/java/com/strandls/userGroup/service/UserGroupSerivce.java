@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
+import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 
@@ -35,5 +36,9 @@ public interface UserGroupSerivce {
 	public List<Featured> createFeatured(Long userId, FeaturedCreate featuredCreate);
 
 	public List<Featured> removeFeatured(Long userId, String objectType, Long objectId, List<Long> userGroupList);
+
+	public void filterRule(ObservationLatLon latlon);
+
+	public void bulkFilterRule(String userGroupIds, List<ObservationLatLon> latlonList);
 
 }

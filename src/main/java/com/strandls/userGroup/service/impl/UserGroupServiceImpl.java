@@ -21,10 +21,17 @@ import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
+import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupObservation;
+import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupSerivce;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * @author Abhishek Rudra
@@ -91,7 +98,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	public List<Long> createUserGroupObservationMapping(Long observationId, List<Long> userGroups) {
 
 		List<Long> resultList = new ArrayList<Long>();
-
 		for (Long userGroup : userGroups) {
 			UserGroupObservation userGroupObs = new UserGroupObservation(userGroup, observationId);
 			UserGroupObservation result = userGroupObvDao.save(userGroupObs);
@@ -348,6 +354,91 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			logger.error(e.getMessage());
 		}
 		return resultList;
+	}
+
+	@Override
+	public void filterRule(ObservationLatLon latlon) {
+		try {
+			List<UserGroup> userGroupList = userGroupDao.findFilterRule();
+			GeometryFactory geofactory = new GeometryFactory(new PrecisionModel(), 4326);
+			WKTReader reader = new WKTReader(geofactory);
+			Coordinate c = new Coordinate(latlon.getLongitude(), latlon.getLatitude());
+			Geometry point = geofactory.createPoint(c);
+
+			List<Long> userGroupId = new ArrayList<Long>();
+
+			List<UserGroupObservation> usergroupObv = userGroupObvDao.findByObservationId(latlon.getObservationId());
+			if (usergroupObv != null) {
+				for (UserGroupObservation ugObv : usergroupObv) {
+					userGroupId.add(ugObv.getUserGroupId());
+				}
+			}
+			int previousSize = userGroupId.size();
+			for (UserGroup userGroup : userGroupList) {
+				UserGroupWKT wkt = objectMapper.readValue(userGroup.getFilterRule(), UserGroupWKT.class);
+				Geometry groupBoundries = reader.read(wkt.getWkt());
+				if (groupBoundries.intersects(point)) {
+					if (!(userGroupId.contains(userGroup.getId()))) {
+						userGroupId.add(userGroup.getId());
+					}
+				}
+			}
+			if (previousSize < userGroupId.size())
+				updateUserGroupObservationMapping(latlon.getObservationId(), userGroupId);
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+	}
+
+	@Override
+	public void bulkFilterRule(String userGroupIds, List<ObservationLatLon> latlonList) {
+		List<UserGroup> userGroupList = null;
+		if (userGroupIds == null) {
+			userGroupList = userGroupDao.findFilterRule();
+		} else {
+			userGroupList = userGroupDao.findFilterRuleGroupWise(userGroupIds);
+		}
+		bulkFilter(userGroupList, latlonList);
+	}
+
+	private void bulkFilter(List<UserGroup> userGroupList, List<ObservationLatLon> latlonList) {
+
+		try {
+			GeometryFactory geofactory = new GeometryFactory(new PrecisionModel(), 4326);
+			WKTReader reader = new WKTReader(geofactory);
+
+			for (ObservationLatLon latlon : latlonList) {
+				Coordinate c = new Coordinate(latlon.getLongitude(), latlon.getLatitude());
+				Geometry point = geofactory.createPoint(c);
+				List<Long> userGroupId = new ArrayList<Long>();
+
+				List<UserGroupObservation> usergroupObv = userGroupObvDao
+						.findByObservationId(latlon.getObservationId());
+				if (usergroupObv != null) {
+					for (UserGroupObservation ugObv : usergroupObv) {
+						userGroupId.add(ugObv.getUserGroupId());
+					}
+				}
+				int previousSize = userGroupId.size();
+				for (UserGroup userGroup : userGroupList) {
+					UserGroupWKT wkt = objectMapper.readValue(userGroup.getFilterRule(), UserGroupWKT.class);
+					Geometry groupBoundries = reader.read(wkt.getWkt());
+					if (groupBoundries.intersects(point)) {
+						if (!(userGroupId.contains(userGroup.getId()))) {
+							userGroupId.add(userGroup.getId());
+						}
+					}
+				}
+				if (previousSize < userGroupId.size())
+					updateUserGroupObservationMapping(latlon.getObservationId(), userGroupId);
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
 	}
 
 }

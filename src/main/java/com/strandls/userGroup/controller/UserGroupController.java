@@ -28,6 +28,7 @@ import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
+import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.service.UserGroupSerivce;
@@ -250,6 +251,46 @@ public class UserGroupController {
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.FILTERRULE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Checks the post creation rule", notes = "Add the observation Based on rules", response = String.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Unable to set the filter Rule", response = String.class) })
+
+	public Response getFilterRule(@Context HttpServletRequest request,
+			@ApiParam(name = "latlon") ObservationLatLon latlon) {
+		try {
+			ugServices.filterRule(latlon);
+			return Response.status(Status.OK).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.FILTERRULE + ApiConstants.BULK)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Checks the post creation rule in Bulk", notes = "Add the observation Based on rules in Bulk", response = String.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Unable to set the filter Rule", response = String.class) })
+
+	public Response bulkFilterRule(@QueryParam("groupIds") String groupIds,
+			@ApiParam(name = "latlonList") List<ObservationLatLon> latlonList) {
+		try {
+			ugServices.bulkFilterRule(groupIds, latlonList);
+			return Response.status(Status.OK).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity("Not Allowed").build();
 		}
 	}
 
