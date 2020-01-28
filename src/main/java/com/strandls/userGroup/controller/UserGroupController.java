@@ -254,7 +254,7 @@ public class UserGroupController {
 		}
 	}
 
-	@GET
+	@POST
 	@Path(ApiConstants.FILTERRULE)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
