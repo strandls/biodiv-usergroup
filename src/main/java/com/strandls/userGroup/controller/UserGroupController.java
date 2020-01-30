@@ -31,6 +31,7 @@ import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
+import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupSerivce;
 
 import io.swagger.annotations.Api;
@@ -38,6 +39,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import net.minidev.json.JSONArray;
 
 /**
  * @author Abhishek Rudra
@@ -152,7 +154,7 @@ public class UserGroupController {
 	}
 
 	@PUT
-	@Path(ApiConstants.UPDATE + "/{observationId}")
+	@Path(ApiConstants.UPDATE + ApiConstants.OBSERVATION + "/{observationId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -291,6 +293,28 @@ public class UserGroupController {
 			return Response.status(Status.OK).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity("Not Allowed").build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.UPDATE + ApiConstants.FILTERRULE + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ValidateUser
+
+	public Response updateUserGroupFilterRule(@Context HttpServletRequest request,
+			@PathParam("userGroupId") String userGroupId, @ApiParam(name = "userGroupWKT") UserGroupWKT userGroupWKT) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray userRole = (JSONArray) profile.getAttribute("roles");
+			if (userRole.contains("ROLE_ADMIN")) {
+				Long userGroup = Long.parseLong(userGroupId);
+				String result = ugServices.updateUserGroupFilter(userGroup, userGroupWKT);
+				return Response.status(Status.OK).entity(result).build();
+			}
+			return Response.status(Status.NOT_ACCEPTABLE).entity("USER NOT ALLOWED TO PERFORM THE TASK").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 

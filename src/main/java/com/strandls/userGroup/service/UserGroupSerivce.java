@@ -10,6 +10,7 @@ import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
+import com.strandls.userGroup.pojo.UserGroupWKT;
 
 /**
  * @author Abhishek Rudra
@@ -40,5 +41,7 @@ public interface UserGroupSerivce {
 	public void filterRule(ObservationLatLon latlon);
 
 	public void bulkFilterRule(String userGroupIds, List<ObservationLatLon> latlonList);
+
+	public String updateUserGroupFilter(Long userGroupId, UserGroupWKT userGroupWKT);
 
 }

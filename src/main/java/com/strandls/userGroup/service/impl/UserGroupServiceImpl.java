@@ -441,4 +441,19 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	}
 
+	@Override
+	public String updateUserGroupFilter(Long userGroupId, UserGroupWKT userGroupWKT) {
+		try {
+			UserGroup userGroup = userGroupDao.findById(userGroupId);
+			String filterRule = objectMapper.writeValueAsString(userGroupWKT);
+			userGroup.setFilterRule(filterRule);
+			userGroupDao.update(userGroup);
+			return "User Group Updated with WKT filter";
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+
+	}
+
 }
