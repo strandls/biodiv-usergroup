@@ -644,8 +644,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			List<UserGroupCustomFieldMapping> ugCfMappingList = ugCFMappingDao
 					.findByUserGroupId(ugObservation.getUserGroupId());
 
-			if (ugCfMappingList != null) {
-				List<ObservationCustomField> observationCFDataList = observationCFDao.findByObservationId(observationId);
+			if (!(ugCfMappingList.isEmpty())) {
+
+				List<ObservationCustomField> observationCFDataList = observationCFDao
+						.findByObservationId(observationId);
 				Map<Long, ObservationCustomField> cfDataMapping = new HashMap<Long, ObservationCustomField>();
 				for (ObservationCustomField observationCF : observationCFDataList)
 					cfDataMapping.put(observationCF.getCustomFieldId(), observationCF);
@@ -653,17 +655,21 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				for (UserGroupCustomFieldMapping ugCFMapping : ugCfMappingList) {
 					ObservationCustomField observationCFData = cfDataMapping.get(ugCFMapping.getCustomFieldId());
 					String value = null;
-					if (observationCFData.getValue() != null)
-						value = observationCFData.getValue();
-					else if (observationCFData.getCustomFieldValueId() != null) {
-
+					if (observationCFData != null) {
+						if (observationCFData.getValue() != null)
+							value = observationCFData.getValue();
+						else if (observationCFData.getCustomFieldValueId() != null) {
+//							to be written the logic of custom fields having the 
+						}
 					}
+
 					cfShowData.add(new CustomFieldData(ugCFMapping.getCustomFieldId(),
-							cfsDao.findById(ugCFMapping.getCustomFieldId()).getName(), value, ugCFMapping.getDisplayOrder(),
+							cfsDao.findById(ugCFMapping.getCustomFieldId()).getName(), value,
+							ugCFMapping.getDisplayOrder(),
 							cfsDao.findById(ugCFMapping.getCustomFieldId()).getFieldType()));
 				}
+				cfObservationData.add(new CustomFieldObservationData(ugObservation.getUserGroupId(), cfShowData));
 			}
-			cfObservationData.add(new CustomFieldObservationData(ugObservation.getUserGroupId(), cfShowData));
 		}
 
 		return cfObservationData;
