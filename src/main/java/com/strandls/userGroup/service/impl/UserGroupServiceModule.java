@@ -17,5 +17,6 @@ public class UserGroupServiceModule extends AbstractModule {
 	protected void configure() {
 		bind(UserGroupSerivce.class).to(UserGroupServiceImpl.class).in(Scopes.SINGLETON);
 		bind(LogActivities.class).in(Scopes.SINGLETON);
+		bind(CustomFieldMigrationThread.class).in(Scopes.SINGLETON);
 	}
 }

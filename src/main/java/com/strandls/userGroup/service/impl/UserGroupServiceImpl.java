@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -16,13 +18,30 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.strandls.activity.pojo.UserGroupActivity;
+import com.strandls.observation.controller.ObservationServiceApi;
+import com.strandls.userGroup.dao.CustomFieldDao;
+import com.strandls.userGroup.dao.CustomFieldUG18Dao;
+import com.strandls.userGroup.dao.CustomFieldUG37Dao;
+import com.strandls.userGroup.dao.CustomFieldValuesDao;
+import com.strandls.userGroup.dao.CustomFieldsDao;
 import com.strandls.userGroup.dao.FeaturedDao;
+import com.strandls.userGroup.dao.ObservationCustomFieldDao;
+import com.strandls.userGroup.dao.UserGroupCustomFieldMappingDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
+import com.strandls.userGroup.pojo.CustomField;
+import com.strandls.userGroup.pojo.CustomFieldData;
+import com.strandls.userGroup.pojo.CustomFieldObservationData;
+import com.strandls.userGroup.pojo.CustomFieldUG18;
+import com.strandls.userGroup.pojo.CustomFieldUG37;
+import com.strandls.userGroup.pojo.CustomFieldValues;
+import com.strandls.userGroup.pojo.CustomFields;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
+import com.strandls.userGroup.pojo.ObservationCustomField;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
+import com.strandls.userGroup.pojo.UserGroupCustomFieldMapping;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.pojo.UserGroupWKT;
@@ -55,6 +74,30 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private FeaturedDao featuredDao;
+
+	@Inject
+	private CustomFieldDao cfDao;
+
+	@Inject
+	private CustomFieldsDao cfsDao;
+
+	@Inject
+	private CustomFieldValuesDao cfValueDao;
+
+	@Inject
+	private UserGroupCustomFieldMappingDao ugCFMappingDao;
+
+	@Inject
+	private CustomFieldUG18Dao cf18Dao;
+
+	@Inject
+	private CustomFieldUG37Dao cf37Dao;
+
+	@Inject
+	private ObservationCustomFieldDao observationCFDao;
+
+	@Inject
+	private ObservationServiceApi observationService;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -454,6 +497,176 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		}
 		return null;
 
+	}
+
+	@Override
+	public void migrateCustomField() {
+		try {
+
+			Map<Long, Long> previousToNew = new HashMap<Long, Long>();
+			List<CustomField> cfList = cfDao.findAll();
+			for (CustomField customField : cfList) {
+
+				String dataType = "";
+				if (customField.getDataType().equalsIgnoreCase("PARAGRAPH_TEXT")
+						|| customField.getDataType().equalsIgnoreCase("TEXT"))
+					dataType = "STRING";
+				else if (customField.getDataType().equalsIgnoreCase("Integer"))
+					dataType = "INTEGER";
+				else if (customField.getDataType().equalsIgnoreCase("decimal"))
+					dataType = "DECIMAL";
+				else if (customField.getDataType().equalsIgnoreCase("date"))
+					dataType = "DATE";
+
+				String fieldType = "";
+				if (customField.getDataType().equalsIgnoreCase("PARAGRAPH_TEXT")
+						|| customField.getDataType().equalsIgnoreCase("TEXT"))
+					fieldType = "FIELD TEXT";
+
+				if (customField.getOptions() != null && customField.getOptions().trim().length() != 0) {
+					if (customField.getAllowedMultiple())
+						fieldType = "MULTIPLE CATEGORICAL";
+					else
+						fieldType = "SINGLE CATEGORICAL";
+				}
+
+				CustomFields cfs = new CustomFields(null, customField.getAuthorId(), customField.getName(), dataType,
+						fieldType, null, customField.getNotes());
+				cfs = cfsDao.save(cfs);
+				previousToNew.put(customField.getId(), cfs.getId());
+
+				if (customField.getOptions() != null) {
+					CustomFieldValues cfValues = null;
+					String options[] = customField.getOptions().split(",");
+					for (String option : options) {
+						cfValues = new CustomFieldValues(null, cfs.getId(), option.trim(), cfs.getAuthorId(), null,
+								null);
+						cfValues = cfValueDao.save(cfValues);
+					}
+				}
+
+				UserGroupCustomFieldMapping ugCFMapping = new UserGroupCustomFieldMapping(null,
+						customField.getAuthorId(), customField.getUserGroupId(), cfs.getId(),
+						customField.getDefaultValue(), customField.getDisplayOrder(), customField.getIsMandatory(),
+						customField.getAllowedPaticipation());
+				ugCFMappingDao.save(ugCFMapping);
+			}
+			observationCustomFieldDataMigration(previousToNew);
+
+			System.out.println("-------!!!!!!Custom field Migration Completed!!!!!!!!!!!!-----------");
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+	}
+
+	private void observationCustomFieldDataMigration(Map<Long, Long> preciousToNew) {
+		try {
+
+			List<CustomFieldUG18> cf18DataList = cf18Dao.findAll();
+			ObservationCustomField observationCF = null;
+			for (CustomFieldUG18 cf18Data : cf18DataList) {
+				Long authorId = Long
+						.parseLong(observationService.getObservationAuthor(cf18Data.getObservationId().toString()));
+				if (cf18Data.getCf5() != null && cf18Data.getCf5().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf18Data.getObservationId(),
+							preciousToNew.get(5L), null, cf18Data.getCf5());
+					observationCFDao.save(observationCF);
+				}
+				if (cf18Data.getCf6() != null && cf18Data.getCf6().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf18Data.getObservationId(),
+							preciousToNew.get(6L), null, cf18Data.getCf6());
+					observationCFDao.save(observationCF);
+				}
+			}
+
+			List<CustomFieldUG37> cf37DataList = cf37Dao.findAll();
+			for (CustomFieldUG37 cf37Data : cf37DataList) {
+				Long authorId = Long
+						.parseLong(observationService.getObservationAuthor(cf37Data.getObservationId().toString()));
+				if (cf37Data.getCf_14501638() != null && cf37Data.getCf_14501638().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(),
+							preciousToNew.get(14501638L), null, cf37Data.getCf_14501638());
+					observationCFDao.save(observationCF);
+				}
+				if (cf37Data.getCf_14501655() != null && cf37Data.getCf_14501655().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(),
+							preciousToNew.get(14501655L), null, cf37Data.getCf_14501655());
+					observationCFDao.save(observationCF);
+				}
+				if (cf37Data.getCf_14501656() != null && cf37Data.getCf_14501656().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(),
+							preciousToNew.get(14501656L), null, cf37Data.getCf_14501656());
+					observationCFDao.save(observationCF);
+				}
+				if (cf37Data.getCf_14501657() != null && cf37Data.getCf_14501657().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(),
+							preciousToNew.get(14501657L), null, cf37Data.getCf_14501657());
+					observationCFDao.save(observationCF);
+				}
+				if (cf37Data.getCf_14501658() != null && cf37Data.getCf_14501658().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(),
+							preciousToNew.get(14501658L), null, cf37Data.getCf_14501658());
+					observationCFDao.save(observationCF);
+				}
+				if (cf37Data.getCf_14501659() != null && cf37Data.getCf_14501659().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(),
+							preciousToNew.get(14501659L), null, cf37Data.getCf_14501659());
+					observationCFDao.save(observationCF);
+				}
+				if (cf37Data.getCf_14501660() != null && cf37Data.getCf_14501660().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(),
+							preciousToNew.get(14501660L), null, cf37Data.getCf_14501660());
+					observationCFDao.save(observationCF);
+				}
+				if (cf37Data.getCf_14501661() != null && cf37Data.getCf_14501661().trim().length() != 0) {
+					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(),
+							preciousToNew.get(14501661L), null, cf37Data.getCf_14501661());
+					observationCFDao.save(observationCF);
+				}
+
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+	}
+
+	@Override
+	public List<CustomFieldObservationData> getObservationCustomFields(Long observationId) {
+
+		List<CustomFieldObservationData> cfObservationData = new ArrayList<CustomFieldObservationData>();
+		List<UserGroupObservation> ugObservationList = userGroupObvDao.findByObservationId(observationId);
+		for (UserGroupObservation ugObservation : ugObservationList) {
+			List<CustomFieldData> cfShowData = new ArrayList<CustomFieldData>();
+			List<UserGroupCustomFieldMapping> ugCfMappingList = ugCFMappingDao
+					.findByUserGroupId(ugObservation.getUserGroupId());
+
+			if (ugCfMappingList != null) {
+				List<ObservationCustomField> observationCFDataList = observationCFDao.findByObservationId(observationId);
+				Map<Long, ObservationCustomField> cfDataMapping = new HashMap<Long, ObservationCustomField>();
+				for (ObservationCustomField observationCF : observationCFDataList)
+					cfDataMapping.put(observationCF.getCustomFieldId(), observationCF);
+
+				for (UserGroupCustomFieldMapping ugCFMapping : ugCfMappingList) {
+					ObservationCustomField observationCFData = cfDataMapping.get(ugCFMapping.getCustomFieldId());
+					String value = null;
+					if (observationCFData.getValue() != null)
+						value = observationCFData.getValue();
+					else if (observationCFData.getCustomFieldValueId() != null) {
+
+					}
+					cfShowData.add(new CustomFieldData(ugCFMapping.getCustomFieldId(),
+							cfsDao.findById(ugCFMapping.getCustomFieldId()).getName(), value, ugCFMapping.getDisplayOrder(),
+							cfsDao.findById(ugCFMapping.getCustomFieldId()).getFieldType()));
+				}
+			}
+			cfObservationData.add(new CustomFieldObservationData(ugObservation.getUserGroupId(), cfShowData));
+		}
+
+		return cfObservationData;
 	}
 
 }

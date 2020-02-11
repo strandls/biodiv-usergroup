@@ -23,5 +23,7 @@ public class ApiConstants {
 	public static final String ALL = "/all";
 	public static final String FILTERRULE = "/filterRule";
 	public static final String BULK = "/bulk";
+	public static final String MIGRATE = "/migrate";
+	public static final String CUSTOMFIELD = "/customfield";
 
 }

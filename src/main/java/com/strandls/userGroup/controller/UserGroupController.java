@@ -26,6 +26,7 @@ import com.google.inject.Inject;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
+import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.ObservationLatLon;
@@ -33,6 +34,7 @@ import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupSerivce;
+import com.strandls.userGroup.service.impl.CustomFieldMigrationThread;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,6 +54,9 @@ public class UserGroupController {
 
 	@Inject
 	private UserGroupSerivce ugServices;
+
+	@Inject
+	private CustomFieldMigrationThread cfMigrationThread;
 
 	@GET
 	@Path("/{objectId}")
@@ -102,6 +107,39 @@ public class UserGroupController {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 
+	}
+
+	@GET
+	@Path(ApiConstants.OBSERVATION + ApiConstants.CUSTOMFIELD + "/{observationId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Finds the Custom fields for the specified Observaiton", notes = "Return all the Custom field associated with a observation", response = CustomFieldObservationData.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "Unable to retrieve the data", response = String.class) })
+	public Response getObservationCustomFields(@PathParam("observationId") String observationId) {
+		try {
+			Long obvId = Long.parseLong(observationId);
+			List<CustomFieldObservationData> result = ugServices.getObservationCustomFields(obvId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@POST
+	@Path(ApiConstants.CUSTOMFIELD + ApiConstants.CREATE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	public Response addCustomFieldData() {
+		try {
+
+			return null;
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
 	}
 
 	@GET
@@ -316,6 +354,22 @@ public class UserGroupController {
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
+	}
+
+	@POST
+	@Path(ApiConstants.MIGRATE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	public Response migrateCustomField() {
+		try {
+			Thread customFieldMigrationThread = new Thread(cfMigrationThread);
+			customFieldMigrationThread.start();
+			return Response.status(Status.OK).entity("Custom Field migration has started").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
 	}
 
 }
