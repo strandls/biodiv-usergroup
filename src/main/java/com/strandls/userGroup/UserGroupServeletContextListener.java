@@ -35,6 +35,7 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.authentication_utility.filter.FilterModule;
 import com.strandls.observation.controller.ObservationServiceApi;
+import com.strandls.user.controller.UserServiceApi;
 import com.strandls.userGroup.controller.UserGroupControllerModule;
 import com.strandls.userGroup.dao.UserGroupDaoModule;
 import com.strandls.userGroup.service.impl.UserGroupServiceModule;
@@ -80,6 +81,7 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 				bind(SessionFactory.class).toInstance(sessionFactory);
 				bind(ActivitySerivceApi.class).in(Scopes.SINGLETON);
 				bind(ObservationServiceApi.class).in(Scopes.SINGLETON);
+				bind(UserServiceApi.class).in(Scopes.SINGLETON);
 
 				serve("/api/*").with(GuiceContainer.class, props);
 				filter("/*").through(SwaggerFilter.class);

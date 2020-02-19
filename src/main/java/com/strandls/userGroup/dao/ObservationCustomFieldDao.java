@@ -47,13 +47,16 @@ public class ObservationCustomFieldDao extends AbstractDAO<ObservationCustomFiel
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<ObservationCustomField> findByObservationId(Long observationId) {
+	public List<ObservationCustomField> findByObservationIdUGidCFId(Long observationId, Long customFieldId,
+			Long userGroupId) {
 		Session session = sessionFactory.openSession();
-		String qry = "from ObservationCustomField where observationId = :id";
+		String qry = "from ObservationCustomField where observationId = :id and customFieldId = :cfId and userGroupId = :ugId";
 		List<ObservationCustomField> result = null;
 		try {
 			Query<ObservationCustomField> query = session.createQuery(qry);
 			query.setParameter("id", observationId);
+			query.setParameter("cfId", customFieldId);
+			query.setParameter("ugId", userGroupId);
 			result = query.getResultList();
 
 		} catch (Exception e) {

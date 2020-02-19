@@ -18,6 +18,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.observation.controller.ObservationServiceApi;
+import com.strandls.user.controller.UserServiceApi;
 
 /**
  * @author Abhishek Rudra
@@ -31,6 +32,9 @@ public class SwaggerFilter implements Filter {
 
 	@Inject
 	public ObservationServiceApi observationService;
+
+	@Inject
+	public UserServiceApi userService;
 
 	/**
 	 * 
@@ -59,6 +63,7 @@ public class SwaggerFilter implements Filter {
 
 		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, header);
 		observationService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, header);
+		userService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, header);
 
 		chain.doFilter(request2, response);
 	}

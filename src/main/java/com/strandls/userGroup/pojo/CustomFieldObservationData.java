@@ -12,7 +12,7 @@ import java.util.List;
 public class CustomFieldObservationData {
 
 	private Long userGroupId;
-	private List<CustomFieldData> customFieldData;
+	private List<CustomFieldData> customField;
 
 	/**
 	 * 
@@ -23,12 +23,12 @@ public class CustomFieldObservationData {
 
 	/**
 	 * @param userGroupId
-	 * @param customFieldData
+	 * @param customField
 	 */
-	public CustomFieldObservationData(Long userGroupId, List<CustomFieldData> customFieldData) {
+	public CustomFieldObservationData(Long userGroupId, List<CustomFieldData> customField) {
 		super();
 		this.userGroupId = userGroupId;
-		this.customFieldData = customFieldData;
+		this.customField = customField;
 	}
 
 	public Long getUserGroupId() {
@@ -39,12 +39,12 @@ public class CustomFieldObservationData {
 		this.userGroupId = userGroupId;
 	}
 
-	public List<CustomFieldData> getCustomFieldData() {
-		return customFieldData;
+	public List<CustomFieldData> getCustomField() {
+		return customField;
 	}
 
-	public void setCustomFieldData(List<CustomFieldData> customFieldData) {
-		this.customFieldData = customFieldData;
+	public void setCustomField(List<CustomFieldData> customField) {
+		this.customField = customField;
 	}
 
 }

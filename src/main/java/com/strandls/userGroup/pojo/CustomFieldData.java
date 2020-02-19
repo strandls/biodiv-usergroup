@@ -11,9 +11,15 @@ public class CustomFieldData {
 
 	private Long cfId;
 	private String cfName;
-	private String cfValue;
-	private Integer displayOrder;
+	private String dataType;
 	private String fieldType;
+	private String cfIconUrl;
+	private String cfNotes;
+	private String defaultValue;
+	private String units;
+	private Integer displayOrder;
+	private Boolean allowedParticipation;
+	private CustomFieldValuesData customFieldValues;
 
 	/**
 	 * 
@@ -25,17 +31,31 @@ public class CustomFieldData {
 	/**
 	 * @param cfId
 	 * @param cfName
-	 * @param cfValue
-	 * @param displayOrder
+	 * @param dataType
 	 * @param fieldType
+	 * @param cfIconUrl
+	 * @param cfNotes
+	 * @param defaultValue
+	 * @param units
+	 * @param displayOrder
+	 * @param allowedParticipation
+	 * @param customFieldValues
 	 */
-	public CustomFieldData(Long cfId, String cfName, String cfValue, Integer displayOrder, String fieldType) {
+	public CustomFieldData(Long cfId, String cfName, String dataType, String fieldType, String cfIconUrl,
+			String cfNotes, String defaultValue, String units, Integer displayOrder, Boolean allowedParticipation,
+			CustomFieldValuesData customFieldValues) {
 		super();
 		this.cfId = cfId;
 		this.cfName = cfName;
-		this.cfValue = cfValue;
-		this.displayOrder = displayOrder;
+		this.dataType = dataType;
 		this.fieldType = fieldType;
+		this.cfIconUrl = cfIconUrl;
+		this.cfNotes = cfNotes;
+		this.defaultValue = defaultValue;
+		this.units = units;
+		this.displayOrder = displayOrder;
+		this.allowedParticipation = allowedParticipation;
+		this.customFieldValues = customFieldValues;
 	}
 
 	public Long getCfId() {
@@ -54,12 +74,52 @@ public class CustomFieldData {
 		this.cfName = cfName;
 	}
 
-	public String getCfValue() {
-		return cfValue;
+	public String getDataType() {
+		return dataType;
 	}
 
-	public void setCfValue(String cfValue) {
-		this.cfValue = cfValue;
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	public String getFieldType() {
+		return fieldType;
+	}
+
+	public void setFieldType(String fieldType) {
+		this.fieldType = fieldType;
+	}
+
+	public String getCfIconUrl() {
+		return cfIconUrl;
+	}
+
+	public void setCfIconUrl(String cfIconUrl) {
+		this.cfIconUrl = cfIconUrl;
+	}
+
+	public String getCfNotes() {
+		return cfNotes;
+	}
+
+	public void setCfNotes(String cfNotes) {
+		this.cfNotes = cfNotes;
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
+	public String getUnits() {
+		return units;
+	}
+
+	public void setUnits(String units) {
+		this.units = units;
 	}
 
 	public Integer getDisplayOrder() {
@@ -70,12 +130,20 @@ public class CustomFieldData {
 		this.displayOrder = displayOrder;
 	}
 
-	public String getFieldType() {
-		return fieldType;
+	public Boolean getAllowedParticipation() {
+		return allowedParticipation;
 	}
 
-	public void setFieldType(String fieldType) {
-		this.fieldType = fieldType;
+	public void setAllowedParticipation(Boolean allowedParticipation) {
+		this.allowedParticipation = allowedParticipation;
+	}
+
+	public CustomFieldValuesData getCustomFieldValues() {
+		return customFieldValues;
+	}
+
+	public void setCustomFieldValues(CustomFieldValuesData customFieldValues) {
+		this.customFieldValues = customFieldValues;
 	}
 
 }

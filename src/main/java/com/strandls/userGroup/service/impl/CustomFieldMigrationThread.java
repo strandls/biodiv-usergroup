@@ -4,7 +4,7 @@
 package com.strandls.userGroup.service.impl;
 
 import com.google.inject.Inject;
-import com.strandls.userGroup.service.UserGroupSerivce;
+import com.strandls.userGroup.service.CustomFieldServices;
 
 /**
  * @author Abhishek Rudra
@@ -13,11 +13,11 @@ import com.strandls.userGroup.service.UserGroupSerivce;
 public class CustomFieldMigrationThread implements Runnable {
 
 	@Inject
-	private UserGroupSerivce ugService;
+	private CustomFieldServices cfService;
 
 	@Override
 	public void run() {
-		ugService.migrateCustomField();
+		cfService.migrateCustomField();
 	}
 
 }

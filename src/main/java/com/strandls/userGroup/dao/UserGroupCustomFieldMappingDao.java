@@ -62,4 +62,22 @@ public class UserGroupCustomFieldMappingDao extends AbstractDAO<UserGroupCustomF
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	public UserGroupCustomFieldMapping findByUserGroupCustomFieldId(Long userGroupId, Long customFieldId) {
+		Session session = sessionFactory.openSession();
+		UserGroupCustomFieldMapping result = null;
+		String qry = "from UserGroupCustomFieldMapping where userGroupId = :id and customFieldId = :cfId";
+		try {
+			Query<UserGroupCustomFieldMapping> query = session.createQuery(qry);
+			query.setParameter("id", userGroupId);
+			query.setParameter("cfId", customFieldId);
+			result = query.getSingleResult();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
 }

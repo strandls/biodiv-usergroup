@@ -29,6 +29,7 @@ public class UserGroup implements Serializable {
 	private static final long serialVersionUID = 9177200176991398786L;
 
 	private Long id;
+	private Boolean allowUserToJoin;
 	private String description;
 	private String domianName;
 	private Date foundedOn;
@@ -57,6 +58,15 @@ public class UserGroup implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	@Column(name = "allow_users_to_join")
+	public Boolean getAllowUserToJoin() {
+		return allowUserToJoin;
+	}
+
+	public void setAllowUserToJoin(Boolean allowUserToJoin) {
+		this.allowUserToJoin = allowUserToJoin;
 	}
 
 	@Column(name = "description")

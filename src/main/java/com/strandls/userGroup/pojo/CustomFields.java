@@ -33,6 +33,7 @@ public class CustomFields implements Serializable {
 	private String name;
 	private String dataType;
 	private String fieldType;
+	private String units;
 	private String iconURL;
 	private String notes;
 
@@ -49,17 +50,19 @@ public class CustomFields implements Serializable {
 	 * @param name
 	 * @param dataType
 	 * @param fieldType
+	 * @param units
 	 * @param iconURL
 	 * @param notes
 	 */
-	public CustomFields(Long id, Long authorId, String name, String dataType, String fieldType, String iconURL,
-			String notes) {
+	public CustomFields(Long id, Long authorId, String name, String dataType, String fieldType, String units,
+			String iconURL, String notes) {
 		super();
 		this.id = id;
 		this.authorId = authorId;
 		this.name = name;
 		this.dataType = dataType;
 		this.fieldType = fieldType;
+		this.units = units;
 		this.iconURL = iconURL;
 		this.notes = notes;
 	}
@@ -109,6 +112,15 @@ public class CustomFields implements Serializable {
 
 	public void setFieldType(String fieldType) {
 		this.fieldType = fieldType;
+	}
+
+	@Column(name = "units")
+	public String getUnits() {
+		return units;
+	}
+
+	public void setUnits(String units) {
+		this.units = units;
 	}
 
 	@Column(name = "icon_url")

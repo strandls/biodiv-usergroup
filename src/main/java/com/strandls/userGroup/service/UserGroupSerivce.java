@@ -5,7 +5,6 @@ package com.strandls.userGroup.service;
 
 import java.util.List;
 
-import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.ObservationLatLon;
@@ -44,9 +43,5 @@ public interface UserGroupSerivce {
 	public void bulkFilterRule(String userGroupIds, List<ObservationLatLon> latlonList);
 
 	public String updateUserGroupFilter(Long userGroupId, UserGroupWKT userGroupWKT);
-
-	public void migrateCustomField();
-
-	public List<CustomFieldObservationData> getObservationCustomFields(Long observationId);
 
 }

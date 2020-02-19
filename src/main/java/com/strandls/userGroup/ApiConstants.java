@@ -25,5 +25,7 @@ public class ApiConstants {
 	public static final String BULK = "/bulk";
 	public static final String MIGRATE = "/migrate";
 	public static final String CUSTOMFIELD = "/customfield";
+	public static final String INSERT = "/insert";
+	public static final String OPTIONS = "/options";
 
 }
