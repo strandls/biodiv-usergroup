@@ -27,5 +27,6 @@ public class ApiConstants {
 	public static final String CUSTOMFIELD = "/customfield";
 	public static final String INSERT = "/insert";
 	public static final String OPTIONS = "/options";
+	public static final String PERMISSION = "/permission";
 
 }

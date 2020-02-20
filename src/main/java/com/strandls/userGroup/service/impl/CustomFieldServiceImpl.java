@@ -31,6 +31,7 @@ import com.strandls.userGroup.pojo.CustomFieldCreateData;
 import com.strandls.userGroup.pojo.CustomFieldData;
 import com.strandls.userGroup.pojo.CustomFieldFactsInsert;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
+import com.strandls.userGroup.pojo.CustomFieldPermission;
 import com.strandls.userGroup.pojo.CustomFieldUG18;
 import com.strandls.userGroup.pojo.CustomFieldUG37;
 import com.strandls.userGroup.pojo.CustomFieldValues;
@@ -40,8 +41,10 @@ import com.strandls.userGroup.pojo.CustomFields;
 import com.strandls.userGroup.pojo.ObservationCustomField;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupCustomFieldMapping;
+import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.service.CustomFieldServices;
+import com.strandls.userGroup.service.UserGroupSerivce;
 
 import net.minidev.json.JSONArray;
 
@@ -52,6 +55,9 @@ import net.minidev.json.JSONArray;
 public class CustomFieldServiceImpl implements CustomFieldServices {
 
 	private final Logger logger = LoggerFactory.getLogger(CustomFieldServiceImpl.class);
+
+	@Inject
+	private UserGroupSerivce ugService;
 
 	@Inject
 	private UserGroupDao userGroupDao;
@@ -608,6 +614,35 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 			logger.error("Error inside Populate Range");
 		}
 		return null;
+	}
+
+	@Override
+	public List<CustomFieldPermission> getCustomFieldPermisison(CommonProfile profile, String observationId)
+			throws Exception {
+
+		List<CustomFieldPermission> cfPermissionList = new ArrayList<CustomFieldPermission>();
+		List<Long> allowedCFId = null;
+
+		List<UserGroupIbp> userGroupListIbp = ugService.fetchByObservationId(Long.parseLong(observationId));
+		List<Long> userGroupList = new ArrayList<Long>();
+		for (UserGroupIbp ugIBP : userGroupListIbp)
+			userGroupList.add(ugIBP.getId());
+
+		for (Long userGroupId : userGroupList) {
+			List<UserGroupCustomFieldMapping> ugcfMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
+			if (!ugcfMappingList.isEmpty()) {
+				allowedCFId = new ArrayList<Long>();
+				for (UserGroupCustomFieldMapping ugCFMapping : ugcfMappingList) {
+					Boolean isAllowed = checkCustomFieldPermissions(profile, observationId,
+							ugCFMapping.getCustomFieldId(), userGroupId);
+					if (isAllowed)
+						allowedCFId.add(ugCFMapping.getCustomFieldId());
+				}
+				cfPermissionList.add(new CustomFieldPermission(userGroupId, allowedCFId));
+			}
+		}
+		return cfPermissionList;
+
 	}
 
 }

@@ -26,6 +26,7 @@ import com.strandls.userGroup.ApiConstants;
 import com.strandls.userGroup.pojo.CustomFieldCreateData;
 import com.strandls.userGroup.pojo.CustomFieldFactsInsert;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
+import com.strandls.userGroup.pojo.CustomFieldPermission;
 import com.strandls.userGroup.pojo.CustomFieldValues;
 import com.strandls.userGroup.service.CustomFieldServices;
 import com.strandls.userGroup.service.impl.CustomFieldMigrationThread;
@@ -163,6 +164,29 @@ public class CustomFieldController {
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
+	}
+
+	@GET
+	@Path(ApiConstants.PERMISSION + "/{observationId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Checks the current user permission for custom Field", notes = "Returns the list of cfid group wises", response = CustomFieldPermission.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Unable to get the permission", response = String.class) })
+
+	public Response getCustomFieldPermission(@Context HttpServletRequest request,
+			@PathParam("observationId") String observationId) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			List<CustomFieldPermission> result = cfService.getCustomFieldPermisison(profile, observationId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
 	}
 
 }
