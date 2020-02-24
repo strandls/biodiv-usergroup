@@ -29,11 +29,13 @@ import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.pojo.CustomField;
 import com.strandls.userGroup.pojo.CustomFieldCreateData;
 import com.strandls.userGroup.pojo.CustomFieldData;
+import com.strandls.userGroup.pojo.CustomFieldDetails;
 import com.strandls.userGroup.pojo.CustomFieldFactsInsert;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
 import com.strandls.userGroup.pojo.CustomFieldUG18;
 import com.strandls.userGroup.pojo.CustomFieldUG37;
+import com.strandls.userGroup.pojo.CustomFieldUGData;
 import com.strandls.userGroup.pojo.CustomFieldValues;
 import com.strandls.userGroup.pojo.CustomFieldValuesCreateData;
 import com.strandls.userGroup.pojo.CustomFieldValuesData;
@@ -643,6 +645,70 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		}
 		return cfPermissionList;
 
+	}
+
+	@Override
+	public List<CustomFieldDetails> getCustomField(Long userGroupId) {
+		List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
+		List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
+		List<UserGroupCustomFieldMapping> ugCFMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
+		for (UserGroupCustomFieldMapping ugCFMapping : ugCFMappingList) {
+			CustomFields customField = cfsDao.findById(ugCFMapping.getCustomFieldId());
+			if (customField.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+					|| customField.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
+				cfValues = cfValueDao.findByCustomFieldId(customField.getId());
+
+			}
+
+			result.add(new CustomFieldDetails(customField, cfValues, ugCFMapping.getDefaultValue(),
+					ugCFMapping.getDisplayOrder(), ugCFMapping.getIsMandatory(),
+					ugCFMapping.getAllowedParticipation()));
+
+		}
+
+		return result;
+
+	}
+
+	@Override
+	public List<CustomFieldDetails> removeCustomField(Long userGroupId, Long customFieldId) {
+		UserGroupCustomFieldMapping ugCFMapping = ugCFMappingDao.findByUserGroupCustomFieldId(userGroupId,
+				customFieldId);
+		ugCFMappingDao.delete(ugCFMapping);
+		return getCustomField(userGroupId);
+	}
+
+	@Override
+	public List<CustomFieldDetails> getAllCustomField() {
+
+		List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
+
+		List<CustomFieldValues> cfValues = null;
+
+		List<CustomFields> customFieldList = cfsDao.findAll();
+
+		for (CustomFields customField : customFieldList) {
+
+			if (customField.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+					|| customField.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
+				cfValues = cfValueDao.findByCustomFieldId(customField.getId());
+
+			}
+			result.add(new CustomFieldDetails(customField, cfValues, null, null, null, null));
+
+		}
+		return result;
+	}
+
+	@Override
+	public List<CustomFieldDetails> addCustomFieldUG(Long userId, CustomFieldUGData customFieldUGData) {
+		UserGroupCustomFieldMapping ugCFMapping = new UserGroupCustomFieldMapping(null, userId,
+				customFieldUGData.getUserGroupId(), customFieldUGData.getCustomFieldId(),
+				customFieldUGData.getDefaultValue(), customFieldUGData.getDisplayOrder(),
+				customFieldUGData.getIsMandatory(), customFieldUGData.getAllowedParticipation());
+		ugCFMappingDao.save(ugCFMapping);
+
+		return getCustomField(customFieldUGData.getUserGroupId());
 	}
 
 }

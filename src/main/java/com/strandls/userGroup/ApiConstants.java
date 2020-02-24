@@ -28,5 +28,7 @@ public class ApiConstants {
 	public static final String INSERT = "/insert";
 	public static final String OPTIONS = "/options";
 	public static final String PERMISSION = "/permission";
+	public static final String REMOVE = "/remove";
+	public static final String ADD = "/add";
 
 }
