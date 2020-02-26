@@ -456,7 +456,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 				CustomFields customFields = cfsDao.findById(factsCreateData.getCustomFieldId());
 				Long authorId = Long.parseLong(profile.getId());
 
-				if (observationCF != null) {
+				if (observationCF != null && !(observationCF.isEmpty())) {
 //				update of the custom Field data
 					if (customFields.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")) {
 //						single result always
