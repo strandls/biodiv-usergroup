@@ -375,7 +375,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			}
 			int previousSize = userGroupId.size();
 			for (UserGroup userGroup : userGroupList) {
-				UserGroupWKT wkt = objectMapper.readValue(userGroup.getFilterRule(), UserGroupWKT.class);
+				UserGroupWKT wkt = objectMapper.readValue(userGroup.getNewFilterRule(), UserGroupWKT.class);
 				Geometry groupBoundries = reader.read(wkt.getWkt());
 				if (groupBoundries.intersects(point)) {
 					if (!(userGroupId.contains(userGroup.getId()))) {
@@ -423,7 +423,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 				int previousSize = userGroupId.size();
 				for (UserGroup userGroup : userGroupList) {
-					UserGroupWKT wkt = objectMapper.readValue(userGroup.getFilterRule(), UserGroupWKT.class);
+					UserGroupWKT wkt = objectMapper.readValue(userGroup.getNewFilterRule(), UserGroupWKT.class);
 					Geometry groupBoundries = reader.read(wkt.getWkt());
 					if (groupBoundries.intersects(point)) {
 						if (!(userGroupId.contains(userGroup.getId()))) {
@@ -446,7 +446,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		try {
 			UserGroup userGroup = userGroupDao.findById(userGroupId);
 			String filterRule = objectMapper.writeValueAsString(userGroupWKT);
-			userGroup.setFilterRule(filterRule);
+			userGroup.setNewFilterRule(filterRule);
 			userGroupDao.update(userGroup);
 			return "User Group Updated with WKT filter";
 		} catch (Exception e) {

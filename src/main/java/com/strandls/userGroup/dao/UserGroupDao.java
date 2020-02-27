@@ -50,7 +50,7 @@ public class UserGroupDao extends AbstractDAO<UserGroup, Long> {
 	public List<UserGroup> findFilterRule() {
 		Session session = sessionFactory.openSession();
 		List<UserGroup> result = null;
-		String qry = "from UserGroup where filterRule is not null";
+		String qry = "from UserGroup where newFilterRule is not null";
 		try {
 			Query<UserGroup> query = session.createQuery(qry);
 			result = query.getResultList();
@@ -67,7 +67,7 @@ public class UserGroupDao extends AbstractDAO<UserGroup, Long> {
 	public List<UserGroup> findFilterRuleGroupWise(String groupIds) {
 		Session session = sessionFactory.openSession();
 		List<UserGroup> result = null;
-		String qry = "from UserGroup where id in (" + groupIds + ") filterRule is not null";
+		String qry = "from UserGroup where id in (" + groupIds + ") newFilterRule is not null";
 		try {
 			Query<UserGroup> query = session.createQuery(qry);
 			result = query.getResultList();
