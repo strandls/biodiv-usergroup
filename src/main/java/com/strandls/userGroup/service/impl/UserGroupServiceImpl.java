@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.strandls.activity.pojo.UserGroupActivity;
+import com.strandls.observation.controller.ObservationServiceApi;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
@@ -55,6 +56,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private FeaturedDao featuredDao;
+
+	@Inject
+	private ObservationServiceApi observationService;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -172,7 +176,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						"Posted resource");
 			}
 		}
+		try {
+			observationService.pushToRabbitMQ("User Groups", observationId.toString());
 
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
 		List<UserGroupIbp> result = fetchByObservationId(observationId);
 
 		return result;
