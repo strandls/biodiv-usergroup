@@ -20,12 +20,14 @@ import com.strandls.observation.controller.ObservationServiceApi;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
+import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupObservation;
+import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupSerivce;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -60,6 +62,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Inject
 	private ObservationServiceApi observationService;
 
+	@Inject
+	private UserGroupSpeciesGroupDao ugSGroupDao;
+
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
 		UserGroup userGroup = userGroupDao.findById(id);
@@ -92,9 +97,14 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Override
 	public List<UserGroupIbp> fetchByUserGroupDetails(List<Long> userGroupMember) {
 		List<UserGroupIbp> userGroupList = new ArrayList<UserGroupIbp>();
-		for (Long userGroupId : userGroupMember) {
-			userGroupList.add(fetchByGroupIdIbp(userGroupId));
+		try {
+			for (Long userGroupId : userGroupMember) {
+				userGroupList.add(fetchByGroupIdIbp(userGroupId));
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
+
 		return userGroupList;
 	}
 
@@ -463,6 +473,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		}
 		return null;
 
+	}
+
+	@Override
+	public List<UserGroupSpeciesGroup> getUserGroupSpeciesGroup(Long ugId) {
+		List<UserGroupSpeciesGroup> result = ugSGroupDao.findByUserGroupId(ugId);
+		return result;
 	}
 
 }

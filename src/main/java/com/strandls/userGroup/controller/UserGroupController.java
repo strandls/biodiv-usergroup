@@ -31,6 +31,7 @@ import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
+import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupSerivce;
 
@@ -313,6 +314,25 @@ public class UserGroupController {
 				return Response.status(Status.OK).entity(result).build();
 			}
 			return Response.status(Status.NOT_ACCEPTABLE).entity("USER NOT ALLOWED TO PERFORM THE TASK").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.SPECIESGROUP + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Get the species Group for a userGroup", notes = "Returns the species Group for a userGroup", response = UserGroupSpeciesGroup.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Unable to retireve the data", response = String.class) })
+
+	public Response getUserGroupSGroup(@PathParam("userGroupId") String userGroupId) {
+		try {
+			Long ugId = Long.parseLong(userGroupId);
+			List<UserGroupSpeciesGroup> result = ugServices.getUserGroupSpeciesGroup(ugId);
+			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}

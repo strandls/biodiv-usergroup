@@ -205,14 +205,9 @@ public class CustomFieldController {
 	public Response getUserGroupCustomFields(@Context HttpServletRequest request,
 			@PathParam("userGroupId") String userGroupId) {
 		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray userProfile = (JSONArray) profile.getAttribute("roles");
-			if (userProfile.contains("ROLE_ADMIN")) {
-				Long ugId = Long.parseLong(userGroupId);
-				List<CustomFieldDetails> customField = cfService.getCustomField(ugId);
-				return Response.status(Status.OK).entity(customField).build();
-			}
-			return Response.status(Status.NOT_ACCEPTABLE).entity("User not allowed to get the information").build();
+			Long ugId = Long.parseLong(userGroupId);
+			List<CustomFieldDetails> customField = cfService.getCustomField(ugId);
+			return Response.status(Status.OK).entity(customField).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

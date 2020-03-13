@@ -30,5 +30,6 @@ public class ApiConstants {
 	public static final String PERMISSION = "/permission";
 	public static final String REMOVE = "/remove";
 	public static final String ADD = "/add";
+	public static final String SPECIESGROUP = "speciesGroup";
 
 }
