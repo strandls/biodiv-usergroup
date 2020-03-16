@@ -94,6 +94,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	@Inject
 	private ObservationServiceApi observationService;
 
+	@Inject
+	private LogActivities logActivity;
+
 	@Override
 	public void migrateCustomField() {
 		try {
@@ -464,6 +467,14 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 						observationCF.get(0).setLastModified(new Date());
 						observationCF.get(0).setCustomFieldValueId(factsCreateData.getSingleCategorical());
 						observationCFDao.update(observationCF.get(0));
+
+//						logging activity for signle categorical
+						String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + ":"
+								+ factsCreateData.getSingleCategorical();
+						logActivity.LogActivity(description, factsCreateData.getObservationId(),
+								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
+								"Custom field edited");
+
 					} else if (customFields.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
 
 //						can have multiple result
@@ -483,6 +494,13 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 										factsCreateData.getCustomFieldId(), valueId, new Date(), new Date(), null, null,
 										null);
 								observationCFDao.save(obvCF);
+
+//								Logging activity for multiple categorical
+								String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + ":"
+										+ cfValueDao.findById(valueId).getValues();
+								logActivity.LogActivity(description, factsCreateData.getObservationId(),
+										factsCreateData.getObservationId(), "observation",
+										factsCreateData.getObservationId(), "Custom field edited");
 							}
 						}
 
@@ -529,10 +547,25 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					if (customFields.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")) {
 						obvCF.setCustomFieldValueId(factsCreateData.getSingleCategorical());
 						observationCFDao.save(obvCF);
+
+//						logging activity for multiple categorical
+						String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + ":"
+								+ factsCreateData.getSingleCategorical();
+						logActivity.LogActivity(description, factsCreateData.getObservationId(),
+								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
+								"Custom field edited");
+
 					} else if (customFields.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
 						for (Long cfValuesId : factsCreateData.getMultipleCategorical()) {
 							obvCF.setCustomFieldValueId(cfValuesId);
 							observationCFDao.save(obvCF);
+
+//							loggig activity for multiple categorical
+							String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + ":"
+									+ cfValueDao.findById(cfValuesId).getValues();
+							logActivity.LogActivity(description, factsCreateData.getObservationId(),
+									factsCreateData.getObservationId(), "observation",
+									factsCreateData.getObservationId(), "Custom field edited");
 						}
 					} else if (customFields.getFieldType().equalsIgnoreCase("RANGE")) {
 						List<CustomFieldValues> cfValues = cfValueDao
@@ -575,6 +608,12 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 				obvCF.setValueDate(
 						new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").parse(factsCreateData.getTextBoxValue()));
 
+//			logging activity for Text box type
+			String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + ":"
+					+ factsCreateData.getTextBoxValue();
+			logActivity.LogActivity(description, factsCreateData.getObservationId(), factsCreateData.getObservationId(),
+					"observation", factsCreateData.getObservationId(), "Custom field edited");
+
 			return obvCF;
 		} catch (Exception e) {
 			logger.error("Error inside populate Field TextBox");
@@ -597,6 +636,13 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					obvCF.setValueDate(
 							new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").parse(factsCreateData.getMinValue()));
 
+//				Logging activiy for Range Min type
+				String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + "(Range - Min):"
+						+ factsCreateData.getMinValue();
+				logActivity.LogActivity(description, factsCreateData.getObservationId(),
+						factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
+						"Custom field edited");
+
 			}
 			if (cfValue.getValues().equalsIgnoreCase("max")) {
 				obvCF.setCustomFieldValueId(cfValue.getId());
@@ -608,6 +654,13 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 				else
 					obvCF.setValueDate(
 							new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").parse(factsCreateData.getMaxValue()));
+
+//				logging activity for range max type
+				String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + "(Range - Max):"
+						+ factsCreateData.getMaxValue();
+				logActivity.LogActivity(description, factsCreateData.getObservationId(),
+						factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
+						"Custom field edited");
 
 			}
 			return obvCF;
