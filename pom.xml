@@ -220,10 +220,11 @@
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		
+		<!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
 		<dependency>
-		    <groupId>com.strandls.biodiv</groupId>
-		    <artifactId>observation-client</artifactId>
-		    <version>1.0.0-SNAPSHOT</version>
+		    <groupId>com.rabbitmq</groupId>
+		    <artifactId>amqp-client</artifactId>
+		    <version>5.8.0</version>
 		</dependency>
 		
 		<dependency>

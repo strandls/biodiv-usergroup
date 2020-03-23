@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.strandls.activity.pojo.UserGroupActivity;
-import com.strandls.observation.controller.ObservationServiceApi;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
@@ -60,7 +59,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	private FeaturedDao featuredDao;
 
 	@Inject
-	private ObservationServiceApi observationService;
+	private RabbitMQProducer produce;
 
 	@Inject
 	private UserGroupSpeciesGroupDao ugSGroupDao;
@@ -187,8 +186,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			}
 		}
 		try {
-			observationService.pushToRabbitMQ("User Groups", observationId.toString());
-
+			produce.setMessage("esmodule", observationId.toString(), "User Groups");
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

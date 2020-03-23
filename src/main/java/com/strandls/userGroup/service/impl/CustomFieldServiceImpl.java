@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.strandls.observation.controller.ObservationServiceApi;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.userGroup.dao.CustomFieldDao;
 import com.strandls.userGroup.dao.CustomFieldUG18Dao;
@@ -92,9 +91,6 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	private ObservationCustomFieldDao observationCFDao;
 
 	@Inject
-	private ObservationServiceApi observationService;
-
-	@Inject
 	private LogActivities logActivity;
 
 	@Override
@@ -167,8 +163,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 			ObservationCustomField observationCF = null;
 			Date date = new Date(0);
 			for (CustomFieldUG18 cf18Data : cf18DataList) {
-				Long authorId = Long
-						.parseLong(observationService.getObservationAuthor(cf18Data.getObservationId().toString()));
+				Long authorId = userGroupDao.getObservationAuthor(cf18Data.getObservationId().toString());
 				if (cf18Data.getCf5() != null && cf18Data.getCf5().trim().length() != 0) {
 					observationCF = new ObservationCustomField(null, authorId, cf18Data.getObservationId(), 18L,
 							preciousToNew.get(5L), null, date, date, cf18Data.getCf5(), null, null);
@@ -183,8 +178,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 			List<CustomFieldUG37> cf37DataList = cf37Dao.findAll();
 			for (CustomFieldUG37 cf37Data : cf37DataList) {
-				Long authorId = Long
-						.parseLong(observationService.getObservationAuthor(cf37Data.getObservationId().toString()));
+				Long authorId = userGroupDao.getObservationAuthor(cf37Data.getObservationId().toString());
 				if (cf37Data.getCf_14501638() != null && cf37Data.getCf_14501638().trim().length() != 0) {
 					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
 							preciousToNew.get(14501638L), null, date, date, cf37Data.getCf_14501638(), null, null);
@@ -377,7 +371,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 			} else {
 //				participation is not allowed
-				Long authorId = Long.parseLong(observationService.getObservationAuthor(observationId));
+				Long authorId = userGroupDao.getObservationAuthor(observationId);
 				if (userGroup.getAllowUserToJoin()) {
 //					open group
 					if (authorId.equals(userId)) {

@@ -32,9 +32,9 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import com.google.inject.servlet.GuiceServletContextListener;
+import com.rabbitmq.client.Channel;
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.authentication_utility.filter.FilterModule;
-import com.strandls.observation.controller.ObservationServiceApi;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.userGroup.controller.UserGroupControllerModule;
 import com.strandls.userGroup.dao.UserGroupDaoModule;
@@ -71,6 +71,17 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 				configuration = configuration.configure();
 				SessionFactory sessionFactory = configuration.buildSessionFactory();
 
+//				Rabbit MQ initialization
+				RabbitMqConnection rabbitConnetion = new RabbitMqConnection();
+				Channel channel = null;
+				try {
+					channel = rabbitConnetion.setRabbitMQConnetion();
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+
+				bind(Channel.class).toInstance(channel);
+
 				Map<String, String> props = new HashMap<String, String>();
 				props.put("javax.ws.rs.Application", ApplicationConfig.class.getName());
 				props.put("jersey.config.server.wadl.disableWadl", "true");
@@ -80,7 +91,6 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 
 				bind(SessionFactory.class).toInstance(sessionFactory);
 				bind(ActivitySerivceApi.class).in(Scopes.SINGLETON);
-				bind(ObservationServiceApi.class).in(Scopes.SINGLETON);
 				bind(UserServiceApi.class).in(Scopes.SINGLETON);
 
 				serve("/api/*").with(GuiceContainer.class, props);
@@ -141,6 +151,14 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 
 		SessionFactory sessionFactory = injector.getInstance(SessionFactory.class);
 		sessionFactory.close();
+
+		Channel channel = injector.getInstance(Channel.class);
+		try {
+			channel.getConnection().close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		super.contextDestroyed(servletContextEvent);
 		// ... First close any background tasks which may be using the DB ...
