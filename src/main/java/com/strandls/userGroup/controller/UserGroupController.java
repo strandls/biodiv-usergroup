@@ -27,10 +27,11 @@ import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
 import com.strandls.userGroup.pojo.Featured;
-import com.strandls.userGroup.pojo.FeaturedCreate;
+import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
+import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupSerivce;
@@ -140,11 +141,12 @@ public class UserGroupController {
 			@ApiResponse(code = 409, message = "UserGroup-Observation Mapping Cannot be Created", response = String.class) })
 
 	public Response createObservationUserGroupMapping(@Context HttpServletRequest request,
-			@PathParam("obsId") String obsId, @ApiParam(name = "userGroups") List<Long> userGroups) {
+			@PathParam("obsId") String obsId,
+			@ApiParam(name = "userGroupData") UserGroupMappingCreateData userGroupData) {
 		try {
 
 			Long observationId = Long.parseLong(obsId);
-			List<Long> result = ugServices.createUserGroupObservationMapping(observationId, userGroups);
+			List<Long> result = ugServices.createUserGroupObservationMapping(observationId, userGroupData);
 			if (result == null)
 				return Response.status(Status.CONFLICT).entity("Error occured in transaction").build();
 			return Response.status(Status.CREATED).entity(result).build();
@@ -165,7 +167,8 @@ public class UserGroupController {
 			@ApiResponse(code = 400, message = "Unable to Update the UserGroup Observation Mapping", response = String.class) })
 
 	public Response updateUserGroupMapping(@Context HttpServletRequest request,
-			@PathParam("observationId") String observationId, @ApiParam(name = "userGroups") List<Long> userGroup) {
+			@PathParam("observationId") String observationId,
+			@ApiParam(name = "userGroups") UserGroupMappingCreateData userGroup) {
 		try {
 			Long obvId = Long.parseLong(observationId);
 
@@ -222,7 +225,7 @@ public class UserGroupController {
 	@ApiResponses(value = {
 			@ApiResponse(code = 404, message = "Unable to Feature in a Group", response = String.class) })
 	public Response createFeatured(@Context HttpServletRequest request,
-			@ApiParam(name = "featuredCreate") FeaturedCreate featuredCreate) {
+			@ApiParam(name = "featuredCreate") FeaturedCreateData featuredCreate) {
 
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
@@ -244,7 +247,8 @@ public class UserGroupController {
 	@ApiOperation(value = "UnFeatures a Object from a UserGroup", notes = "Returns the Current Featured", response = Featured.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "Unable to Unfeature", response = String.class) })
 	public Response unFeatured(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
-			@PathParam("objectId") String objectId, @ApiParam("userGroupList") List<Long> userGroupList) {
+			@PathParam("objectId") String objectId,
+			@ApiParam("userGroupList") UserGroupMappingCreateData userGroupList) {
 		try {
 
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);

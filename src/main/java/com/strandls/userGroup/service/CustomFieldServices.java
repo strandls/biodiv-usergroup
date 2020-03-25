@@ -9,7 +9,7 @@ import org.pac4j.core.profile.CommonProfile;
 
 import com.strandls.userGroup.pojo.CustomFieldCreateData;
 import com.strandls.userGroup.pojo.CustomFieldDetails;
-import com.strandls.userGroup.pojo.CustomFieldFactsInsert;
+import com.strandls.userGroup.pojo.CustomFieldFactsInsertData;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
 import com.strandls.userGroup.pojo.CustomFieldUGData;
@@ -29,7 +29,7 @@ public interface CustomFieldServices {
 			Long customFieldId) throws Exception;
 
 	public List<CustomFieldObservationData> insertUpdateCustomFieldData(CommonProfile profile,
-			CustomFieldFactsInsert factsCreateData) throws Exception;
+			CustomFieldFactsInsertData factsCreateData) throws Exception;
 
 	public void createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData);
 

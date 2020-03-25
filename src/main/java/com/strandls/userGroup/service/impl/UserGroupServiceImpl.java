@@ -15,16 +15,20 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.strandls.activity.pojo.MailData;
 import com.strandls.activity.pojo.UserGroupActivity;
+import com.strandls.activity.pojo.UserGroupMailData;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
+import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupIbp;
+import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
@@ -108,10 +112,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<Long> createUserGroupObservationMapping(Long observationId, List<Long> userGroups) {
+	public List<Long> createUserGroupObservationMapping(Long observationId, UserGroupMappingCreateData userGroups) {
 
 		List<Long> resultList = new ArrayList<Long>();
-		for (Long userGroup : userGroups) {
+		for (Long userGroup : userGroups.getUserGroups()) {
 			UserGroupObservation userGroupObs = new UserGroupObservation(userGroup, observationId);
 			UserGroupObservation result = userGroupObvDao.save(userGroupObs);
 			if (result != null) {
@@ -128,20 +132,22 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				} catch (Exception e) {
 					logger.error(e.getMessage());
 				}
+				MailData mailData = updateMailData(observationId, userGroups.getMailData());
 				logActivity.LogActivity(description, observationId, observationId, "observation",
-						result.getUserGroupId(), "Posted resource");
+						result.getUserGroupId(), "Posted resource", mailData);
 			}
 		}
 		return resultList;
 	}
 
 	@Override
-	public List<UserGroupIbp> updateUserGroupObservationMapping(Long observationId, List<Long> userGorups) {
+	public List<UserGroupIbp> updateUserGroupObservationMapping(Long observationId,
+			UserGroupMappingCreateData userGorups) {
 
 		List<Long> previousUserGroup = new ArrayList<Long>();
 		List<UserGroupObservation> previousMapping = userGroupObvDao.findByObservationId(observationId);
 		for (UserGroupObservation ug : previousMapping) {
-			if (!(userGorups.contains(ug.getUserGroupId()))) {
+			if (!(userGorups.getUserGroups().contains(ug.getUserGroupId()))) {
 				userGroupObvDao.delete(ug);
 
 				UserGroupActivity ugActivity = new UserGroupActivity();
@@ -157,13 +163,14 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					logger.error(e.getMessage());
 				}
 
+				MailData mailData = updateMailData(observationId, userGorups.getMailData());
 				logActivity.LogActivity(description, observationId, observationId, "observation", ug.getUserGroupId(),
-						"Removed resoruce");
+						"Removed resoruce", mailData);
 			}
 			previousUserGroup.add(ug.getUserGroupId());
 		}
 
-		for (Long userGroupId : userGorups) {
+		for (Long userGroupId : userGorups.getUserGroups()) {
 			if (!(previousUserGroup.contains(userGroupId))) {
 				UserGroupObservation userGroupMapping = new UserGroupObservation(userGroupId, observationId);
 				userGroupObvDao.save(userGroupMapping);
@@ -181,8 +188,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					logger.error(e.getMessage());
 				}
 
+				MailData mailData = updateMailData(observationId, userGorups.getMailData());
 				logActivity.LogActivity(description, observationId, observationId, "observation", userGroupId,
-						"Posted resource");
+						"Posted resource", mailData);
 			}
 		}
 		try {
@@ -221,11 +229,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<Featured> createFeatured(Long userId, FeaturedCreate featuredCreate) {
+	public List<Featured> createFeatured(Long userId, FeaturedCreateData featuredCreateData) {
 
 		List<Featured> result = new ArrayList<Featured>();
 		try {
 
+			FeaturedCreate featuredCreate = featuredCreateData.getFeaturedCreate();
 			Featured featured;
 			if (featuredCreate.getObjectType().equalsIgnoreCase("observation"))
 				featuredCreate.setObjectType("species.participation.Observation");
@@ -292,8 +301,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					logger.error(e.getMessage());
 				}
 
+				MailData mailData = updateMailData(featuredCreate.getObjectId(), featuredCreateData.getMailData());
 				logActivity.LogActivity(description, featuredCreate.getObjectId(), featuredCreate.getObjectId(),
-						"observation", activityId, "Featured");
+						"observation", activityId, "Featured", mailData);
 
 			}
 
@@ -307,7 +317,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<Featured> removeFeatured(Long userId, String objectType, Long objectId, List<Long> userGroupList) {
+	public List<Featured> removeFeatured(Long userId, String objectType, Long objectId,
+			UserGroupMappingCreateData userGroupList) {
 
 		List<Featured> resultList = null;
 		try {
@@ -315,7 +326,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				objectType = "species.participation.Observation";
 			List<Featured> featuredList = featuredDao.fetchAllFeatured(objectType, objectId);
 
-			for (Long userGroupId : userGroupList) {
+			for (Long userGroupId : userGroupList.getUserGroups()) {
 
 				for (Featured featured : featuredList) {
 					if (featured.getUserGroup() == userGroupId) {
@@ -358,8 +369,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							logger.error(e.getMessage());
 						}
 
+						MailData mailData = updateMailData(objectId, userGroupList.getMailData());
 						logActivity.LogActivity(description, objectId, objectId, "observation", activityId,
-								"UnFeatured");
+								"UnFeatured", mailData);
 
 						break;
 					}
@@ -400,8 +412,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					}
 				}
 			}
+			UserGroupMappingCreateData usergroupMapping = null;
 			if (previousSize < userGroupId.size())
-				updateUserGroupObservationMapping(latlon.getObservationId(), userGroupId);
+				usergroupMapping = new UserGroupMappingCreateData(latlon.getMailData(), userGroupId);
+			updateUserGroupObservationMapping(latlon.getObservationId(), usergroupMapping);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -448,8 +462,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						}
 					}
 				}
+				UserGroupMappingCreateData usergroupMapping = null;
 				if (previousSize < userGroupId.size())
-					updateUserGroupObservationMapping(latlon.getObservationId(), userGroupId);
+					usergroupMapping = new UserGroupMappingCreateData(latlon.getMailData(), userGroupId);
+				updateUserGroupObservationMapping(latlon.getObservationId(), usergroupMapping);
 			}
 
 		} catch (Exception e) {
@@ -477,6 +493,25 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	public List<UserGroupSpeciesGroup> getUserGroupSpeciesGroup(Long ugId) {
 		List<UserGroupSpeciesGroup> result = ugSGroupDao.findByUserGroupId(ugId);
 		return result;
+	}
+
+	@Override
+	public MailData updateMailData(Long observationId, MailData mailData) {
+		List<UserGroupMailData> userGroup = new ArrayList<UserGroupMailData>();
+		List<UserGroupIbp> updatedUG = fetchByObservationId(observationId);
+
+		for (UserGroupIbp ug : updatedUG) {
+			UserGroupMailData ugMail = new UserGroupMailData();
+			ugMail.setIcon(ug.getIcon());
+			ugMail.setId(ug.getId());
+			ugMail.setName(ug.getName());
+			ugMail.setWebAddress(ug.getWebAddress());
+
+			userGroup.add(ugMail);
+		}
+
+		mailData.setUserGroupData(userGroup);
+		return mailData;
 	}
 
 }

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.strandls.activity.pojo.MailData;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.userGroup.dao.CustomFieldDao;
 import com.strandls.userGroup.dao.CustomFieldUG18Dao;
@@ -30,6 +31,7 @@ import com.strandls.userGroup.pojo.CustomFieldCreateData;
 import com.strandls.userGroup.pojo.CustomFieldData;
 import com.strandls.userGroup.pojo.CustomFieldDetails;
 import com.strandls.userGroup.pojo.CustomFieldFactsInsert;
+import com.strandls.userGroup.pojo.CustomFieldFactsInsertData;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
 import com.strandls.userGroup.pojo.CustomFieldUG18;
@@ -441,8 +443,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 	@Override
 	public List<CustomFieldObservationData> insertUpdateCustomFieldData(CommonProfile profile,
-			CustomFieldFactsInsert factsCreateData) throws Exception {
+			CustomFieldFactsInsertData factsInsertData) throws Exception {
 		try {
+			CustomFieldFactsInsert factsCreateData = factsInsertData.getFactsCreateData();
 			Boolean isAllowed = checkCustomFieldPermissions(profile, factsCreateData.getObservationId().toString(),
 					factsCreateData.getCustomFieldId(), factsCreateData.getUserGroupId());
 			if (isAllowed) {
@@ -465,9 +468,11 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 //						logging activity for signle categorical
 						String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + " : "
 								+ factsCreateData.getSingleCategorical();
+						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
+								factsInsertData.getMailData());
 						logActivity.LogActivity(description, factsCreateData.getObservationId(),
 								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
-								"Custom field edited");
+								"Custom field edited", mailData);
 
 					} else if (customFields.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
 
@@ -492,9 +497,12 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 //								Logging activity for multiple categorical
 								String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName()
 										+ " : " + cfValueDao.findById(valueId).getValues();
+
+								MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
+										factsInsertData.getMailData());
 								logActivity.LogActivity(description, factsCreateData.getObservationId(),
 										factsCreateData.getObservationId(), "observation",
-										factsCreateData.getObservationId(), "Custom field edited");
+										factsCreateData.getObservationId(), "Custom field edited", mailData);
 							}
 						}
 
@@ -531,9 +539,11 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 							String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName()
 									+ " (Range) : " + factsCreateData.getMinValue() + " - "
 									+ factsCreateData.getMaxValue();
+							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
+									factsInsertData.getMailData());
 							logActivity.LogActivity(description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
-									factsCreateData.getObservationId(), "Custom field edited");
+									factsCreateData.getObservationId(), "Custom field edited", mailData);
 
 						}
 
@@ -542,7 +552,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 						observationCF.get(0).setAuthorId(authorId);
 						observationCF.get(0).setLastModified(new Date());
 						observationCFDao
-								.update(populateFieldTextBox(customFields, observationCF.get(0), factsCreateData));
+								.update(populateFieldTextBox(customFields, observationCF.get(0), factsInsertData));
 					}
 
 				} else {
@@ -558,9 +568,11 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 //						logging activity for multiple categorical
 						String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + " : "
 								+ factsCreateData.getSingleCategorical();
+						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
+								factsInsertData.getMailData());
 						logActivity.LogActivity(description, factsCreateData.getObservationId(),
 								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
-								"Custom field edited");
+								"Custom field edited", mailData);
 
 					} else if (customFields.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
 						for (Long cfValuesId : factsCreateData.getMultipleCategorical()) {
@@ -570,9 +582,11 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 //							loggig activity for multiple categorical
 							String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + " : "
 									+ cfValueDao.findById(cfValuesId).getValues();
+							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
+									factsInsertData.getMailData());
 							logActivity.LogActivity(description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
-									factsCreateData.getObservationId(), "Custom field edited");
+									factsCreateData.getObservationId(), "Custom field edited", mailData);
 						}
 					} else if (customFields.getFieldType().equalsIgnoreCase("RANGE")) {
 
@@ -588,15 +602,17 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 							String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName()
 									+ " (Range) : " + factsCreateData.getMinValue() + " - "
 									+ factsCreateData.getMaxValue();
+							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
+									factsInsertData.getMailData());
 							logActivity.LogActivity(description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
-									factsCreateData.getObservationId(), "Custom field edited");
+									factsCreateData.getObservationId(), "Custom field edited", mailData);
 
 						}
 
 					} else {
 //						Field Text Box case
-						obvCF = populateFieldTextBox(customFields, obvCF, factsCreateData);
+						obvCF = populateFieldTextBox(customFields, obvCF, factsInsertData);
 						observationCFDao.save(obvCF);
 
 					}
@@ -616,9 +632,10 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	private ObservationCustomField populateFieldTextBox(CustomFields customFields, ObservationCustomField obvCF,
-			CustomFieldFactsInsert factsCreateData) {
+			CustomFieldFactsInsertData factsInsertData) {
 
 		try {
+			CustomFieldFactsInsert factsCreateData = factsInsertData.getFactsCreateData();
 			if (customFields.getDataType().equalsIgnoreCase("String"))
 				obvCF.setValueString(factsCreateData.getTextBoxValue());
 			else if (customFields.getDataType().equalsIgnoreCase("Integer")
@@ -631,8 +648,10 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 //			logging activity for Text box type
 			String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + " : "
 					+ factsCreateData.getTextBoxValue();
+			MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
+					factsInsertData.getMailData());
 			logActivity.LogActivity(description, factsCreateData.getObservationId(), factsCreateData.getObservationId(),
-					"observation", factsCreateData.getObservationId(), "Custom field edited");
+					"observation", factsCreateData.getObservationId(), "Custom field edited", mailData);
 
 			return obvCF;
 		} catch (Exception e) {

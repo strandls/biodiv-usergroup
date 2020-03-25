@@ -26,7 +26,7 @@ import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
 import com.strandls.userGroup.pojo.CustomFieldCreateData;
 import com.strandls.userGroup.pojo.CustomFieldDetails;
-import com.strandls.userGroup.pojo.CustomFieldFactsInsert;
+import com.strandls.userGroup.pojo.CustomFieldFactsInsertData;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
 import com.strandls.userGroup.pojo.CustomFieldUGData;
@@ -130,7 +130,7 @@ public class CustomFieldController {
 			@ApiResponse(code = 400, message = "Unable to add/Update the data", response = String.class) })
 
 	public Response addUpdateCustomFieldData(@Context HttpServletRequest request,
-			@ApiParam(name = "factsCreateData") CustomFieldFactsInsert factsCreateData) {
+			@ApiParam(name = "factsCreateData") CustomFieldFactsInsertData factsCreateData) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			List<CustomFieldObservationData> result = cfService.insertUpdateCustomFieldData(profile, factsCreateData);
