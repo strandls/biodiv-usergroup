@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response.Status;
 import com.google.inject.Inject;
 import com.strandls.userGroup.ApiConstants;
 import com.strandls.userGroup.pojo.Newsletter;
+import com.strandls.userGroup.pojo.NewsletterWithParentChildRelationship;
 import com.strandls.userGroup.service.NewsletterSerivce;
 
 import io.swagger.annotations.Api;
@@ -62,7 +63,7 @@ public class NewsletterController {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "Newsletter not found", response = String.class) })
 	public Response getNewslettersByGroup(@QueryParam("userGroupId") Long userGroupId, @QueryParam("languageId") @DefaultValue(ENGLISH_LANGAUAGE_ID) Long languageId) {
 		try {
-			List<Newsletter> newsletter = newsletterSerivce.getByUserGroupAndLanguage(userGroupId, languageId);
+			List<NewsletterWithParentChildRelationship> newsletter = newsletterSerivce.getByUserGroupAndLanguage(userGroupId, languageId);
 			return Response.status(Status.OK).entity(newsletter).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
