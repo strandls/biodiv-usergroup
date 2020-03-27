@@ -16,6 +16,7 @@ public class UserGroupControllerModule extends AbstractModule {
 	protected void configure() {
 		bind(UserGroupController.class).in(Scopes.SINGLETON);
 		bind(CustomFieldController.class).in(Scopes.SINGLETON);
+		bind(NewsletterController.class).in(Scopes.SINGLETON);
 	}
 
 }

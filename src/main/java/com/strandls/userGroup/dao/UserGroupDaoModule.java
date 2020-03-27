@@ -24,7 +24,7 @@ public class UserGroupDaoModule extends AbstractModule {
 		bind(CustomFieldValuesDao.class).in(Scopes.SINGLETON);
 		bind(UserGroupCustomFieldMappingDao.class).in(Scopes.SINGLETON);
 		bind(ObservationCustomFieldDao.class).in(Scopes.SINGLETON);
-
+		bind(NewsletterDao.class).in(Scopes.SINGLETON);
 	}
 
 }
