@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -18,6 +20,8 @@ import com.google.inject.Inject;
 import com.strandls.activity.pojo.MailData;
 import com.strandls.activity.pojo.UserGroupActivity;
 import com.strandls.activity.pojo.UserGroupMailData;
+import com.strandls.user.controller.UserServiceApi;
+import com.strandls.user.pojo.UserGroupMembersCount;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
@@ -67,6 +71,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupSpeciesGroupDao ugSGroupDao;
+
+	@Inject
+	private UserServiceApi userService;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -205,19 +212,30 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Override
 	public List<UserGroupIbp> fetchAllUserGroup() {
-		List<UserGroup> userGroupList = userGroupDao.findAll();
 		List<UserGroupIbp> result = new ArrayList<UserGroupIbp>();
-		UserGroupIbp ibp = null;
-		for (UserGroup userGroup : userGroupList) {
+		try {
+			List<UserGroup> userGroupList = userGroupDao.findAll();
+			List<UserGroupMembersCount> count = userService.getMemberCounts();
+			Map<Long, UserGroupIbp> ugMap = new HashMap<Long, UserGroupIbp>();
+			UserGroupIbp ibp = null;
+			for (UserGroup userGroup : userGroupList) {
 
-			if (userGroup.getDomianName() != null)
-				ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(),
-						userGroup.getDomianName());
-			else {
-				String webAddress = "/group/" + userGroup.getWebAddress();
-				ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(), webAddress);
+				if (userGroup.getDomianName() != null)
+					ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(),
+							userGroup.getDomianName());
+				else {
+					String webAddress = "/group/" + userGroup.getWebAddress();
+					ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(), webAddress);
+				}
+				ugMap.put(userGroup.getId(), ibp);
 			}
-			result.add(ibp);
+			for(UserGroupMembersCount ugm:count) {
+				result.add(ugMap.get(ugm.getUserGroupId()));
+			}
+			
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
 		return result;
 	}
