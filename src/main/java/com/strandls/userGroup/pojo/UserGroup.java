@@ -29,6 +29,7 @@ public class UserGroup implements Serializable {
 	private static final long serialVersionUID = 9177200176991398786L;
 
 	private Long id;
+	private Boolean allowUserToJoin;
 	private String description;
 	private String domianName;
 	private Date foundedOn;
@@ -46,6 +47,8 @@ public class UserGroup implements Serializable {
 	private Long languageId;
 	private Boolean sendDigestMail;
 	private Date startDate;
+	private String filterRule;
+	private String newFilterRule;
 
 	@Id
 	@GeneratedValue
@@ -56,6 +59,15 @@ public class UserGroup implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	@Column(name = "allow_users_to_join")
+	public Boolean getAllowUserToJoin() {
+		return allowUserToJoin;
+	}
+
+	public void setAllowUserToJoin(Boolean allowUserToJoin) {
+		this.allowUserToJoin = allowUserToJoin;
 	}
 
 	@Column(name = "description")
@@ -209,6 +221,24 @@ public class UserGroup implements Serializable {
 
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
+	}
+
+	@Column(name = "filter_rule")
+	public String getFilterRule() {
+		return filterRule;
+	}
+
+	public void setFilterRule(String filterRule) {
+		this.filterRule = filterRule;
+	}
+
+	@Column(name = "new_filter_rule", columnDefinition = "TEXT")
+	public String getNewFilterRule() {
+		return newFilterRule;
+	}
+
+	public void setNewFilterRule(String newFilterRule) {
+		this.newFilterRule = newFilterRule;
 	}
 
 }

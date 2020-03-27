@@ -16,20 +16,21 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Abhishek Rudra
  *
  */
+
 @Entity
-@Table(name = "user_group_member_role")
+@Table(name = "user_group_species_group")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserGroupMemberRole implements Serializable {
+public class UserGroupSpeciesGroup implements Serializable {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5160519423395168068L;
+	private static final long serialVersionUID = -6436983258689514465L;
 	private Long userGroupId;
-	private Long sUserId;
+	private Long speciesGroupId;
 
 	@Id
-	@Column(name = "user_group_id")
+	@Column(name = "user_group_species_groups_id")
 	public Long getUserGroupId() {
 		return userGroupId;
 	}
@@ -38,13 +39,13 @@ public class UserGroupMemberRole implements Serializable {
 		this.userGroupId = userGroupId;
 	}
 
-	@Column(name = "s_user_id")
-	public Long getsUserId() {
-		return sUserId;
+	@Column(name = "species_group_id")
+	public Long getSpeciesGroupId() {
+		return speciesGroupId;
 	}
 
-	public void setsUserId(Long sUserId) {
-		this.sUserId = sUserId;
+	public void setSpeciesGroupId(Long speciesGroupId) {
+		this.speciesGroupId = speciesGroupId;
 	}
 
 }

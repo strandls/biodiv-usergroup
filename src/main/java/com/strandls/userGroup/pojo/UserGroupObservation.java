@@ -23,6 +23,13 @@ public class UserGroupObservation {
 	private Long observationId;
 
 	/**
+	 * 
+	 */
+	public UserGroupObservation() {
+		super();
+	}
+
+	/**
 	 * @param userGroupId
 	 * @param observationId
 	 */
