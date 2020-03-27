@@ -38,6 +38,8 @@ public class NewsletterServiceImpl extends AbstractService<Newsletter> implement
 			n.setTitle(newsletter.getTitle());
 			n.setParentId(newsletter.getParentId());
 			n.setDisplayOrder(newsletter.getDisplayOrder());
+			List<NewsletterWithParentChildRelationship> childs = new NewsletterArrayList();
+			n.setChilds(childs);
 			newsletterWithParentChildRelationships.put(newsletter.getId(), n);
 		}
 		return makeParentChildRelationship(newsletterWithParentChildRelationships);
@@ -57,9 +59,6 @@ public class NewsletterServiceImpl extends AbstractService<Newsletter> implement
 			} else {
 				NewsletterWithParentChildRelationship parent = newsletterWithParentChildRelationships.get(parentId);
 				List<NewsletterWithParentChildRelationship> childs = parent.getChilds();
-				if(childs == null) {
-					childs = new NewsletterArrayList();
-				}
 				childs.add(value);
 			}
 		}
