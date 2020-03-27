@@ -11,6 +11,7 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -92,6 +93,7 @@ public class Newsletter implements Serializable{
 
 	@Column(name = "newsitem")
 	@Type(type = "text")
+	@JsonIgnore
 	public String getNewsitem() {
 		return newsitem;
 	}
