@@ -229,10 +229,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 				ugMap.put(userGroup.getId(), ibp);
 			}
-			for(UserGroupMembersCount ugm:count) {
+			for (UserGroupMembersCount ugm : count) {
 				result.add(ugMap.get(ugm.getUserGroupId()));
 			}
-			
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -431,9 +430,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 			}
 			UserGroupMappingCreateData usergroupMapping = null;
-			if (previousSize < userGroupId.size())
+			if (previousSize < userGroupId.size()) {
 				usergroupMapping = new UserGroupMappingCreateData(latlon.getMailData(), userGroupId);
-			updateUserGroupObservationMapping(latlon.getObservationId(), usergroupMapping);
+				updateUserGroupObservationMapping(latlon.getObservationId(), usergroupMapping);
+			}
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
