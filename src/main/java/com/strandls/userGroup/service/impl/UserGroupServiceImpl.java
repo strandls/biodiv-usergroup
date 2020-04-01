@@ -139,7 +139,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				} catch (Exception e) {
 					logger.error(e.getMessage());
 				}
-				MailData mailData = updateMailData(observationId, userGroups.getMailData());
+				MailData mailData = null;
+				if (userGroups.getMailData() != null) {
+					mailData = updateMailData(observationId, userGroups.getMailData());
+				}
 				logActivity.LogActivity(description, observationId, observationId, "observation",
 						result.getUserGroupId(), "Posted resource", mailData);
 			}
