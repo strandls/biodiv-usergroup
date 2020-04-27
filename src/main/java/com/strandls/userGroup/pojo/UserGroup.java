@@ -4,7 +4,7 @@
 package com.strandls.userGroup.pojo;
 
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -49,6 +49,64 @@ public class UserGroup implements Serializable {
 	private Date startDate;
 	private String filterRule;
 	private String newFilterRule;
+
+	/**
+	 * 
+	 */
+	public UserGroup() {
+		super();
+	}
+
+	/**
+	 * @param id
+	 * @param allowUserToJoin
+	 * @param description
+	 * @param domianName
+	 * @param foundedOn
+	 * @param homePage
+	 * @param icon
+	 * @param isDeleted
+	 * @param name
+	 * @param neLatitude
+	 * @param neLongitude
+	 * @param swLatitude
+	 * @param swLongitude
+	 * @param theme
+	 * @param visitCount
+	 * @param webAddress
+	 * @param languageId
+	 * @param sendDigestMail
+	 * @param startDate
+	 * @param filterRule
+	 * @param newFilterRule
+	 */
+	public UserGroup(Long id, Boolean allowUserToJoin, String description, String domianName, Date foundedOn,
+			String homePage, String icon, Boolean isDeleted, String name, Double neLatitude, Double neLongitude,
+			Double swLatitude, Double swLongitude, String theme, Long visitCount, String webAddress, Long languageId,
+			Boolean sendDigestMail, Date startDate, String filterRule, String newFilterRule) {
+		super();
+		this.id = id;
+		this.allowUserToJoin = allowUserToJoin;
+		this.description = description;
+		this.domianName = domianName;
+		this.foundedOn = foundedOn;
+		this.homePage = homePage;
+		this.icon = icon;
+		this.isDeleted = isDeleted;
+		this.name = name;
+		this.neLatitude = neLatitude;
+		this.neLongitude = neLongitude;
+		this.swLatitude = swLatitude;
+		this.swLongitude = swLongitude;
+		this.theme = theme;
+		this.visitCount = visitCount;
+		this.webAddress = webAddress;
+		this.languageId = languageId;
+		this.sendDigestMail = sendDigestMail;
+		this.startDate = startDate;
+		this.filterRule = filterRule;
+		this.newFilterRule = newFilterRule;
+	}
 
 	@Id
 	@GeneratedValue

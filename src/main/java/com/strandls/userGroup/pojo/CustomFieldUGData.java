@@ -9,7 +9,6 @@ package com.strandls.userGroup.pojo;
  */
 public class CustomFieldUGData {
 
-	private Long userGroupId;
 	private Long customFieldId;
 	private String defaultValue;
 	private Integer displayOrder;
@@ -24,30 +23,20 @@ public class CustomFieldUGData {
 	}
 
 	/**
-	 * @param userGroupId
 	 * @param customFieldId
 	 * @param defaultValue
 	 * @param displayOrder
 	 * @param isMandatory
 	 * @param allowedParticipation
 	 */
-	public CustomFieldUGData(Long userGroupId, Long customFieldId, String defaultValue, Integer displayOrder,
-			Boolean isMandatory, Boolean allowedParticipation) {
+	public CustomFieldUGData(Long customFieldId, String defaultValue, Integer displayOrder, Boolean isMandatory,
+			Boolean allowedParticipation) {
 		super();
-		this.userGroupId = userGroupId;
 		this.customFieldId = customFieldId;
 		this.defaultValue = defaultValue;
 		this.displayOrder = displayOrder;
 		this.isMandatory = isMandatory;
 		this.allowedParticipation = allowedParticipation;
-	}
-
-	public Long getUserGroupId() {
-		return userGroupId;
-	}
-
-	public void setUserGroupId(Long userGroupId) {
-		this.userGroupId = userGroupId;
 	}
 
 	public Long getCustomFieldId() {

@@ -31,17 +31,18 @@ public interface CustomFieldServices {
 	public List<CustomFieldObservationData> insertUpdateCustomFieldData(CommonProfile profile,
 			CustomFieldFactsInsertData factsCreateData) throws Exception;
 
-	public void createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData);
+	public CustomFieldDetails createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData);
 
 	public List<CustomFieldPermission> getCustomFieldPermisison(CommonProfile profile, String observationId)
 			throws Exception;
 
 	public List<CustomFieldDetails> getAllCustomField();
 
-	public List<CustomFieldDetails> getCustomField(Long userGroupId);
+	public List<CustomFieldDetails> getCustomField(CommonProfile profile, Long userGroupId);
 
-	public List<CustomFieldDetails> addCustomFieldUG(Long userId, CustomFieldUGData customFieldUGData);
+	public List<CustomFieldDetails> addCustomFieldUG(CommonProfile profile, Long userId, Long userGroupId,
+			List<CustomFieldUGData> customFieldUGDataList);
 
-	public List<CustomFieldDetails> removeCustomField(Long userGroupId, Long customFieldId);
+	public List<CustomFieldDetails> removeCustomField(CommonProfile profile, Long userGroupId, Long customFieldId);
 
 }

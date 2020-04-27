@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -30,7 +31,11 @@ import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
+import com.strandls.userGroup.pojo.UserGroupAddMemebr;
+import com.strandls.userGroup.pojo.UserGroupCreateData;
+import com.strandls.userGroup.pojo.UserGroupEditData;
 import com.strandls.userGroup.pojo.UserGroupIbp;
+import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
@@ -337,6 +342,315 @@ public class UserGroupController {
 			Long ugId = Long.parseLong(userGroupId);
 			List<UserGroupSpeciesGroup> result = ugServices.getUserGroupSpeciesGroup(ugId);
 			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.ADD + ApiConstants.MEMBERS)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Sends out invitaions for founder and moedrators", notes = "Returns the success and failur", response = String.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Unable to send the invitaions", response = String.class) })
+
+	public Response addUserGroupMember(@Context HttpServletRequest request,
+			@ApiParam(name = "userGroupInvitations") UserGroupInvitationData userGroupInvitations) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Boolean result = ugServices.addMemberRoleInvitaions(profile, userGroupInvitations);
+			if (result)
+				return Response.status(Status.OK).entity("Sent out Invitations to all").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("User not allowed to send invitations").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@GET
+	@Path(ApiConstants.VALIDATE + ApiConstants.MEMBERS + "/{token}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Validate the inivation request", notes = "validates the invitaion request", response = String.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to validate the invitation", response = String.class) })
+
+	public Response validateUserGroupMemberInvite(@Context HttpServletRequest request,
+			@PathParam("token") String token) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			Boolean result = ugServices.validateMember(userId, token);
+			if (result)
+				return Response.status(Status.OK).entity("User added to userGroup").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("user Not allowed to join the group").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@GET
+	@Path(ApiConstants.REMOVE + ApiConstants.MEMBERS)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.TEXT_PLAIN)
+
+	@ValidateUser
+
+	@ApiOperation(value = "remove a existing user from the group", notes = "remove existing user", response = String.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to remove the user", response = String.class) })
+
+	public Response removeUserUG(@Context HttpServletRequest request, @QueryParam("userId") String userId,
+			@QueryParam("userGroupId") String userGroupId) {
+		try {
+			Boolean result = ugServices.removeUser(userGroupId, userId);
+			if (result)
+				return Response.status(Status.OK).entity("Removed user").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("User Not removed").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@DELETE
+	@Path(ApiConstants.LEAVE + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.TEXT_PLAIN)
+
+	@ValidateUser
+
+	@ApiOperation(value = "endpoint to leave a group", notes = "leave group", response = String.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to leave the group", response = String.class) })
+
+	public Response leaveUserGroup(@Context HttpServletRequest request, @PathParam("userGroupId") String userGroupId) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			Boolean result = ugServices.leaveGroup(userId, userGroupId);
+			if (result)
+				return Response.status(Status.OK).entity("User left the group").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("NOt able to leave the group").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@GET
+	@Path(ApiConstants.JOIN + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.TEXT_PLAIN)
+
+	@ValidateUser
+
+	@ApiOperation(value = "endpoint to join open group", notes = "User can join open group without invitation", response = String.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to join the userGroup", response = String.class) })
+
+	public Response joinUserGroup(@Context HttpServletRequest request, @PathParam("userGroupId") String userGroupId) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			Boolean result = ugServices.joinGroup(userId, userGroupId);
+			if (result)
+				return Response.status(Status.OK).entity("User joined the Group").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("User not able to join the Group").build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.SEND + ApiConstants.INVITES + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Send invites for Role Member in UserGroup", notes = "Sends Invitation mails for joining group as Member role", response = String.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to send invites", response = String.class) })
+
+	public Response sendInvitesForMemberRole(@Context HttpServletRequest request,
+			@PathParam("userGroupId") String userGroupId, @ApiParam(name = "userList") List<Long> userList) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long ugId = Long.parseLong(userGroupId);
+			Boolean result = ugServices.sendInvitesForMemberRole(profile, ugId, userList);
+			if (result)
+				return Response.status(Status.OK).entity("Invitaion Sent out").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Invitation Sending caused Problem").build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@POST
+	@Path(ApiConstants.BULK + ApiConstants.POSTING + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Bulk Posting of observation in a UserGroup", notes = "Returns the success failuer result", response = String.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to do Bulk Posting", response = String.class) })
+
+	public Response bulkPostingObservationUG(@Context HttpServletRequest request,
+			@PathParam("userGroupId") String userGroupId,
+			@ApiParam(name = "observationList") List<Long> observationList) {
+
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long ugId = Long.parseLong(userGroupId);
+			Boolean result = ugServices.bulkPosting(profile, ugId, observationList);
+			if (result)
+				return Response.status(Status.OK).entity("Bulk Posting completed").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Bulk posting failed").build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@POST
+	@Path(ApiConstants.BULK + ApiConstants.REMOVING + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Bulk removing of observation in a UserGroup", notes = "Returns the success failuer result", response = String.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to do Bulk removing", response = String.class) })
+
+	public Response bulkRemovingObservation(@Context HttpServletRequest request,
+			@PathParam("userGroupId") String userGroupId,
+			@ApiParam(name = "observationList") List<Long> observationList) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long ugId = Long.parseLong(userGroupId);
+			Boolean result = ugServices.bulkRemoving(profile, ugId, observationList);
+			if (result)
+				return Response.status(Status.OK).entity("Bulk Removing Completed").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Bulking Removing Failed").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.ADD + ApiConstants.DIRECT + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Adds the user directly to usergroup", notes = "Add all the user", response = String.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to add the user", response = String.class) })
+
+	public Response addMembersDirectly(@Context HttpServletRequest request,
+			@PathParam("userGroupId") String userGroupId,
+			@ApiParam(name = "memberList") UserGroupAddMemebr memberList) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			if (roles.contains("ROLE_ADMIN")) {
+				Long ugId = Long.parseLong(userGroupId);
+				Boolean result = ugServices.addMemberDirectly(ugId, memberList);
+				if (result)
+					return Response.status(Status.OK).entity("Added all user").build();
+				return Response.status(Status.NOT_ACCEPTABLE).entity("Not Able to add the user").build();
+			}
+			return Response.status(Status.FORBIDDEN).entity("User not allowed to do the operation").build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.CREATE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Create the userGroup", notes = "Returns the userGroupIBP data", response = UserGroupIbp.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the group", response = String.class) })
+
+	public Response createUserGroup(@Context HttpServletRequest request,
+			@ApiParam(name = "userGroupCreateData") UserGroupCreateData ugCreateDate) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			if (roles.contains("ROLE_ADMIN")) {
+				UserGroupIbp result = ugServices.createUserGroup(profile, ugCreateDate);
+				return Response.status(Status.OK).entity(result).build();
+			}
+			return Response.status(Status.FORBIDDEN).entity("User not allowed to create User group").build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.EDIT + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "find the userGroup edit data", notes = "Returns the edit data of userGroup", response = UserGroupEditData.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to read the data", response = String.class) })
+
+	public Response getEditData(@Context HttpServletRequest request, @PathParam("userGroupId") String userGroupId) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long ugId = Long.parseLong(userGroupId);
+			UserGroupEditData result = ugServices.getUGEditData(profile, ugId);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.FORBIDDEN).entity("User Not allowed to Edit the page").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.EDIT + ApiConstants.SAVE + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Save the editied data of UserGroup", notes = "Saves the edit of UserGroup", response = UserGroupIbp.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Unable to edit the userGroup", response = String.class) })
+
+	public Response saveEdit(@Context HttpServletRequest request, @PathParam("userGroupId") String userGroupId,
+			@ApiParam("ugEditData") UserGroupEditData ugEditData) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long ugId = Long.parseLong(userGroupId);
+			UserGroupIbp result = ugServices.saveUGEdit(profile, ugId, ugEditData);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.FORBIDDEN).entity("User not allowed to edit").build();
+
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}

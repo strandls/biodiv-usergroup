@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,27 +22,39 @@ import com.strandls.activity.pojo.MailData;
 import com.strandls.activity.pojo.UserGroupActivity;
 import com.strandls.activity.pojo.UserGroupMailData;
 import com.strandls.user.controller.UserServiceApi;
+import com.strandls.user.pojo.GroupAddMember;
 import com.strandls.user.pojo.UserGroupMembersCount;
+import com.strandls.user.pojo.UserIbp;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
+import com.strandls.userGroup.dao.UserGroupInvitaionDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
+import com.strandls.userGroup.pojo.InvitaionMailData;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
+import com.strandls.userGroup.pojo.UserGroupAddMemebr;
+import com.strandls.userGroup.pojo.UserGroupCreateData;
+import com.strandls.userGroup.pojo.UserGroupEditData;
 import com.strandls.userGroup.pojo.UserGroupIbp;
+import com.strandls.userGroup.pojo.UserGroupInvitation;
+import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
+import com.strandls.userGroup.service.CustomFieldServices;
 import com.strandls.userGroup.service.UserGroupSerivce;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKTReader;
+
+import net.minidev.json.JSONArray;
 
 /**
  * @author Abhishek Rudra
@@ -74,6 +87,15 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserServiceApi userService;
+
+	@Inject
+	private UserGroupInvitaionDao ugInvitationDao;
+
+	@Inject
+	private EncryptionUtils encryptionUtils;
+
+	@Inject
+	private CustomFieldServices cfServices;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -533,6 +555,587 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 		mailData.setUserGroupData(userGroup);
 		return mailData;
+	}
+
+	@Override
+	public Boolean addMemberRoleInvitaions(CommonProfile profile, UserGroupInvitationData userGroupInvitations) {
+
+		try {
+
+			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
+			Properties properties = new Properties();
+			try {
+				properties.load(in);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			Long founderId = Long.parseLong(properties.getProperty("userGroupFounder"));
+			Long moderatorId = Long.parseLong(properties.getProperty("userGroupExpert"));
+			in.close();
+
+			Long inviterId = Long.parseLong(profile.getId());
+			List<InvitaionMailData> inviteData = new ArrayList<InvitaionMailData>();
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Boolean isFounder = userService.checkFounderRole(userGroupInvitations.getUserGroupId().toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				UserGroupIbp userGroupIbp = fetchByGroupIdIbp(userGroupInvitations.getUserGroupId());
+				if (!userGroupInvitations.getFounderIds().isEmpty()) {
+					for (Long inviteeId : userGroupInvitations.getFounderIds()) {
+						InvitaionMailData mailData = getInvitationMailData(inviterId, inviteeId,
+								userGroupInvitations.getUserGroupId(), founderId, "Founder", null, userGroupIbp);
+						if (mailData != null)
+							inviteData.add(mailData);
+					}
+				}
+				if (!userGroupInvitations.getModeratorsIds().isEmpty()) {
+					for (Long inviteeId : userGroupInvitations.getModeratorsIds()) {
+						InvitaionMailData mailData = getInvitationMailData(inviterId, inviteeId,
+								userGroupInvitations.getUserGroupId(), moderatorId, "Moderator", null, userGroupIbp);
+						if (mailData != null)
+							inviteData.add(mailData);
+					}
+				}
+				if (!userGroupInvitations.getFounderEmail().isEmpty()) {
+					for (String email : userGroupInvitations.getFounderEmail()) {
+						InvitaionMailData mailData = getInvitationMailData(inviterId, null,
+								userGroupInvitations.getUserGroupId(), founderId, "Founder", email, userGroupIbp);
+						if (mailData != null)
+							inviteData.add(mailData);
+					}
+				}
+				if (!userGroupInvitations.getModeratorsEmail().isEmpty()) {
+					for (String email : userGroupInvitations.getModeratorsEmail()) {
+						InvitaionMailData mailData = getInvitationMailData(inviterId, null,
+								userGroupInvitations.getUserGroupId(), moderatorId, "Moderator", email, userGroupIbp);
+						if (mailData != null)
+							inviteData.add(mailData);
+					}
+				}
+//				LAST STEP
+//			TODO	forward the data to send out mails
+				return true;
+			}
+			return false;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return false;
+
+	}
+
+	private InvitaionMailData getInvitationMailData(Long inviterId, Long inviteeId, Long userGroupId, Long roleId,
+			String role, String email, UserGroupIbp userGroupIbp) {
+		try {
+			if (inviteeId != null) {
+				UserGroupInvitation ugInvitee = ugInvitationDao.findByUserIdUGId(inviteeId, userGroupId);
+				if (ugInvitee != null)
+					ugInvitationDao.delete(ugInvitee);
+			}
+			if (email != null) {
+				UserGroupInvitation ugEmailInvitees = ugInvitationDao.findByUGIdEmailId(userGroupId, email);
+				if (ugEmailInvitees != null)
+					ugInvitationDao.delete(ugEmailInvitees);
+			}
+			UserGroupInvitation ugInvite = new UserGroupInvitation(null, inviterId, inviteeId, userGroupId, roleId,
+					email);
+			ugInvite = ugInvitationDao.save(ugInvite);
+
+			if (ugInvite != null) {
+				String desc = "Sent invitation for Role: " + role;
+				if (inviteeId == null) {
+					String emailsplit[] = email.split("@");
+					desc = "Sent Invitaion to a NON-registred user : " + emailsplit[0] + " for role : " + role;
+				}
+				logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", inviteeId,
+						"Invitation Sent");
+			}
+//			create mail invitation data
+			String ugInviteStr = objectMapper.writeValueAsString(ugInvite);
+			UserIbp userIbp = null;
+			if (inviteeId != null)
+				userIbp = userService.getUserIbp(inviteeId.toString());
+			InvitaionMailData mailData = new InvitaionMailData(userIbp, email, userGroupIbp, role,
+					encryptionUtils.encrypt(ugInviteStr));
+			return mailData;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Boolean validateMember(Long userId, String token) {
+		try {
+
+			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
+			Properties properties = new Properties();
+			try {
+				properties.load(in);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			Long founderId = Long.parseLong(properties.getProperty("userGroupFounder"));
+			Long moderatorId = Long.parseLong(properties.getProperty("userGroupExpert"));
+			in.close();
+
+			String plaintext = encryptionUtils.decrypt(token);
+			UserGroupInvitation ugInvte = objectMapper.readValue(plaintext, UserGroupInvitation.class);
+			if (userId.equals(ugInvte.getInviteeId())) {
+				UserGroupInvitation ugInviteDB = ugInvitationDao.findByUserIdUGId(userId, ugInvte.getUserGroupId());
+				if (ugInviteDB.equals(ugInvte)) {
+					Boolean isMember = userService.checkGroupMemberByUserId(ugInviteDB.getUserGroupId().toString(),
+							userId.toString());
+					if (!isMember) {
+						userService.addMemberRoleUG(ugInviteDB.getUserGroupId().toString(),
+								ugInviteDB.getRoleId().toString());
+						ugInvitationDao.delete(ugInviteDB);
+
+						String role = "Member";
+						if (ugInviteDB.getRoleId().equals(founderId))
+							role = "Founder";
+						else if (ugInviteDB.getRoleId().equals(moderatorId))
+							role = "Moderator";
+
+						String desc = "Joined Group with Role:" + role;
+						logActivity.logUserGroupActivities(desc, ugInviteDB.getUserGroupId(),
+								ugInviteDB.getUserGroupId(), "userGroup", userId, "Joined group");
+
+						return true;
+					} else {
+//						code for role update
+
+						String previousRole = "Member";
+						if (ugInviteDB.getRoleId().equals(founderId)) {
+							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
+							if (isFounder)
+								return null;
+							Boolean isModerator = userService
+									.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
+							if (isModerator)
+								previousRole = "Moderator";
+						} else if (ugInviteDB.getRoleId().equals(moderatorId)) {
+							Boolean isModerator = userService
+									.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
+							if (isModerator)
+								return null;
+							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
+							if (isFounder)
+								previousRole = "Founder";
+						} else {
+							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
+							if (!isFounder) {
+								Boolean isModerator = userService
+										.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
+								if (!isModerator)
+									return null;
+								else
+									previousRole = "Moderator";
+
+							} else {
+								previousRole = "Founder";
+							}
+
+						}
+						userService.removeGroupMember(ugInviteDB.getInviteeId().toString(),
+								ugInviteDB.getUserGroupId().toString());
+
+						userService.addMemberRoleUG(ugInviteDB.getUserGroupId().toString(),
+								ugInviteDB.getRoleId().toString());
+						ugInvitationDao.delete(ugInviteDB);
+
+						String role = "Member";
+						if (ugInviteDB.getRoleId().equals(founderId))
+							role = "Founder";
+						else if (ugInviteDB.getRoleId().equals(moderatorId))
+							role = "Moderator";
+
+						String desc = "User Role Updated from ROLE " + previousRole + " to ROLE " + role;
+						logActivity.logUserGroupActivities(desc, ugInviteDB.getUserGroupId(),
+								ugInviteDB.getUserGroupId(), "userGroup", userId, "Role updated");
+
+						return true;
+
+					}
+
+				}
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return false;
+	}
+
+	@Override
+	public Boolean removeUser(String userGroupId, String userId) {
+		try {
+			Boolean result = userService.removeGroupMember(userId, userGroupId);
+			if (result) {
+				logActivity.logUserGroupActivities(null, Long.parseLong(userGroupId), Long.parseLong(userGroupId),
+						"userGroup", Long.parseLong(userId), "Removed user");
+			}
+			return result;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Boolean leaveGroup(Long userId, String userGroupId) {
+		try {
+			Boolean result = userService.leaveGroup(userGroupId);
+			if (result) {
+				logActivity.logUserGroupActivities(null, Long.parseLong(userGroupId), Long.parseLong(userGroupId),
+						"userGroup", userId, "Left Group");
+			}
+			return result;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Boolean joinGroup(Long userId, String userGroupId) {
+		try {
+			Boolean result = userService.joinGroup(userGroupId);
+			if (result) {
+				String desc = "Joined Group with Role: Member";
+				logActivity.logUserGroupActivities(desc, Long.parseLong(userGroupId), Long.parseLong(userGroupId),
+						"userGroup", userId, "Joined group");
+			}
+			return result;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Boolean sendInvitesForMemberRole(CommonProfile profile, Long userGroupId, List<Long> inviteeList) {
+
+		try {
+
+			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
+			Properties properties = new Properties();
+			try {
+				properties.load(in);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			Long memberId = Long.parseLong(properties.getProperty("userGroupMember"));
+			in.close();
+
+			Long inviterId = Long.parseLong(profile.getId());
+			UserGroup userGroup = userGroupDao.findById(userGroupId);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			UserGroupIbp userGroupIbp = fetchByGroupIdIbp(userGroupId);
+			List<InvitaionMailData> iniviteData = new ArrayList<InvitaionMailData>();
+
+//			open group any body can send the invitation
+			if (userGroup.getAllowUserToJoin().equals(true)) {
+				for (Long inviteeId : inviteeList) {
+					InvitaionMailData mailData = getInvitationMailData(inviterId, inviteeId, userGroupId, memberId,
+							"Member", null, userGroupIbp);
+					if (mailData != null) {
+						iniviteData.add(mailData);
+						String desc = "Sent invitation for Role: Member";
+						logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", inviteeId,
+								"Invitation Sent");
+					}
+
+				}
+
+			} else {
+//			closer group check for founder , moderator and admin
+				Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+				Boolean isModerator = userService.checkModeratorRole(userGroupId.toString());
+				if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
+
+					for (Long inviteeId : inviteeList) {
+						InvitaionMailData mailData = getInvitationMailData(inviterId, inviteeId, userGroupId, memberId,
+								"Member", null, userGroupIbp);
+						if (mailData != null) {
+							iniviteData.add(mailData);
+							String desc = "Sent invitation for Role: Member";
+							logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", inviteeId,
+									"Invitation Sent");
+						}
+					}
+				}
+			}
+
+//			TODO  send mail for invitation
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public Boolean bulkPosting(CommonProfile profile, Long userGroupId, List<Long> observationList) {
+		try {
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			Boolean isModerator = userService.checkModeratorRole(userGroupId.toString());
+			int counter = 0;
+			if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
+
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
+				UserGroupObservation result;
+				for (Long obvId : observationList) {
+					UserGroupObservation isAlreadyMapped = userGroupObvDao.checkObservationUGMApping(obvId,
+							userGroupId);
+					if (isAlreadyMapped != null)
+						continue;
+
+					UserGroupObservation ugObv = new UserGroupObservation(userGroupId, obvId);
+					result = userGroupObvDao.save(ugObv);
+					if (result != null) {
+						counter++;
+						UserGroupActivity ugActivity = new UserGroupActivity();
+						String description = null;
+						ugActivity.setFeatured(null);
+						ugActivity.setUserGroupId(ugIbp.getId());
+						ugActivity.setUserGroupName(ugIbp.getName());
+						ugActivity.setWebAddress(ugIbp.getWebAddress());
+						try {
+							description = objectMapper.writeValueAsString(ugActivity);
+						} catch (Exception e) {
+							logger.error(e.getMessage());
+						}
+						logActivity.LogActivity(description, obvId, obvId, "observation", result.getUserGroupId(),
+								"Posted resource", null);
+					}
+				}
+
+				if (counter > 0) {
+					String description = "Posted " + counter + " Observations to group";
+					logActivity.logUserGroupActivities(description, userGroupId, userGroupId, "userGroup", userGroupId,
+							"Posted resource");
+				}
+				return true;
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return false;
+	}
+
+	@Override
+	public Boolean bulkRemoving(CommonProfile profile, Long userGroupId, List<Long> observationList) {
+		try {
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			Boolean isModerator = userService.checkModeratorRole(userGroupId.toString());
+			int counter = 0;
+			if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
+				UserGroupObservation result;
+				for (Long obvId : observationList) {
+					UserGroupObservation isAlreadyMapped = userGroupObvDao.checkObservationUGMApping(obvId,
+							userGroupId);
+					if (isAlreadyMapped == null)
+						continue;
+					result = userGroupObvDao.delete(isAlreadyMapped);
+					if (result != null) {
+						counter++;
+						UserGroupActivity ugActivity = new UserGroupActivity();
+						String description = null;
+						ugActivity.setFeatured(null);
+						ugActivity.setUserGroupId(ugIbp.getId());
+						ugActivity.setUserGroupName(ugIbp.getName());
+						ugActivity.setWebAddress(ugIbp.getWebAddress());
+						try {
+							description = objectMapper.writeValueAsString(ugActivity);
+						} catch (Exception e) {
+							logger.error(e.getMessage());
+						}
+						logActivity.LogActivity(description, obvId, obvId, "observation", result.getUserGroupId(),
+								"Removed resoruce", null);
+					}
+
+				}
+				if (counter > 0) {
+					String description = "Removed " + counter + " Observations from group";
+					logActivity.logUserGroupActivities(description, userGroupId, userGroupId, "userGroup", userGroupId,
+							"Removed resoruce");
+				}
+				return true;
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return false;
+	}
+
+	@Override
+	public UserGroupIbp createUserGroup(CommonProfile profile, UserGroupCreateData ugCreateData) {
+		try {
+			String webAddress = ugCreateData.getName().replace(" ", "_");
+			Long userId = Long.parseLong(profile.getId());
+
+			UserGroup userGroup = new UserGroup(null, ugCreateData.getAllowUserToJoin(), ugCreateData.getDescription(),
+					ugCreateData.getDomainName(), new Date(), ugCreateData.getHomePage(), ugCreateData.getIcon(), false,
+					ugCreateData.getName(), ugCreateData.getNeLatitude(), ugCreateData.getNeLongitude(),
+					ugCreateData.getSwLatitude(), ugCreateData.getSwLongitude(), ugCreateData.getTheme(), 1L,
+					webAddress, ugCreateData.getLanguageId(), ugCreateData.getSendDigestMail(), new Date(), null,
+					ugCreateData.getNewFilterRule());
+
+			userGroup = userGroupDao.save(userGroup);
+
+			if (ugCreateData.getInvitationData() != null) {
+				UserGroupInvitationData userGroupInvitations = ugCreateData.getInvitationData();
+				userGroupInvitations.setUserGroupId(userGroup.getId());
+				if (!userGroupInvitations.getFounderIds().contains(userId))
+					userGroupInvitations.getFounderIds().add(userId);
+				addMemberRoleInvitaions(profile, userGroupInvitations);
+			}
+
+			if (ugCreateData.getCfUGMappingData() != null)
+				cfServices.addCustomFieldUG(profile, userId, userGroup.getId(), ugCreateData.getCfUGMappingData());
+
+			logActivity.logUserGroupActivities(null, userGroup.getId(), userGroup.getId(), "userGroup", null,
+					"Group created");
+
+			return fetchByGroupIdIbp(userGroup.getId());
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public UserGroupEditData getUGEditData(CommonProfile profile, Long userGroupId) {
+		try {
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				UserGroup userGroup = userGroupDao.findById(userGroupId);
+				if (userGroup != null) {
+					UserGroupEditData ugEditData = new UserGroupEditData(userGroup.getAllowUserToJoin(),
+							userGroup.getDescription(), userGroup.getHomePage(), userGroup.getIcon(),
+							userGroup.getDomianName(), userGroup.getName(), userGroup.getNeLatitude(),
+							userGroup.getNeLongitude(), userGroup.getSwLatitude(), userGroup.getSwLongitude(),
+							userGroup.getTheme(), userGroup.getLanguageId(), userGroup.getSendDigestMail(),
+							userGroup.getNewFilterRule());
+					return ugEditData;
+				}
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public UserGroupIbp saveUGEdit(CommonProfile profile, Long userGroupId, UserGroupEditData ugEditData) {
+		try {
+
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+
+				String webAddress = ugEditData.getName().replace(" ", "_");
+				UserGroup userGroup = new UserGroup(null, ugEditData.getAllowUserToJoin(), ugEditData.getDescription(),
+						ugEditData.getDomainName(), new Date(), ugEditData.getHomePage(), ugEditData.getIcon(), false,
+						ugEditData.getName(), ugEditData.getNeLatitude(), ugEditData.getNeLongitude(),
+						ugEditData.getSwLatitude(), ugEditData.getSwLongitude(), ugEditData.getTheme(), 1L, webAddress,
+						ugEditData.getLanguageId(), ugEditData.getSendDigestMail(), new Date(), null,
+						ugEditData.getNewFilterRule());
+
+				userGroup = userGroupDao.update(userGroup);
+
+				logActivity.logUserGroupActivities(null, userGroup.getId(), userGroup.getId(), "userGroup", null,
+						"Group updated");
+
+				return fetchByGroupIdIbp(userGroupId);
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public Boolean addMemberDirectly(Long userGroupId, UserGroupAddMemebr memberList) {
+		try {
+			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
+			Properties properties = new Properties();
+			try {
+				properties.load(in);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			Long founderId = Long.parseLong(properties.getProperty("userGroupFounder"));
+			Long moderatorId = Long.parseLong(properties.getProperty("userGroupExpert"));
+			Long memberId = Long.parseLong(properties.getProperty("userGroupMember"));
+			in.close();
+
+			if (!memberList.getFounderList().isEmpty()) {
+				GroupAddMember groupAddMember = new GroupAddMember();
+				groupAddMember.setMemberList(memberList.getFounderList());
+				groupAddMember.setRoleId(founderId);
+				groupAddMember.setUserGroupId(userGroupId);
+				List<Long> addedUser = userService.addGroupMemberDirectly(groupAddMember);
+				if (addedUser != null && !addedUser.isEmpty()) {
+					for (Long userId : addedUser) {
+						String desc = "Admin Added user with Role: Founder";
+						logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", userId,
+								"Joined group");
+					}
+				}
+			}
+			if (!memberList.getModeratorList().isEmpty()) {
+				GroupAddMember groupAddMember = new GroupAddMember();
+				groupAddMember.setMemberList(memberList.getModeratorList());
+				groupAddMember.setRoleId(moderatorId);
+				groupAddMember.setUserGroupId(userGroupId);
+				List<Long> addedUser = userService.addGroupMemberDirectly(groupAddMember);
+				if (addedUser != null && !addedUser.isEmpty()) {
+					for (Long userId : addedUser) {
+						String desc = "Admin Added user with Role: Moderator";
+						logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", userId,
+								"Joined group");
+					}
+				}
+			}
+			if (!memberList.getMemberList().isEmpty()) {
+				GroupAddMember groupAddMember = new GroupAddMember();
+				groupAddMember.setMemberList(memberList.getMemberList());
+				groupAddMember.setRoleId(memberId);
+				groupAddMember.setUserGroupId(userGroupId);
+				List<Long> addedUser = userService.addGroupMemberDirectly(groupAddMember);
+				if (addedUser != null && !addedUser.isEmpty()) {
+					for (Long userId : addedUser) {
+						String desc = "Admin Added user with Role: Member";
+						logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", userId,
+								"Joined group");
+					}
+				}
+			}
+
+			return true;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return false;
 	}
 
 }

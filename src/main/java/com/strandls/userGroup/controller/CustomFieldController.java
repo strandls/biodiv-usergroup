@@ -39,7 +39,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import net.minidev.json.JSONArray;
 
 /**
  * @author Abhishek Rudra
@@ -148,7 +147,7 @@ public class CustomFieldController {
 
 	@ValidateUser
 
-	@ApiOperation(value = "Adds a new Custom Field", notes = "Adds a new Custom Field", response = String.class)
+	@ApiOperation(value = "Adds a new Custom Field", notes = "Adds a new Custom Field", response = CustomFieldDetails.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "Unable to create a new CustomField", response = String.class) })
 
@@ -156,13 +155,10 @@ public class CustomFieldController {
 			@ApiParam("customFieldData") CustomFieldCreateData customFieldCreateData) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray userRoles = (JSONArray) profile.getAttribute("roles");
-			if (userRoles.contains("ROLE_ADMIN")) {
-				cfService.createCustomFields(profile, customFieldCreateData);
-				return Response.status(Status.OK).entity("New CustomField Created").build();
-			} else {
-				return Response.status(Status.NOT_ACCEPTABLE).entity("ONLY ADMIN CAN PERFORM THIS TASK").build();
-			}
+			CustomFieldDetails result = cfService.createCustomFields(profile, customFieldCreateData);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Could create the custom Field").build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -205,8 +201,9 @@ public class CustomFieldController {
 	public Response getUserGroupCustomFields(@Context HttpServletRequest request,
 			@PathParam("userGroupId") String userGroupId) {
 		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
-			List<CustomFieldDetails> customField = cfService.getCustomField(ugId);
+			List<CustomFieldDetails> customField = cfService.getCustomField(profile, ugId);
 			return Response.status(Status.OK).entity(customField).build();
 
 		} catch (Exception e) {
@@ -227,13 +224,8 @@ public class CustomFieldController {
 
 	public Response getAllCustomField(@Context HttpServletRequest request) {
 		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray userProfiles = (JSONArray) profile.getAttribute("roles");
-			if (userProfiles.contains("ROLE_ADMIN")) {
-				List<CustomFieldDetails> result = cfService.getAllCustomField();
-				return Response.status(Status.OK).entity(result).build();
-			}
-			return Response.status(Status.NOT_ACCEPTABLE).entity("USER NOT ALLOWED TO REMOVE CUSTOM FIELD").build();
+			List<CustomFieldDetails> result = cfService.getAllCustomField();
+			return Response.status(Status.OK).entity(result).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -241,7 +233,7 @@ public class CustomFieldController {
 	}
 
 	@POST
-	@Path(ApiConstants.ADD)
+	@Path(ApiConstants.ADD + "/{userGroupId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -250,16 +242,15 @@ public class CustomFieldController {
 	@ApiOperation(value = "Add a already existing customField to a UserGroup", notes = "Returns all the customField related with a userGroup", response = CustomFieldDetails.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to retrive the data", response = String.class) })
 
-	public Response addCustomField(@Context HttpServletRequest request,
-			@ApiParam(name = "CustomFieldUserGroupData") CustomFieldUGData customFieldUGData) {
+	public Response addCustomField(@Context HttpServletRequest request, @PathParam("userGroupId") String userGroupId,
+			@ApiParam(name = "CustomFieldUserGroupDataList") List<CustomFieldUGData> customFieldUGDataList) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray userRole = (JSONArray) profile.getAttribute("roles");
-			if (userRole.contains("ROLE_ADMIN")) {
-				Long userId = Long.parseLong(profile.getId());
-				List<CustomFieldDetails> result = cfService.addCustomFieldUG(userId, customFieldUGData);
+			Long userId = Long.parseLong(profile.getId());
+			Long ugId = Long.parseLong(userGroupId);
+			List<CustomFieldDetails> result = cfService.addCustomFieldUG(profile, userId, ugId, customFieldUGDataList);
+			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
-			}
 			return Response.status(Status.NOT_ACCEPTABLE).entity("user not allowed to add custom field").build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -281,16 +272,16 @@ public class CustomFieldController {
 		try {
 
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray userProfiles = (JSONArray) profile.getAttribute("roles");
-			if (userProfiles.contains("ROLE_ADMIN")) {
-				Long cfId = Long.parseLong(customFieldId);
-				Long ugId = Long.parseLong(userGroupId);
-				List<CustomFieldDetails> result = cfService.removeCustomField(ugId, cfId);
+			Long cfId = Long.parseLong(customFieldId);
+			Long ugId = Long.parseLong(userGroupId);
+			List<CustomFieldDetails> result = cfService.removeCustomField(profile, ugId, cfId);
+			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
-			}
 			return Response.status(Status.NOT_ACCEPTABLE).entity("USER NOT ALLOWED TO REMOVE CUSTOM FIELD").build();
 
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
