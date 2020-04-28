@@ -5,6 +5,8 @@ package com.strandls.userGroup.service;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.strandls.activity.pojo.MailData;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
@@ -29,23 +31,24 @@ public interface UserGroupSerivce {
 
 	public List<UserGroupIbp> fetchByUserGroupDetails(List<Long> userGroupMember);
 
-	public List<Long> createUserGroupObservationMapping(Long observationId, UserGroupMappingCreateData userGroups);
+	public List<Long> createUserGroupObservationMapping(HttpServletRequest request, Long observationId,
+			UserGroupMappingCreateData userGroups);
 
-	public List<UserGroupIbp> updateUserGroupObservationMapping(Long observationId,
+	public List<UserGroupIbp> updateUserGroupObservationMapping(HttpServletRequest request, Long observationId,
 			UserGroupMappingCreateData userGorups);
 
 	public List<UserGroupIbp> fetchAllUserGroup();
 
 	public List<Featured> fetchFeatured(String objectType, Long id);
 
-	public List<Featured> createFeatured(Long userId, FeaturedCreateData featuredCreate);
+	public List<Featured> createFeatured(HttpServletRequest request, Long userId, FeaturedCreateData featuredCreate);
 
-	public List<Featured> removeFeatured(Long userId, String objectType, Long objectId,
+	public List<Featured> removeFeatured(HttpServletRequest request, Long userId, String objectType, Long objectId,
 			UserGroupMappingCreateData userGroupList);
 
-	public void filterRule(ObservationLatLon latlon);
+	public void filterRule(HttpServletRequest request, ObservationLatLon latlon);
 
-	public void bulkFilterRule(String userGroupIds, List<ObservationLatLon> latlonList);
+	public void bulkFilterRule(HttpServletRequest request, String userGroupIds, List<ObservationLatLon> latlonList);
 
 	public String updateUserGroupFilter(Long userGroupId, UserGroupWKT userGroupWKT);
 

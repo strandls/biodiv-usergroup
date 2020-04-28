@@ -92,9 +92,9 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 				bind(SessionFactory.class).toInstance(sessionFactory);
 				bind(ActivitySerivceApi.class).in(Scopes.SINGLETON);
 				bind(UserServiceApi.class).in(Scopes.SINGLETON);
+				bind(Headers.class).in(Scopes.SINGLETON);
 
 				serve("/api/*").with(GuiceContainer.class, props);
-				filter("/*").through(SwaggerFilter.class);
 			}
 		}, new UserGroupControllerModule(), new FilterModule(), new UserGroupServiceModule(), new UserGroupDaoModule());
 
