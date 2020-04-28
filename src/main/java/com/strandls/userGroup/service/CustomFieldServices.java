@@ -5,6 +5,8 @@ package com.strandls.userGroup.service;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.pac4j.core.profile.CommonProfile;
 
 import com.strandls.userGroup.pojo.CustomFieldCreateData;
@@ -25,16 +27,16 @@ public interface CustomFieldServices {
 
 	public List<CustomFieldObservationData> getObservationCustomFields(Long observationId);
 
-	public List<CustomFieldValues> getCustomFieldOptions(CommonProfile profile, String observationId, Long userGroupId,
-			Long customFieldId) throws Exception;
+	public List<CustomFieldValues> getCustomFieldOptions(HttpServletRequest request, CommonProfile profile,
+			String observationId, Long userGroupId, Long customFieldId) throws Exception;
 
-	public List<CustomFieldObservationData> insertUpdateCustomFieldData(CommonProfile profile,
-			CustomFieldFactsInsertData factsCreateData) throws Exception;
+	public List<CustomFieldObservationData> insertUpdateCustomFieldData(HttpServletRequest request,
+			CommonProfile profile, CustomFieldFactsInsertData factsCreateData) throws Exception;
 
 	public void createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData);
 
-	public List<CustomFieldPermission> getCustomFieldPermisison(CommonProfile profile, String observationId)
-			throws Exception;
+	public List<CustomFieldPermission> getCustomFieldPermisison(HttpServletRequest request, CommonProfile profile,
+			String observationId) throws Exception;
 
 	public List<CustomFieldDetails> getAllCustomField();
 
