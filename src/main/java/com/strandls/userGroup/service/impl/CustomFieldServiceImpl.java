@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.strandls.activity.pojo.MailData;
 import com.strandls.user.controller.UserServiceApi;
+import com.strandls.userGroup.Headers;
 import com.strandls.userGroup.dao.CustomFieldDao;
 import com.strandls.userGroup.dao.CustomFieldUG18Dao;
 import com.strandls.userGroup.dao.CustomFieldUG37Dao;
@@ -94,6 +97,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 	@Inject
 	private LogActivities logActivity;
+
+	@Inject
+	private Headers headers;
 
 	@Override
 	public void migrateCustomField() {
@@ -330,12 +336,13 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	@Override
-	public List<CustomFieldValues> getCustomFieldOptions(CommonProfile profile, String observationId, Long userGroupId,
-			Long customFieldId) throws Exception {
+	public List<CustomFieldValues> getCustomFieldOptions(HttpServletRequest request, CommonProfile profile,
+			String observationId, Long userGroupId, Long customFieldId) throws Exception {
 
 		List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
 		try {
-			Boolean isAllowed = checkCustomFieldPermissions(profile, observationId, customFieldId, userGroupId);
+			Boolean isAllowed = checkCustomFieldPermissions(request, profile, observationId, customFieldId,
+					userGroupId);
 			if (isAllowed) {
 				cfValues = cfValueDao.findByCustomFieldId(customFieldId);
 			} else {
@@ -348,8 +355,8 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		return cfValues;
 	}
 
-	private Boolean checkCustomFieldPermissions(CommonProfile profile, String observationId, Long customFieldId,
-			Long userGroupId) throws Exception {
+	private Boolean checkCustomFieldPermissions(HttpServletRequest request, CommonProfile profile, String observationId,
+			Long customFieldId, Long userGroupId) throws Exception {
 
 		try {
 			Long userId = Long.parseLong(profile.getId());
@@ -367,6 +374,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					return true;
 				} else {
 //					close group
+					userService = headers.addUserHeader(userService, request);
 					Boolean isMember = userService.checkMemberRoleUG(userGroupId.toString());
 					return isMember;
 				}
@@ -381,6 +389,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					}
 				} else {
 //					closer group
+					userService = headers.addUserHeader(userService, request);
 					Boolean isMember = userService.checkMemberRoleUG(userGroupId.toString());
 					return isMember;
 				}
@@ -436,12 +445,13 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	@Override
-	public List<CustomFieldObservationData> insertUpdateCustomFieldData(CommonProfile profile,
-			CustomFieldFactsInsertData factsInsertData) throws Exception {
+	public List<CustomFieldObservationData> insertUpdateCustomFieldData(HttpServletRequest request,
+			CommonProfile profile, CustomFieldFactsInsertData factsInsertData) throws Exception {
 		try {
 			CustomFieldFactsInsert factsCreateData = factsInsertData.getFactsCreateData();
-			Boolean isAllowed = checkCustomFieldPermissions(profile, factsCreateData.getObservationId().toString(),
-					factsCreateData.getCustomFieldId(), factsCreateData.getUserGroupId());
+			Boolean isAllowed = checkCustomFieldPermissions(request, profile,
+					factsCreateData.getObservationId().toString(), factsCreateData.getCustomFieldId(),
+					factsCreateData.getUserGroupId());
 			if (isAllowed) {
 				List<ObservationCustomField> observationCF = observationCFDao.findByObservationIdUGidCFId(
 						factsCreateData.getObservationId(), factsCreateData.getCustomFieldId(),
@@ -464,7 +474,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 								+ factsCreateData.getSingleCategorical();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
-						logActivity.LogActivity(description, factsCreateData.getObservationId(),
+						logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
 								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
 								"Custom field edited", mailData);
 
@@ -494,7 +504,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 								MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 										factsInsertData.getMailData());
-								logActivity.LogActivity(description, factsCreateData.getObservationId(),
+								logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
 										factsCreateData.getObservationId(), "observation",
 										factsCreateData.getObservationId(), "Custom field edited", mailData);
 							}
@@ -535,7 +545,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ factsCreateData.getMaxValue();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(description, factsCreateData.getObservationId(),
+							logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
 									factsCreateData.getObservationId(), "Custom field edited", mailData);
 
@@ -545,8 +555,8 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 //						field text box single result always
 						observationCF.get(0).setAuthorId(authorId);
 						observationCF.get(0).setLastModified(new Date());
-						observationCFDao
-								.update(populateFieldTextBox(customFields, observationCF.get(0), factsInsertData));
+						observationCFDao.update(
+								populateFieldTextBox(request, customFields, observationCF.get(0), factsInsertData));
 					}
 
 				} else {
@@ -564,7 +574,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 								+ factsCreateData.getSingleCategorical();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
-						logActivity.LogActivity(description, factsCreateData.getObservationId(),
+						logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
 								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
 								"Custom field edited", mailData);
 
@@ -578,7 +588,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ cfValueDao.findById(cfValuesId).getValues();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(description, factsCreateData.getObservationId(),
+							logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
 									factsCreateData.getObservationId(), "Custom field edited", mailData);
 						}
@@ -598,7 +608,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ factsCreateData.getMaxValue();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(description, factsCreateData.getObservationId(),
+							logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
 									factsCreateData.getObservationId(), "Custom field edited", mailData);
 
@@ -606,7 +616,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 					} else {
 //						Field Text Box case
-						obvCF = populateFieldTextBox(customFields, obvCF, factsInsertData);
+						obvCF = populateFieldTextBox(request, customFields, obvCF, factsInsertData);
 						observationCFDao.save(obvCF);
 
 					}
@@ -625,8 +635,8 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 	}
 
-	private ObservationCustomField populateFieldTextBox(CustomFields customFields, ObservationCustomField obvCF,
-			CustomFieldFactsInsertData factsInsertData) {
+	private ObservationCustomField populateFieldTextBox(HttpServletRequest request, CustomFields customFields,
+			ObservationCustomField obvCF, CustomFieldFactsInsertData factsInsertData) {
 
 		try {
 			CustomFieldFactsInsert factsCreateData = factsInsertData.getFactsCreateData();
@@ -644,8 +654,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					+ factsCreateData.getTextBoxValue();
 			MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 					factsInsertData.getMailData());
-			logActivity.LogActivity(description, factsCreateData.getObservationId(), factsCreateData.getObservationId(),
-					"observation", factsCreateData.getObservationId(), "Custom field edited", mailData);
+			logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
+					factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
+					"Custom field edited", mailData);
 
 			return obvCF;
 		} catch (Exception e) {
@@ -691,8 +702,8 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	@Override
-	public List<CustomFieldPermission> getCustomFieldPermisison(CommonProfile profile, String observationId)
-			throws Exception {
+	public List<CustomFieldPermission> getCustomFieldPermisison(HttpServletRequest request, CommonProfile profile,
+			String observationId) throws Exception {
 
 		List<CustomFieldPermission> cfPermissionList = new ArrayList<CustomFieldPermission>();
 		List<Long> allowedCFId = null;
@@ -707,7 +718,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 			if (!ugcfMappingList.isEmpty()) {
 				allowedCFId = new ArrayList<Long>();
 				for (UserGroupCustomFieldMapping ugCFMapping : ugcfMappingList) {
-					Boolean isAllowed = checkCustomFieldPermissions(profile, observationId,
+					Boolean isAllowed = checkCustomFieldPermissions(request, profile, observationId,
 							ugCFMapping.getCustomFieldId(), userGroupId);
 					if (isAllowed)
 						allowedCFId.add(ugCFMapping.getCustomFieldId());

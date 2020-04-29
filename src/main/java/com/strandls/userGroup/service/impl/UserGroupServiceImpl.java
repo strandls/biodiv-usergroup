@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +143,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<Long> createUserGroupObservationMapping(Long observationId, UserGroupMappingCreateData userGroups) {
+	public List<Long> createUserGroupObservationMapping(HttpServletRequest request, Long observationId,
+			UserGroupMappingCreateData userGroups) {
 
 		List<Long> resultList = new ArrayList<Long>();
 		for (Long userGroup : userGroups.getUserGroups()) {
@@ -165,7 +168,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				if (userGroups.getMailData() != null) {
 					mailData = updateMailData(observationId, userGroups.getMailData());
 				}
-				logActivity.LogActivity(description, observationId, observationId, "observation",
+				logActivity.LogActivity(request, description, observationId, observationId, "observation",
 						result.getUserGroupId(), "Posted resource", mailData);
 			}
 		}
@@ -173,7 +176,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<UserGroupIbp> updateUserGroupObservationMapping(Long observationId,
+	public List<UserGroupIbp> updateUserGroupObservationMapping(HttpServletRequest request, Long observationId,
 			UserGroupMappingCreateData userGorups) {
 
 		List<Long> previousUserGroup = new ArrayList<Long>();
@@ -196,8 +199,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 
 				MailData mailData = updateMailData(observationId, userGorups.getMailData());
-				logActivity.LogActivity(description, observationId, observationId, "observation", ug.getUserGroupId(),
-						"Removed resoruce", mailData);
+				logActivity.LogActivity(request, description, observationId, observationId, "observation",
+						ug.getUserGroupId(), "Removed resoruce", mailData);
 			}
 			previousUserGroup.add(ug.getUserGroupId());
 		}
@@ -221,7 +224,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 
 				MailData mailData = updateMailData(observationId, userGorups.getMailData());
-				logActivity.LogActivity(description, observationId, observationId, "observation", userGroupId,
+				logActivity.LogActivity(request, description, observationId, observationId, "observation", userGroupId,
 						"Posted resource", mailData);
 			}
 		}
@@ -271,7 +274,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<Featured> createFeatured(Long userId, FeaturedCreateData featuredCreateData) {
+	public List<Featured> createFeatured(HttpServletRequest request, Long userId,
+			FeaturedCreateData featuredCreateData) {
 
 		List<Featured> result = new ArrayList<Featured>();
 		try {
@@ -344,8 +348,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 
 				MailData mailData = updateMailData(featuredCreate.getObjectId(), featuredCreateData.getMailData());
-				logActivity.LogActivity(description, featuredCreate.getObjectId(), featuredCreate.getObjectId(),
-						"observation", activityId, "Featured", mailData);
+				logActivity.LogActivity(request, description, featuredCreate.getObjectId(),
+						featuredCreate.getObjectId(), "observation", activityId, "Featured", mailData);
 
 			}
 
@@ -359,7 +363,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public List<Featured> removeFeatured(Long userId, String objectType, Long objectId,
+	public List<Featured> removeFeatured(HttpServletRequest request, Long userId, String objectType, Long objectId,
 			UserGroupMappingCreateData userGroupList) {
 
 		List<Featured> resultList = null;
@@ -412,7 +416,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						}
 
 						MailData mailData = updateMailData(objectId, userGroupList.getMailData());
-						logActivity.LogActivity(description, objectId, objectId, "observation", activityId,
+						logActivity.LogActivity(request, description, objectId, objectId, "observation", activityId,
 								"UnFeatured", mailData);
 
 						break;
@@ -428,7 +432,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public void filterRule(ObservationLatLon latlon) {
+	public void filterRule(HttpServletRequest request, ObservationLatLon latlon) {
 		try {
 			List<UserGroup> userGroupList = userGroupDao.findFilterRule();
 			GeometryFactory geofactory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -457,7 +461,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			UserGroupMappingCreateData usergroupMapping = null;
 			if (previousSize < userGroupId.size()) {
 				usergroupMapping = new UserGroupMappingCreateData(latlon.getMailData(), userGroupId);
-				updateUserGroupObservationMapping(latlon.getObservationId(), usergroupMapping);
+				updateUserGroupObservationMapping(request, latlon.getObservationId(), usergroupMapping);
 			}
 
 		} catch (Exception e) {
@@ -467,17 +471,18 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public void bulkFilterRule(String userGroupIds, List<ObservationLatLon> latlonList) {
+	public void bulkFilterRule(HttpServletRequest request, String userGroupIds, List<ObservationLatLon> latlonList) {
 		List<UserGroup> userGroupList = null;
 		if (userGroupIds == null) {
 			userGroupList = userGroupDao.findFilterRule();
 		} else {
 			userGroupList = userGroupDao.findFilterRuleGroupWise(userGroupIds);
 		}
-		bulkFilter(userGroupList, latlonList);
+		bulkFilter(request, userGroupList, latlonList);
 	}
 
-	private void bulkFilter(List<UserGroup> userGroupList, List<ObservationLatLon> latlonList) {
+	private void bulkFilter(HttpServletRequest request, List<UserGroup> userGroupList,
+			List<ObservationLatLon> latlonList) {
 
 		try {
 			GeometryFactory geofactory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -508,7 +513,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				UserGroupMappingCreateData usergroupMapping = null;
 				if (previousSize < userGroupId.size())
 					usergroupMapping = new UserGroupMappingCreateData(latlon.getMailData(), userGroupId);
-				updateUserGroupObservationMapping(latlon.getObservationId(), usergroupMapping);
+				updateUserGroupObservationMapping(request, latlon.getObservationId(), usergroupMapping);
 			}
 
 		} catch (Exception e) {
@@ -879,7 +884,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean bulkPosting(CommonProfile profile, Long userGroupId, List<Long> observationList) {
+	public Boolean bulkPosting(HttpServletRequest request, CommonProfile profile, Long userGroupId,
+			List<Long> observationList) {
 		try {
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
 			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
@@ -910,8 +916,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						} catch (Exception e) {
 							logger.error(e.getMessage());
 						}
-						logActivity.LogActivity(description, obvId, obvId, "observation", result.getUserGroupId(),
-								"Posted resource", null);
+						logActivity.LogActivity(request, description, obvId, obvId, "observation",
+								result.getUserGroupId(), "Posted resource", null);
 					}
 				}
 
@@ -929,7 +935,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean bulkRemoving(CommonProfile profile, Long userGroupId, List<Long> observationList) {
+	public Boolean bulkRemoving(HttpServletRequest request, CommonProfile profile, Long userGroupId,
+			List<Long> observationList) {
 		try {
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
 			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
@@ -957,8 +964,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						} catch (Exception e) {
 							logger.error(e.getMessage());
 						}
-						logActivity.LogActivity(description, obvId, obvId, "observation", result.getUserGroupId(),
-								"Removed resoruce", null);
+						logActivity.LogActivity(request, description, obvId, obvId, "observation",
+								result.getUserGroupId(), "Removed resoruce", null);
 					}
 
 				}

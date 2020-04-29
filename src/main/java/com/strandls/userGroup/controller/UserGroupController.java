@@ -151,7 +151,7 @@ public class UserGroupController {
 		try {
 
 			Long observationId = Long.parseLong(obsId);
-			List<Long> result = ugServices.createUserGroupObservationMapping(observationId, userGroupData);
+			List<Long> result = ugServices.createUserGroupObservationMapping(request, observationId, userGroupData);
 			if (result == null)
 				return Response.status(Status.CONFLICT).entity("Error occured in transaction").build();
 			return Response.status(Status.CREATED).entity(result).build();
@@ -177,7 +177,7 @@ public class UserGroupController {
 		try {
 			Long obvId = Long.parseLong(observationId);
 
-			List<UserGroupIbp> result = ugServices.updateUserGroupObservationMapping(obvId, userGroup);
+			List<UserGroupIbp> result = ugServices.updateUserGroupObservationMapping(request, obvId, userGroup);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -235,7 +235,7 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
-			List<Featured> result = ugServices.createFeatured(userId, featuredCreate);
+			List<Featured> result = ugServices.createFeatured(request, userId, featuredCreate);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -259,7 +259,7 @@ public class UserGroupController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
 			Long objId = Long.parseLong(objectId);
-			List<Featured> result = ugServices.removeFeatured(userId, objectType, objId, userGroupList);
+			List<Featured> result = ugServices.removeFeatured(request, userId, objectType, objId, userGroupList);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -280,7 +280,7 @@ public class UserGroupController {
 	public Response getFilterRule(@Context HttpServletRequest request,
 			@ApiParam(name = "latlon") ObservationLatLon latlon) {
 		try {
-			ugServices.filterRule(latlon);
+			ugServices.filterRule(request, latlon);
 			return Response.status(Status.OK).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -292,14 +292,16 @@ public class UserGroupController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
+	@ValidateUser
+
 	@ApiOperation(value = "Checks the post creation rule in Bulk", notes = "Add the observation Based on rules in Bulk", response = String.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "Unable to set the filter Rule", response = String.class) })
 
-	public Response bulkFilterRule(@QueryParam("groupIds") String groupIds,
+	public Response bulkFilterRule(@Context HttpServletRequest request, @QueryParam("groupIds") String groupIds,
 			@ApiParam(name = "latlonList") List<ObservationLatLon> latlonList) {
 		try {
-			ugServices.bulkFilterRule(groupIds, latlonList);
+			ugServices.bulkFilterRule(request, groupIds, latlonList);
 			return Response.status(Status.OK).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity("Not Allowed").build();
@@ -514,7 +516,7 @@ public class UserGroupController {
 
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
-			Boolean result = ugServices.bulkPosting(profile, ugId, observationList);
+			Boolean result = ugServices.bulkPosting(request, profile, ugId, observationList);
 			if (result)
 				return Response.status(Status.OK).entity("Bulk Posting completed").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Bulk posting failed").build();
@@ -541,7 +543,7 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
-			Boolean result = ugServices.bulkRemoving(profile, ugId, observationList);
+			Boolean result = ugServices.bulkRemoving(request, profile, ugId, observationList);
 			if (result)
 				return Response.status(Status.OK).entity("Bulk Removing Completed").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Bulking Removing Failed").build();

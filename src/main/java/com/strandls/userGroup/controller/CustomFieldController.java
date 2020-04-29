@@ -108,7 +108,7 @@ public class CustomFieldController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long customFieldId = Long.parseLong(cfId);
 			Long ugId = Long.parseLong(userGroupId);
-			List<CustomFieldValues> result = cfService.getCustomFieldOptions(profile, observationId, ugId,
+			List<CustomFieldValues> result = cfService.getCustomFieldOptions(request, profile, observationId, ugId,
 					customFieldId);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
@@ -132,7 +132,8 @@ public class CustomFieldController {
 			@ApiParam(name = "factsCreateData") CustomFieldFactsInsertData factsCreateData) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			List<CustomFieldObservationData> result = cfService.insertUpdateCustomFieldData(profile, factsCreateData);
+			List<CustomFieldObservationData> result = cfService.insertUpdateCustomFieldData(request, profile,
+					factsCreateData);
 			return Response.status(Status.OK).entity(result).build();
 
 		} catch (Exception e) {
@@ -180,7 +181,7 @@ public class CustomFieldController {
 			@PathParam("observationId") String observationId) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			List<CustomFieldPermission> result = cfService.getCustomFieldPermisison(profile, observationId);
+			List<CustomFieldPermission> result = cfService.getCustomFieldPermisison(request, profile, observationId);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
