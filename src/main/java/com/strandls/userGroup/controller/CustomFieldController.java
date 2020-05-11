@@ -204,7 +204,7 @@ public class CustomFieldController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
-			List<CustomFieldDetails> customField = cfService.getCustomField(profile, ugId);
+			List<CustomFieldDetails> customField = cfService.getCustomField(request, profile, ugId);
 			return Response.status(Status.OK).entity(customField).build();
 
 		} catch (Exception e) {
@@ -249,7 +249,8 @@ public class CustomFieldController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
 			Long ugId = Long.parseLong(userGroupId);
-			List<CustomFieldDetails> result = cfService.addCustomFieldUG(profile, userId, ugId, customFieldUGDataList);
+			List<CustomFieldDetails> result = cfService.addCustomFieldUG(request, profile, userId, ugId,
+					customFieldUGDataList);
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("user not allowed to add custom field").build();
@@ -275,7 +276,7 @@ public class CustomFieldController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long cfId = Long.parseLong(customFieldId);
 			Long ugId = Long.parseLong(userGroupId);
-			List<CustomFieldDetails> result = cfService.removeCustomField(profile, ugId, cfId);
+			List<CustomFieldDetails> result = cfService.removeCustomField(request, profile, ugId, cfId);
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("USER NOT ALLOWED TO REMOVE CUSTOM FIELD").build();

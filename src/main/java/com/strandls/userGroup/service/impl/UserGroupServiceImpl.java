@@ -27,6 +27,7 @@ import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.GroupAddMember;
 import com.strandls.user.pojo.UserGroupMembersCount;
 import com.strandls.user.pojo.UserIbp;
+import com.strandls.userGroup.Headers;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupInvitaionDao;
@@ -98,6 +99,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private CustomFieldServices cfServices;
+
+	@Inject
+	private Headers headers;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -563,7 +567,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean addMemberRoleInvitaions(CommonProfile profile, UserGroupInvitationData userGroupInvitations) {
+	public Boolean addMemberRoleInvitaions(HttpServletRequest request, CommonProfile profile,
+			UserGroupInvitationData userGroupInvitations) {
 
 		try {
 
@@ -582,12 +587,13 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			Long inviterId = Long.parseLong(profile.getId());
 			List<InvitaionMailData> inviteData = new ArrayList<InvitaionMailData>();
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request);
 			Boolean isFounder = userService.checkFounderRole(userGroupInvitations.getUserGroupId().toString());
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				UserGroupIbp userGroupIbp = fetchByGroupIdIbp(userGroupInvitations.getUserGroupId());
 				if (!userGroupInvitations.getFounderIds().isEmpty()) {
 					for (Long inviteeId : userGroupInvitations.getFounderIds()) {
-						InvitaionMailData mailData = getInvitationMailData(inviterId, inviteeId,
+						InvitaionMailData mailData = getInvitationMailData(request, inviterId, inviteeId,
 								userGroupInvitations.getUserGroupId(), founderId, "Founder", null, userGroupIbp);
 						if (mailData != null)
 							inviteData.add(mailData);
@@ -595,7 +601,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 				if (!userGroupInvitations.getModeratorsIds().isEmpty()) {
 					for (Long inviteeId : userGroupInvitations.getModeratorsIds()) {
-						InvitaionMailData mailData = getInvitationMailData(inviterId, inviteeId,
+						InvitaionMailData mailData = getInvitationMailData(request, inviterId, inviteeId,
 								userGroupInvitations.getUserGroupId(), moderatorId, "Moderator", null, userGroupIbp);
 						if (mailData != null)
 							inviteData.add(mailData);
@@ -603,7 +609,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 				if (!userGroupInvitations.getFounderEmail().isEmpty()) {
 					for (String email : userGroupInvitations.getFounderEmail()) {
-						InvitaionMailData mailData = getInvitationMailData(inviterId, null,
+						InvitaionMailData mailData = getInvitationMailData(request, inviterId, null,
 								userGroupInvitations.getUserGroupId(), founderId, "Founder", email, userGroupIbp);
 						if (mailData != null)
 							inviteData.add(mailData);
@@ -611,7 +617,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 				if (!userGroupInvitations.getModeratorsEmail().isEmpty()) {
 					for (String email : userGroupInvitations.getModeratorsEmail()) {
-						InvitaionMailData mailData = getInvitationMailData(inviterId, null,
+						InvitaionMailData mailData = getInvitationMailData(request, inviterId, null,
 								userGroupInvitations.getUserGroupId(), moderatorId, "Moderator", email, userGroupIbp);
 						if (mailData != null)
 							inviteData.add(mailData);
@@ -630,8 +636,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	}
 
-	private InvitaionMailData getInvitationMailData(Long inviterId, Long inviteeId, Long userGroupId, Long roleId,
-			String role, String email, UserGroupIbp userGroupIbp) {
+	private InvitaionMailData getInvitationMailData(HttpServletRequest request, Long inviterId, Long inviteeId,
+			Long userGroupId, Long roleId, String role, String email, UserGroupIbp userGroupIbp) {
 		try {
 			if (inviteeId != null) {
 				UserGroupInvitation ugInvitee = ugInvitationDao.findByUserIdUGId(inviteeId, userGroupId);
@@ -653,7 +659,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					String emailsplit[] = email.split("@");
 					desc = "Sent Invitaion to a NON-registred user : " + emailsplit[0] + " for role : " + role;
 				}
-				logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", inviteeId,
+				logActivity.logUserGroupActivities(request, desc, userGroupId, userGroupId, "userGroup", inviteeId,
 						"Invitation Sent");
 			}
 //			create mail invitation data
@@ -671,7 +677,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean validateMember(Long userId, String token) {
+	public Boolean validateMember(HttpServletRequest request, Long userId, String token) {
 		try {
 
 			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
@@ -691,9 +697,11 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (userId.equals(ugInvte.getInviteeId())) {
 				UserGroupInvitation ugInviteDB = ugInvitationDao.findByUserIdUGId(userId, ugInvte.getUserGroupId());
 				if (ugInviteDB.equals(ugInvte)) {
+					userService = headers.addUserHeader(userService, request);
 					Boolean isMember = userService.checkGroupMemberByUserId(ugInviteDB.getUserGroupId().toString(),
 							userId.toString());
 					if (!isMember) {
+						userService = headers.addUserHeader(userService, request);
 						userService.addMemberRoleUG(ugInviteDB.getUserGroupId().toString(),
 								ugInviteDB.getRoleId().toString());
 						ugInvitationDao.delete(ugInviteDB);
@@ -705,7 +713,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							role = "Moderator";
 
 						String desc = "Joined Group with Role:" + role;
-						logActivity.logUserGroupActivities(desc, ugInviteDB.getUserGroupId(),
+						logActivity.logUserGroupActivities(request, desc, ugInviteDB.getUserGroupId(),
 								ugInviteDB.getUserGroupId(), "userGroup", userId, "Joined group");
 
 						return true;
@@ -714,24 +722,30 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 						String previousRole = "Member";
 						if (ugInviteDB.getRoleId().equals(founderId)) {
+							userService = headers.addUserHeader(userService, request);
 							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
 							if (isFounder)
 								return null;
+							userService = headers.addUserHeader(userService, request);
 							Boolean isModerator = userService
 									.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
 							if (isModerator)
 								previousRole = "Moderator";
 						} else if (ugInviteDB.getRoleId().equals(moderatorId)) {
+							userService = headers.addUserHeader(userService, request);
 							Boolean isModerator = userService
 									.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
 							if (isModerator)
 								return null;
+							userService = headers.addUserHeader(userService, request);
 							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
 							if (isFounder)
 								previousRole = "Founder";
 						} else {
+							userService = headers.addUserHeader(userService, request);
 							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
 							if (!isFounder) {
+								userService = headers.addUserHeader(userService, request);
 								Boolean isModerator = userService
 										.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
 								if (!isModerator)
@@ -744,9 +758,11 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							}
 
 						}
+						userService = headers.addUserHeader(userService, request);
 						userService.removeGroupMember(ugInviteDB.getInviteeId().toString(),
 								ugInviteDB.getUserGroupId().toString());
 
+						userService = headers.addUserHeader(userService, request);
 						userService.addMemberRoleUG(ugInviteDB.getUserGroupId().toString(),
 								ugInviteDB.getRoleId().toString());
 						ugInvitationDao.delete(ugInviteDB);
@@ -758,7 +774,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							role = "Moderator";
 
 						String desc = "User Role Updated from ROLE " + previousRole + " to ROLE " + role;
-						logActivity.logUserGroupActivities(desc, ugInviteDB.getUserGroupId(),
+						logActivity.logUserGroupActivities(request, desc, ugInviteDB.getUserGroupId(),
 								ugInviteDB.getUserGroupId(), "userGroup", userId, "Role updated");
 
 						return true;
@@ -775,12 +791,13 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean removeUser(String userGroupId, String userId) {
+	public Boolean removeUser(HttpServletRequest request, String userGroupId, String userId) {
 		try {
+			userService = headers.addUserHeader(userService, request);
 			Boolean result = userService.removeGroupMember(userId, userGroupId);
 			if (result) {
-				logActivity.logUserGroupActivities(null, Long.parseLong(userGroupId), Long.parseLong(userGroupId),
-						"userGroup", Long.parseLong(userId), "Removed user");
+				logActivity.logUserGroupActivities(request, null, Long.parseLong(userGroupId),
+						Long.parseLong(userGroupId), "userGroup", Long.parseLong(userId), "Removed user");
 			}
 			return result;
 		} catch (Exception e) {
@@ -790,12 +807,13 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean leaveGroup(Long userId, String userGroupId) {
+	public Boolean leaveGroup(HttpServletRequest request, Long userId, String userGroupId) {
 		try {
+			userService = headers.addUserHeader(userService, request);
 			Boolean result = userService.leaveGroup(userGroupId);
 			if (result) {
-				logActivity.logUserGroupActivities(null, Long.parseLong(userGroupId), Long.parseLong(userGroupId),
-						"userGroup", userId, "Left Group");
+				logActivity.logUserGroupActivities(request, null, Long.parseLong(userGroupId),
+						Long.parseLong(userGroupId), "userGroup", userId, "Left Group");
 			}
 			return result;
 		} catch (Exception e) {
@@ -805,13 +823,14 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean joinGroup(Long userId, String userGroupId) {
+	public Boolean joinGroup(HttpServletRequest request, Long userId, String userGroupId) {
 		try {
+			userService = headers.addUserHeader(userService, request);
 			Boolean result = userService.joinGroup(userGroupId);
 			if (result) {
 				String desc = "Joined Group with Role: Member";
-				logActivity.logUserGroupActivities(desc, Long.parseLong(userGroupId), Long.parseLong(userGroupId),
-						"userGroup", userId, "Joined group");
+				logActivity.logUserGroupActivities(request, desc, Long.parseLong(userGroupId),
+						Long.parseLong(userGroupId), "userGroup", userId, "Joined group");
 			}
 			return result;
 		} catch (Exception e) {
@@ -821,7 +840,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean sendInvitesForMemberRole(CommonProfile profile, Long userGroupId, List<Long> inviteeList) {
+	public Boolean sendInvitesForMemberRole(HttpServletRequest request, CommonProfile profile, Long userGroupId,
+			List<Long> inviteeList) {
 
 		try {
 
@@ -844,31 +864,33 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 //			open group any body can send the invitation
 			if (userGroup.getAllowUserToJoin().equals(true)) {
 				for (Long inviteeId : inviteeList) {
-					InvitaionMailData mailData = getInvitationMailData(inviterId, inviteeId, userGroupId, memberId,
-							"Member", null, userGroupIbp);
+					InvitaionMailData mailData = getInvitationMailData(request, inviterId, inviteeId, userGroupId,
+							memberId, "Member", null, userGroupIbp);
 					if (mailData != null) {
 						iniviteData.add(mailData);
 						String desc = "Sent invitation for Role: Member";
-						logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", inviteeId,
-								"Invitation Sent");
+						logActivity.logUserGroupActivities(request, desc, userGroupId, userGroupId, "userGroup",
+								inviteeId, "Invitation Sent");
 					}
 
 				}
 
 			} else {
 //			closer group check for founder , moderator and admin
+				userService = headers.addUserHeader(userService, request);
 				Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+				userService = headers.addUserHeader(userService, request);
 				Boolean isModerator = userService.checkModeratorRole(userGroupId.toString());
 				if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
 
 					for (Long inviteeId : inviteeList) {
-						InvitaionMailData mailData = getInvitationMailData(inviterId, inviteeId, userGroupId, memberId,
-								"Member", null, userGroupIbp);
+						InvitaionMailData mailData = getInvitationMailData(request, inviterId, inviteeId, userGroupId,
+								memberId, "Member", null, userGroupIbp);
 						if (mailData != null) {
 							iniviteData.add(mailData);
 							String desc = "Sent invitation for Role: Member";
-							logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", inviteeId,
-									"Invitation Sent");
+							logActivity.logUserGroupActivities(request, desc, userGroupId, userGroupId, "userGroup",
+									inviteeId, "Invitation Sent");
 						}
 					}
 				}
@@ -888,7 +910,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			List<Long> observationList) {
 		try {
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request);
 			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			userService = headers.addUserHeader(userService, request);
 			Boolean isModerator = userService.checkModeratorRole(userGroupId.toString());
 			int counter = 0;
 			if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
@@ -923,8 +947,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				if (counter > 0) {
 					String description = "Posted " + counter + " Observations to group";
-					logActivity.logUserGroupActivities(description, userGroupId, userGroupId, "userGroup", userGroupId,
-							"Posted resource");
+					logActivity.logUserGroupActivities(request, description, userGroupId, userGroupId, "userGroup",
+							userGroupId, "Posted resource");
 				}
 				return true;
 			}
@@ -939,7 +963,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			List<Long> observationList) {
 		try {
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request);
 			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			userService = headers.addUserHeader(userService, request);
 			Boolean isModerator = userService.checkModeratorRole(userGroupId.toString());
 			int counter = 0;
 			if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
@@ -971,8 +997,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 				if (counter > 0) {
 					String description = "Removed " + counter + " Observations from group";
-					logActivity.logUserGroupActivities(description, userGroupId, userGroupId, "userGroup", userGroupId,
-							"Removed resoruce");
+					logActivity.logUserGroupActivities(request, description, userGroupId, userGroupId, "userGroup",
+							userGroupId, "Removed resoruce");
 				}
 				return true;
 			}
@@ -985,7 +1011,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public UserGroupIbp createUserGroup(CommonProfile profile, UserGroupCreateData ugCreateData) {
+	public UserGroupIbp createUserGroup(HttpServletRequest request, CommonProfile profile,
+			UserGroupCreateData ugCreateData) {
 		try {
 			String webAddress = ugCreateData.getName().replace(" ", "_");
 			Long userId = Long.parseLong(profile.getId());
@@ -1004,13 +1031,14 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				userGroupInvitations.setUserGroupId(userGroup.getId());
 				if (!userGroupInvitations.getFounderIds().contains(userId))
 					userGroupInvitations.getFounderIds().add(userId);
-				addMemberRoleInvitaions(profile, userGroupInvitations);
+				addMemberRoleInvitaions(request, profile, userGroupInvitations);
 			}
 
 			if (ugCreateData.getCfUGMappingData() != null)
-				cfServices.addCustomFieldUG(profile, userId, userGroup.getId(), ugCreateData.getCfUGMappingData());
+				cfServices.addCustomFieldUG(request, profile, userId, userGroup.getId(),
+						ugCreateData.getCfUGMappingData());
 
-			logActivity.logUserGroupActivities(null, userGroup.getId(), userGroup.getId(), "userGroup", null,
+			logActivity.logUserGroupActivities(request, null, userGroup.getId(), userGroup.getId(), "userGroup", null,
 					"Group created");
 
 			return fetchByGroupIdIbp(userGroup.getId());
@@ -1022,9 +1050,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public UserGroupEditData getUGEditData(CommonProfile profile, Long userGroupId) {
+	public UserGroupEditData getUGEditData(HttpServletRequest request, CommonProfile profile, Long userGroupId) {
 		try {
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request);
 			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				UserGroup userGroup = userGroupDao.findById(userGroupId);
@@ -1047,10 +1076,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public UserGroupIbp saveUGEdit(CommonProfile profile, Long userGroupId, UserGroupEditData ugEditData) {
+	public UserGroupIbp saveUGEdit(HttpServletRequest request, CommonProfile profile, Long userGroupId,
+			UserGroupEditData ugEditData) {
 		try {
 
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request);
 			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
 
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
@@ -1065,8 +1096,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				userGroup = userGroupDao.update(userGroup);
 
-				logActivity.logUserGroupActivities(null, userGroup.getId(), userGroup.getId(), "userGroup", null,
-						"Group updated");
+				logActivity.logUserGroupActivities(request, null, userGroup.getId(), userGroup.getId(), "userGroup",
+						null, "Group updated");
 
 				return fetchByGroupIdIbp(userGroupId);
 			}
@@ -1079,7 +1110,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean addMemberDirectly(Long userGroupId, UserGroupAddMemebr memberList) {
+	public Boolean addMemberDirectly(HttpServletRequest request, Long userGroupId, UserGroupAddMemebr memberList) {
 		try {
 			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
 			Properties properties = new Properties();
@@ -1098,11 +1129,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				groupAddMember.setMemberList(memberList.getFounderList());
 				groupAddMember.setRoleId(founderId);
 				groupAddMember.setUserGroupId(userGroupId);
+				userService = headers.addUserHeader(userService, request);
 				List<Long> addedUser = userService.addGroupMemberDirectly(groupAddMember);
 				if (addedUser != null && !addedUser.isEmpty()) {
 					for (Long userId : addedUser) {
 						String desc = "Admin Added user with Role: Founder";
-						logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", userId,
+						logActivity.logUserGroupActivities(request, desc, userGroupId, userGroupId, "userGroup", userId,
 								"Joined group");
 					}
 				}
@@ -1112,11 +1144,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				groupAddMember.setMemberList(memberList.getModeratorList());
 				groupAddMember.setRoleId(moderatorId);
 				groupAddMember.setUserGroupId(userGroupId);
+				userService = headers.addUserHeader(userService, request);
 				List<Long> addedUser = userService.addGroupMemberDirectly(groupAddMember);
 				if (addedUser != null && !addedUser.isEmpty()) {
 					for (Long userId : addedUser) {
 						String desc = "Admin Added user with Role: Moderator";
-						logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", userId,
+						logActivity.logUserGroupActivities(request, desc, userGroupId, userGroupId, "userGroup", userId,
 								"Joined group");
 					}
 				}
@@ -1126,11 +1159,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				groupAddMember.setMemberList(memberList.getMemberList());
 				groupAddMember.setRoleId(memberId);
 				groupAddMember.setUserGroupId(userGroupId);
+				userService = headers.addUserHeader(userService, request);
 				List<Long> addedUser = userService.addGroupMemberDirectly(groupAddMember);
 				if (addedUser != null && !addedUser.isEmpty()) {
 					for (Long userId : addedUser) {
 						String desc = "Admin Added user with Role: Member";
-						logActivity.logUserGroupActivities(desc, userGroupId, userGroupId, "userGroup", userId,
+						logActivity.logUserGroupActivities(request, desc, userGroupId, userGroupId, "userGroup", userId,
 								"Joined group");
 					}
 				}

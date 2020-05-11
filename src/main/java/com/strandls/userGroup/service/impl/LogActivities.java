@@ -25,7 +25,7 @@ public class LogActivities {
 
 	@Inject
 	private ActivitySerivceApi activityService;
-	
+
 	@Inject
 	private Headers headers;
 
@@ -50,8 +50,8 @@ public class LogActivities {
 
 	}
 
-	public void logUserGroupActivities(String activityDescription, Long rootObjectId, Long subRootObjectId,
-			String rootObjectType, Long activityId, String activityType) {
+	public void logUserGroupActivities(HttpServletRequest request, String activityDescription, Long rootObjectId,
+			Long subRootObjectId, String rootObjectType, Long activityId, String activityType) {
 		try {
 			UserGroupActivityLogging ugActivityLogging = new UserGroupActivityLogging();
 			ugActivityLogging.setActivityDescription(activityDescription);
@@ -61,6 +61,7 @@ public class LogActivities {
 			ugActivityLogging.setRootObjectType(rootObjectType);
 			ugActivityLogging.setSubRootObjectId(subRootObjectId);
 
+			activityService = headers.addActivityHeader(activityService, request);
 			activityService.logUserGroupActivity(ugActivityLogging);
 		} catch (Exception e) {
 			logger.error(e.getMessage());

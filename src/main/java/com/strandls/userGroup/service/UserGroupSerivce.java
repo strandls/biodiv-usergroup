@@ -62,17 +62,19 @@ public interface UserGroupSerivce {
 
 	public MailData updateMailData(Long observationId, MailData mailData);
 
-	public Boolean addMemberRoleInvitaions(CommonProfile profile, UserGroupInvitationData userGroupInvitations);
+	public Boolean addMemberRoleInvitaions(HttpServletRequest request, CommonProfile profile,
+			UserGroupInvitationData userGroupInvitations);
 
-	public Boolean validateMember(Long userId, String token);
+	public Boolean validateMember(HttpServletRequest request, Long userId, String token);
 
-	public Boolean removeUser(String userGroupId, String userId);
+	public Boolean removeUser(HttpServletRequest request, String userGroupId, String userId);
 
-	public Boolean leaveGroup(Long userId, String userGroupId);
+	public Boolean leaveGroup(HttpServletRequest request, Long userId, String userGroupId);
 
-	public Boolean joinGroup(Long userId, String userGroupId);
+	public Boolean joinGroup(HttpServletRequest request, Long userId, String userGroupId);
 
-	public Boolean sendInvitesForMemberRole(CommonProfile profile, Long userGroupId, List<Long> inviteeList);
+	public Boolean sendInvitesForMemberRole(HttpServletRequest request, CommonProfile profile, Long userGroupId,
+			List<Long> inviteeList);
 
 	public Boolean bulkPosting(HttpServletRequest request, CommonProfile profile, Long userGroupId,
 			List<Long> observationId);
@@ -80,12 +82,16 @@ public interface UserGroupSerivce {
 	public Boolean bulkRemoving(HttpServletRequest request, CommonProfile profile, Long userGroupId,
 			List<Long> observationId);
 
-	public UserGroupIbp createUserGroup(CommonProfile profile, UserGroupCreateData ugCreateData);
+	public UserGroupIbp createUserGroup(HttpServletRequest request, CommonProfile profile,
+			UserGroupCreateData ugCreateData);
 
-	public UserGroupEditData getUGEditData(CommonProfile profile, Long userGroupId);
+	public UserGroupEditData getUGEditData(HttpServletRequest request, CommonProfile profile, Long userGroupId);
 
-	public UserGroupIbp saveUGEdit(CommonProfile profile, Long userGroupId, UserGroupEditData ugEditData);
+	public UserGroupIbp saveUGEdit(HttpServletRequest request, CommonProfile profile, Long userGroupId,
+			UserGroupEditData ugEditData);
 
-	public Boolean addMemberDirectly(Long userGroupId, UserGroupAddMemebr memberList);
+	public Boolean addMemberDirectly(HttpServletRequest request, Long userGroupId, UserGroupAddMemebr memberList);
+	
+	
 
 }

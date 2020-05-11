@@ -39,6 +39,7 @@ import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
+import com.strandls.userGroup.service.UserGroupFilterService;
 import com.strandls.userGroup.service.UserGroupSerivce;
 
 import io.swagger.annotations.Api;
@@ -59,6 +60,18 @@ public class UserGroupController {
 
 	@Inject
 	private UserGroupSerivce ugServices;
+
+	@Inject
+	private UserGroupFilterService ugFilterService;
+
+	@GET
+	@Path("/ping")
+	@Produces(MediaType.TEXT_PLAIN)
+
+	public Response pong() {
+		ugFilterService.checkUserRule(1L, 1L);
+		return Response.status(Status.OK).entity("PONG").build();
+	}
 
 	@GET
 	@Path("/{objectId}")
@@ -364,7 +377,7 @@ public class UserGroupController {
 			@ApiParam(name = "userGroupInvitations") UserGroupInvitationData userGroupInvitations) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			Boolean result = ugServices.addMemberRoleInvitaions(profile, userGroupInvitations);
+			Boolean result = ugServices.addMemberRoleInvitaions(request, profile, userGroupInvitations);
 			if (result)
 				return Response.status(Status.OK).entity("Sent out Invitations to all").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("User not allowed to send invitations").build();
@@ -390,7 +403,7 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
-			Boolean result = ugServices.validateMember(userId, token);
+			Boolean result = ugServices.validateMember(request, userId, token);
 			if (result)
 				return Response.status(Status.OK).entity("User added to userGroup").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("user Not allowed to join the group").build();
@@ -413,7 +426,7 @@ public class UserGroupController {
 	public Response removeUserUG(@Context HttpServletRequest request, @QueryParam("userId") String userId,
 			@QueryParam("userGroupId") String userGroupId) {
 		try {
-			Boolean result = ugServices.removeUser(userGroupId, userId);
+			Boolean result = ugServices.removeUser(request, userGroupId, userId);
 			if (result)
 				return Response.status(Status.OK).entity("Removed user").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("User Not removed").build();
@@ -437,7 +450,7 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
-			Boolean result = ugServices.leaveGroup(userId, userGroupId);
+			Boolean result = ugServices.leaveGroup(request, userId, userGroupId);
 			if (result)
 				return Response.status(Status.OK).entity("User left the group").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("NOt able to leave the group").build();
@@ -462,7 +475,7 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
-			Boolean result = ugServices.joinGroup(userId, userGroupId);
+			Boolean result = ugServices.joinGroup(request, userId, userGroupId);
 			if (result)
 				return Response.status(Status.OK).entity("User joined the Group").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("User not able to join the Group").build();
@@ -487,7 +500,7 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
-			Boolean result = ugServices.sendInvitesForMemberRole(profile, ugId, userList);
+			Boolean result = ugServices.sendInvitesForMemberRole(request, profile, ugId, userList);
 			if (result)
 				return Response.status(Status.OK).entity("Invitaion Sent out").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Invitation Sending caused Problem").build();
@@ -571,7 +584,7 @@ public class UserGroupController {
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
 			if (roles.contains("ROLE_ADMIN")) {
 				Long ugId = Long.parseLong(userGroupId);
-				Boolean result = ugServices.addMemberDirectly(ugId, memberList);
+				Boolean result = ugServices.addMemberDirectly(request, ugId, memberList);
 				if (result)
 					return Response.status(Status.OK).entity("Added all user").build();
 				return Response.status(Status.NOT_ACCEPTABLE).entity("Not Able to add the user").build();
@@ -599,7 +612,7 @@ public class UserGroupController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
 			if (roles.contains("ROLE_ADMIN")) {
-				UserGroupIbp result = ugServices.createUserGroup(profile, ugCreateDate);
+				UserGroupIbp result = ugServices.createUserGroup(request, profile, ugCreateDate);
 				return Response.status(Status.OK).entity(result).build();
 			}
 			return Response.status(Status.FORBIDDEN).entity("User not allowed to create User group").build();
@@ -623,7 +636,7 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
-			UserGroupEditData result = ugServices.getUGEditData(profile, ugId);
+			UserGroupEditData result = ugServices.getUGEditData(request, profile, ugId);
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.FORBIDDEN).entity("User Not allowed to Edit the page").build();
@@ -648,7 +661,7 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
-			UserGroupIbp result = ugServices.saveUGEdit(profile, ugId, ugEditData);
+			UserGroupIbp result = ugServices.saveUGEdit(request, profile, ugId, ugEditData);
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.FORBIDDEN).entity("User not allowed to edit").build();
