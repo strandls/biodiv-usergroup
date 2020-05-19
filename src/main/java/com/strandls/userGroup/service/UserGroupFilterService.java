@@ -3,9 +3,15 @@
  */
 package com.strandls.userGroup.service;
 
-import java.util.Date;
+import java.util.List;
 
-import com.strandls.userGroup.pojo.UserGroupFilterData;
+import javax.servlet.http.HttpServletRequest;
+
+import com.strandls.userGroup.pojo.ShowFilterRule;
+import com.strandls.userGroup.pojo.UserGroupFilterEnable;
+import com.strandls.userGroup.pojo.UserGroupFilterRemove;
+import com.strandls.userGroup.pojo.UserGroupFilterRuleInputData;
+import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 
 /**
  * @author Abhishek Rudra
@@ -13,16 +19,29 @@ import com.strandls.userGroup.pojo.UserGroupFilterData;
  */
 public interface UserGroupFilterService {
 
-	public void bgCheckForRule(UserGroupFilterData ugFilterData);
+	public Boolean checkUserGroupEligiblity(Long userGroupId, Long userId, UserGroupObvFilterData ugFilterData);
 
-	public Boolean checkObservedOnDateFilter(Long observationId, Date observedOnDate);
+	public void bgFiltureRule(HttpServletRequest request, UserGroupObvFilterData ugObvFilterData);
 
-	public Boolean checkCreatedOnDateFilter(Long observationdId, Date createdOnDate);
+	public void bgPostingUG(HttpServletRequest request, UserGroupObvFilterData ugFilterData);
 
-	public Boolean checkUserRule(Long observationId, Long userId);
+	public void bgUnPostingUG(HttpServletRequest request, UserGroupObvFilterData ugObvFilterData);
 
-	public Boolean checkTaxonomicRule(Long observationId, Long taxonomyId);
+	public void bulkFilteringIn(HttpServletRequest request, Long userGroupId,
+			List<UserGroupObvFilterData> ugObvFilterDataList);
 
-	public Boolean checkSpatialRule(Long userGroupId, Double lat, Double lon);
+	public void bulkFilteringOut(HttpServletRequest request, Long userGroupId,
+			List<UserGroupObvFilterData> ugObvFilterDataList);
+
+	public ShowFilterRule showAllFilter(Long userGroupId);
+
+	public ShowFilterRule changeUgFilter(HttpServletRequest request, Long userGroupId,
+			UserGroupFilterRuleInputData ugFilterInputData);
+
+	public ShowFilterRule deleteUGFilter(HttpServletRequest request, Long userGroupId,
+			UserGroupFilterRemove ugFilterRemove);
+
+	public ShowFilterRule enableDisableUGFilter(HttpServletRequest request, Long userGroupId,
+			UserGroupFilterEnable ugFilterEnable);
 
 }

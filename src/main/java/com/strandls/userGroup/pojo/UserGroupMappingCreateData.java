@@ -8,22 +8,17 @@ public class UserGroupMappingCreateData {
 
 	private MailData mailData;
 	private List<Long> userGroups;
+	private UserGroupObvFilterData ugFilterData;
 
-	/**
-	 * 
-	 */
 	public UserGroupMappingCreateData() {
 		super();
 	}
 
-	/**
-	 * @param mailData
-	 * @param userGroups
-	 */
-	public UserGroupMappingCreateData(MailData mailData, List<Long> userGroups) {
+	public UserGroupMappingCreateData(MailData mailData, List<Long> userGroups, UserGroupObvFilterData ugFilterData) {
 		super();
 		this.mailData = mailData;
 		this.userGroups = userGroups;
+		this.ugFilterData = ugFilterData;
 	}
 
 	public MailData getMailData() {
@@ -40,6 +35,14 @@ public class UserGroupMappingCreateData {
 
 	public void setUserGroups(List<Long> userGroups) {
 		this.userGroups = userGroups;
+	}
+
+	public UserGroupObvFilterData getUgFilterData() {
+		return ugFilterData;
+	}
+
+	public void setUgFilterData(UserGroupObvFilterData ugFilterData) {
+		this.ugFilterData = ugFilterData;
 	}
 
 }

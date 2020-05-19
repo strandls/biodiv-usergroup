@@ -46,8 +46,25 @@ public class UserGroupSpatialDataDao extends AbstractDAO<UserGroupSpatialData, L
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<UserGroupSpatialData> findByUserGroupId(Long userGroupId) {
+	public List<UserGroupSpatialData> findByUserGroupIdIsEnabled(Long userGroupId) {
 		String qry = "from UserGroupSpatialData where userGroupId = :ugId and isEnabled = true";
+		Session session = sessionFactory.openSession();
+		List<UserGroupSpatialData> result = null;
+		try {
+			Query<UserGroupSpatialData> query = session.createQuery(qry);
+			query.setParameter("ugId", userGroupId);
+			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<UserGroupSpatialData> findAllByUserGroupId(Long userGroupId) {
+		String qry = "from UserGroupSpatialData where userGroupId = :ugId";
 		Session session = sessionFactory.openSession();
 		List<UserGroupSpatialData> result = null;
 		try {

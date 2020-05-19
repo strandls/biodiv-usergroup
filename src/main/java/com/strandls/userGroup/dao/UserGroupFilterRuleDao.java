@@ -5,6 +5,7 @@ package com.strandls.userGroup.dao;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,24 @@ public class UserGroupFilterRuleDao extends AbstractDAO<UserGroupFilterRule, Lon
 		Session session = sessionFactory.openSession();
 		try {
 			result = session.get(UserGroupFilterRule.class, id);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public UserGroupFilterRule findByUserGroupId(Long userGroupId) {
+		String qry = "from UserGroupFilterRule where userGroupId = :ugId";
+		Session session = sessionFactory.openSession();
+		UserGroupFilterRule result = null;
+		try {
+			Query<UserGroupFilterRule> query = session.createQuery(qry);
+			query.setParameter("ugId", userGroupId);
+			result = query.getSingleResult();
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {

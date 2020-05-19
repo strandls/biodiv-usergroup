@@ -33,6 +33,27 @@ public class UserGroupTaxonomicRule implements Serializable {
 	private Long taxonomyId;
 	private Boolean isEnabled;
 
+	/**
+	 * 
+	 */
+	public UserGroupTaxonomicRule() {
+		super();
+	}
+
+	/**
+	 * @param id
+	 * @param userGroupId
+	 * @param taxonomyId
+	 * @param isEnabled
+	 */
+	public UserGroupTaxonomicRule(Long id, Long userGroupId, Long taxonomyId, Boolean isEnabled) {
+		super();
+		this.id = id;
+		this.userGroupId = userGroupId;
+		this.taxonomyId = taxonomyId;
+		this.isEnabled = isEnabled;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id")

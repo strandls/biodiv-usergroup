@@ -3,8 +3,6 @@
  */
 package com.strandls.userGroup.service.impl;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +27,8 @@ public class LogActivities {
 	@Inject
 	private Headers headers;
 
-	public void LogActivity(HttpServletRequest request, String activityDescription, Long rootObjectId,
-			Long subRootObjectId, String rootObjectType, Long activityId, String activityType, MailData mailData) {
+	public void LogActivity(String token, String activityDescription, Long rootObjectId, Long subRootObjectId,
+			String rootObjectType, Long activityId, String activityType, MailData mailData) {
 
 		try {
 			ActivityLoggingData activityLogging = new ActivityLoggingData();
@@ -41,7 +39,7 @@ public class LogActivities {
 			activityLogging.setRootObjectType(rootObjectType);
 			activityLogging.setSubRootObjectId(subRootObjectId);
 			activityLogging.setMailData(mailData);
-			activityService = headers.addActivityHeader(activityService, request);
+			activityService = headers.addActivityHeader(activityService, token);
 			activityService.logActivity(activityLogging);
 
 		} catch (Exception e) {
@@ -50,7 +48,7 @@ public class LogActivities {
 
 	}
 
-	public void logUserGroupActivities(HttpServletRequest request, String activityDescription, Long rootObjectId,
+	public void logUserGroupActivities(String token, String activityDescription, Long rootObjectId,
 			Long subRootObjectId, String rootObjectType, Long activityId, String activityType) {
 		try {
 			UserGroupActivityLogging ugActivityLogging = new UserGroupActivityLogging();
@@ -61,7 +59,7 @@ public class LogActivities {
 			ugActivityLogging.setRootObjectType(rootObjectType);
 			ugActivityLogging.setSubRootObjectId(subRootObjectId);
 
-			activityService = headers.addActivityHeader(activityService, request);
+			activityService = headers.addActivityHeader(activityService, token);
 			activityService.logUserGroupActivity(ugActivityLogging);
 		} catch (Exception e) {
 			logger.error(e.getMessage());

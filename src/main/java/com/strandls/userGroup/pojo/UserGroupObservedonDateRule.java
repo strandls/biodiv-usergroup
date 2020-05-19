@@ -35,6 +35,29 @@ public class UserGroupObservedonDateRule implements Serializable {
 	private Date toDate;
 	private Boolean isEnabled;
 
+	/**
+	 * 
+	 */
+	public UserGroupObservedonDateRule() {
+		super();
+	}
+
+	/**
+	 * @param id
+	 * @param userGroupId
+	 * @param fromDate
+	 * @param toDate
+	 * @param isEnabled
+	 */
+	public UserGroupObservedonDateRule(Long id, Long userGroupId, Date fromDate, Date toDate, Boolean isEnabled) {
+		super();
+		this.id = id;
+		this.userGroupId = userGroupId;
+		this.fromDate = fromDate;
+		this.toDate = toDate;
+		this.isEnabled = isEnabled;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id")

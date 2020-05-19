@@ -95,6 +95,7 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 				bind(UserServiceApi.class).in(Scopes.SINGLETON);
 				bind(TaxonomyServicesApi.class).in(Scopes.SINGLETON);
 				bind(Headers.class).in(Scopes.SINGLETON);
+				bind(TokenGenerator.class).in(Scopes.SINGLETON);
 
 				serve("/api/*").with(GuiceContainer.class, props);
 			}

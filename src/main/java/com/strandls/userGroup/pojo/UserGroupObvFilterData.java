@@ -9,7 +9,7 @@ import java.util.Date;
  * @author Abhishek Rudra
  *
  */
-public class UserGroupFilterData {
+public class UserGroupObvFilterData {
 
 	private Long observationId;
 	private Double latitude;
@@ -21,7 +21,7 @@ public class UserGroupFilterData {
 	/**
 	 * 
 	 */
-	public UserGroupFilterData() {
+	public UserGroupObvFilterData() {
 		super();
 	}
 
@@ -33,7 +33,7 @@ public class UserGroupFilterData {
 	 * @param observedOnDate
 	 * @param taxonomyId
 	 */
-	public UserGroupFilterData(Long observationId, Double latitude, Double longitude, Date createdOnDate,
+	public UserGroupObvFilterData(Long observationId, Double latitude, Double longitude, Date createdOnDate,
 			Date observedOnDate, Long taxonomyId) {
 		super();
 		this.observationId = observationId;

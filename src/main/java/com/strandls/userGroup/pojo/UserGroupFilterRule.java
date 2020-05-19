@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Table(name = "ug_filter_rule")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserGroupFilterRule implements Serializable{
+public class UserGroupFilterRule implements Serializable {
 
 	/**
 	 * 
@@ -35,6 +35,35 @@ public class UserGroupFilterRule implements Serializable{
 	private Boolean hasUserRule;
 	private Boolean hasCreatedOnDateRule;
 	private Boolean hasObservedOnDateRule;
+
+	/**
+	 * 
+	 */
+	public UserGroupFilterRule() {
+		super();
+
+	}
+
+	/**
+	 * @param id
+	 * @param userGroupId
+	 * @param hasSpatialRule
+	 * @param hasTaxonomicRule
+	 * @param hasUserRule
+	 * @param hasCreatedOnDateRule
+	 * @param hasObservedOnDateRule
+	 */
+	public UserGroupFilterRule(Long id, Long userGroupId, Boolean hasSpatialRule, Boolean hasTaxonomicRule,
+			Boolean hasUserRule, Boolean hasCreatedOnDateRule, Boolean hasObservedOnDateRule) {
+		super();
+		this.id = id;
+		this.userGroupId = userGroupId;
+		this.hasSpatialRule = hasSpatialRule;
+		this.hasTaxonomicRule = hasTaxonomicRule;
+		this.hasUserRule = hasUserRule;
+		this.hasCreatedOnDateRule = hasCreatedOnDateRule;
+		this.hasObservedOnDateRule = hasObservedOnDateRule;
+	}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

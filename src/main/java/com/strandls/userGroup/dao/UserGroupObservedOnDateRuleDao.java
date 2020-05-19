@@ -46,8 +46,25 @@ public class UserGroupObservedOnDateRuleDao extends AbstractDAO<UserGroupObserve
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<UserGroupObservedonDateRule> findByUserGroupId(Long userGroupId) {
+	public List<UserGroupObservedonDateRule> findByUserGroupIdIsEnabled(Long userGroupId) {
 		String qry = "from UserGroupObservedonDateRule where userGroupId = :ugId and isEnabled = true";
+		Session session = sessionFactory.openSession();
+		List<UserGroupObservedonDateRule> result = null;
+		try {
+			Query<UserGroupObservedonDateRule> query = session.createQuery(qry);
+			query.setParameter("ugId", userGroupId);
+			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<UserGroupObservedonDateRule> findAllByUserGroupId(Long userGroupId) {
+		String qry = "from UserGroupObservedonDateRule where userGroupId = :ugId";
 		Session session = sessionFactory.openSession();
 		List<UserGroupObservedonDateRule> result = null;
 		try {

@@ -3,7 +3,6 @@
  */
 package com.strandls.userGroup;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 
 import com.strandls.activity.controller.ActivitySerivceApi;
@@ -15,15 +14,13 @@ import com.strandls.user.controller.UserServiceApi;
  */
 public class Headers {
 
-	public ActivitySerivceApi addActivityHeader(ActivitySerivceApi activityService, HttpServletRequest request) {
-		String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, authHeader);
+	public ActivitySerivceApi addActivityHeader(ActivitySerivceApi activityService, String token) {
+		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, token);
 		return activityService;
 	}
 
-	public UserServiceApi addUserHeader(UserServiceApi userService, HttpServletRequest request) {
-		String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-		userService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, authHeader);
+	public UserServiceApi addUserHeader(UserServiceApi userService, String token) {
+		userService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, token);
 		return userService;
 	}
 

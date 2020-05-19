@@ -10,9 +10,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.pac4j.core.profile.CommonProfile;
 
 import com.strandls.activity.pojo.MailData;
+import com.strandls.userGroup.pojo.BulkGroupPostingData;
+import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
-import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
@@ -33,6 +34,8 @@ public interface UserGroupSerivce {
 
 	public UserGroupIbp fetchByGroupIdIbp(Long id);
 
+	public List<Long> findAllObservation(Long userGroupId);
+
 	public List<UserGroupIbp> fetchByObservationId(Long id);
 
 	public List<UserGroupIbp> fetchByUserGroupDetails(List<Long> userGroupMember);
@@ -51,10 +54,6 @@ public interface UserGroupSerivce {
 
 	public List<Featured> removeFeatured(HttpServletRequest request, Long userId, String objectType, Long objectId,
 			UserGroupMappingCreateData userGroupList);
-
-	public void filterRule(HttpServletRequest request, ObservationLatLon latlon);
-
-	public void bulkFilterRule(HttpServletRequest request, String userGroupIds, List<ObservationLatLon> latlonList);
 
 	public String updateUserGroupFilter(Long userGroupId, UserGroupWKT userGroupWKT);
 
@@ -76,11 +75,10 @@ public interface UserGroupSerivce {
 	public Boolean sendInvitesForMemberRole(HttpServletRequest request, CommonProfile profile, Long userGroupId,
 			List<Long> inviteeList);
 
-	public Boolean bulkPosting(HttpServletRequest request, CommonProfile profile, Long userGroupId,
-			List<Long> observationId);
+	public Boolean bulkPosting(HttpServletRequest request, CommonProfile profile, BulkGroupPostingData bulkPosting);
 
-	public Boolean bulkRemoving(HttpServletRequest request, CommonProfile profile, Long userGroupId,
-			List<Long> observationId);
+	public Boolean bulkRemoving(HttpServletRequest request, CommonProfile profile,
+			BulkGroupUnPostingData bulkUnPosting);
 
 	public UserGroupIbp createUserGroup(HttpServletRequest request, CommonProfile profile,
 			UserGroupCreateData ugCreateData);
@@ -91,7 +89,5 @@ public interface UserGroupSerivce {
 			UserGroupEditData ugEditData);
 
 	public Boolean addMemberDirectly(HttpServletRequest request, Long userGroupId, UserGroupAddMemebr memberList);
-	
-	
 
 }

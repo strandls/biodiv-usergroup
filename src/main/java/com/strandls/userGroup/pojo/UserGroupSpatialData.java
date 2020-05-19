@@ -33,6 +33,27 @@ public class UserGroupSpatialData implements Serializable {
 	private String spatialData;
 	private Boolean isEnabled;
 
+	/**
+	 * 
+	 */
+	public UserGroupSpatialData() {
+		super();
+	}
+
+	/**
+	 * @param id
+	 * @param userGroupId
+	 * @param spatialData
+	 * @param isEnabled
+	 */
+	public UserGroupSpatialData(Long id, Long userGroupId, String spatialData, Boolean isEnabled) {
+		super();
+		this.id = id;
+		this.userGroupId = userGroupId;
+		this.spatialData = spatialData;
+		this.isEnabled = isEnabled;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id")

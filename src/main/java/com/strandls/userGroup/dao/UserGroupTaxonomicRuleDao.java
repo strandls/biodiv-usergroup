@@ -46,8 +46,25 @@ public class UserGroupTaxonomicRuleDao extends AbstractDAO<UserGroupTaxonomicRul
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<UserGroupTaxonomicRule> findByUserGroupId(Long userGroupId) {
+	public List<UserGroupTaxonomicRule> findByUserGroupIdIsEnabled(Long userGroupId) {
 		String qry = "from UserGroupTaxonomicRule where userGroupId = :ugId and isEnabled = true";
+		Session session = sessionFactory.openSession();
+		List<UserGroupTaxonomicRule> result = null;
+		try {
+			Query<UserGroupTaxonomicRule> query = session.createQuery(qry);
+			query.setParameter("ugId", userGroupId);
+			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<UserGroupTaxonomicRule> findAllByUserGroupId(Long userGroupId) {
+		String qry = "from UserGroupTaxonomicRule where userGroupId = :ugId";
 		Session session = sessionFactory.openSession();
 		List<UserGroupTaxonomicRule> result = null;
 		try {
