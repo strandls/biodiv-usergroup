@@ -12,14 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
 
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
 import com.strandls.activity.pojo.MailData;
 import com.strandls.activity.pojo.UserGroupActivity;
 import com.strandls.activity.pojo.UserGroupMailData;
@@ -168,8 +169,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				if (userGroups.getMailData() != null) {
 					mailData = updateMailData(observationId, userGroups.getMailData());
 				}
-				logActivity.LogActivity(request, description, observationId, observationId, "observation",
-						result.getUserGroupId(), "Posted resource", mailData);
+				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, observationId,
+						observationId, "observation", result.getUserGroupId(), "Posted resource", mailData);
 			}
 		}
 		return resultList;
@@ -199,8 +200,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 
 				MailData mailData = updateMailData(observationId, userGorups.getMailData());
-				logActivity.LogActivity(request, description, observationId, observationId, "observation",
-						ug.getUserGroupId(), "Removed resoruce", mailData);
+				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, observationId,
+						observationId, "observation", ug.getUserGroupId(), "Removed resoruce", mailData);
 			}
 			previousUserGroup.add(ug.getUserGroupId());
 		}
@@ -224,8 +225,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 
 				MailData mailData = updateMailData(observationId, userGorups.getMailData());
-				logActivity.LogActivity(request, description, observationId, observationId, "observation", userGroupId,
-						"Posted resource", mailData);
+				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, observationId,
+						observationId, "observation", userGroupId, "Posted resource", mailData);
 			}
 		}
 		try {
@@ -348,8 +349,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 
 				MailData mailData = updateMailData(featuredCreate.getObjectId(), featuredCreateData.getMailData());
-				logActivity.LogActivity(request, description, featuredCreate.getObjectId(),
-						featuredCreate.getObjectId(), "observation", activityId, "Featured", mailData);
+				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+						featuredCreate.getObjectId(), featuredCreate.getObjectId(), "observation", activityId,
+						"Featured", mailData);
 
 			}
 
@@ -416,8 +418,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						}
 
 						MailData mailData = updateMailData(objectId, userGroupList.getMailData());
-						logActivity.LogActivity(request, description, objectId, objectId, "observation", activityId,
-								"UnFeatured", mailData);
+						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
+								objectId, "observation", activityId, "UnFeatured", mailData);
 
 						break;
 					}

@@ -10,13 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
 
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import com.strandls.activity.pojo.MailData;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.userGroup.Headers;
@@ -374,7 +375,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					return true;
 				} else {
 //					close group
-					userService = headers.addUserHeader(userService, request);
+					userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
 					Boolean isMember = userService.checkMemberRoleUG(userGroupId.toString());
 					return isMember;
 				}
@@ -389,7 +390,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					}
 				} else {
 //					closer group
-					userService = headers.addUserHeader(userService, request);
+					userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
 					Boolean isMember = userService.checkMemberRoleUG(userGroupId.toString());
 					return isMember;
 				}
@@ -474,7 +475,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 								+ factsCreateData.getSingleCategorical();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
-						logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
+						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
 								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
 								"Custom field edited", mailData);
 
@@ -504,7 +505,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 								MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 										factsInsertData.getMailData());
-								logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
+								logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
 										factsCreateData.getObservationId(), "observation",
 										factsCreateData.getObservationId(), "Custom field edited", mailData);
 							}
@@ -545,7 +546,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ factsCreateData.getMaxValue();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
+							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
 									factsCreateData.getObservationId(), "Custom field edited", mailData);
 
@@ -574,7 +575,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 								+ factsCreateData.getSingleCategorical();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
-						logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
+						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
 								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
 								"Custom field edited", mailData);
 
@@ -588,7 +589,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ cfValueDao.findById(cfValuesId).getValues();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
+							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
 									factsCreateData.getObservationId(), "Custom field edited", mailData);
 						}
@@ -608,7 +609,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ factsCreateData.getMaxValue();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
+							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
 									factsCreateData.getObservationId(), "observation",
 									factsCreateData.getObservationId(), "Custom field edited", mailData);
 
@@ -654,7 +655,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					+ factsCreateData.getTextBoxValue();
 			MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 					factsInsertData.getMailData());
-			logActivity.LogActivity(request, description, factsCreateData.getObservationId(),
+			logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
 					factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
 					"Custom field edited", mailData);
 

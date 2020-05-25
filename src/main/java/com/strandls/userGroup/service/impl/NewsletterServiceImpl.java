@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
+
 import com.strandls.userGroup.dao.NewsletterDao;
 import com.strandls.userGroup.pojo.Newsletter;
 import com.strandls.userGroup.pojo.NewsletterArrayList;
