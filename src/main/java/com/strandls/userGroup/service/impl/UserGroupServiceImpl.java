@@ -918,7 +918,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						} catch (Exception e) {
 							logger.error(e.getMessage());
 						}
-						logActivity.LogActivity(request, description, obvId, obvId, "observation",
+						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, obvId, obvId, "observation",
 								result.getUserGroupId(), "Posted resource", null);
 					}
 				}
@@ -966,7 +966,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						} catch (Exception e) {
 							logger.error(e.getMessage());
 						}
-						logActivity.LogActivity(request, description, obvId, obvId, "observation",
+						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, obvId, obvId, "observation",
 								result.getUserGroupId(), "Removed resoruce", null);
 					}
 
