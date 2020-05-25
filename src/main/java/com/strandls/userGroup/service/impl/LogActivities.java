@@ -3,12 +3,11 @@
  */
 package com.strandls.userGroup.service.impl;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.activity.pojo.ActivityLoggingData;
 import com.strandls.activity.pojo.MailData;
@@ -28,7 +27,7 @@ public class LogActivities {
 	@Inject
 	private Headers headers;
 
-	public void LogActivity(HttpServletRequest request, String activityDescription, Long rootObjectId,
+	public void LogActivity(String authHeader, String activityDescription, Long rootObjectId,
 			Long subRootObjectId, String rootObjectType, Long activityId, String activityType, MailData mailData) {
 
 		try {
@@ -40,7 +39,7 @@ public class LogActivities {
 			activityLogging.setRootObjectType(rootObjectType);
 			activityLogging.setSubRootObjectId(subRootObjectId);
 			activityLogging.setMailData(mailData);
-			activityService = headers.addActivityHeader(activityService, request);
+			activityService = headers.addActivityHeader(activityService, authHeader);
 			activityService.logActivity(activityLogging);
 
 		} catch (Exception e) {
