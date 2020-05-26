@@ -3,10 +3,11 @@
  */
 package com.strandls.userGroup.service.impl;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.activity.pojo.ActivityLoggingData;
 import com.strandls.activity.pojo.MailData;
@@ -27,7 +28,7 @@ public class LogActivities {
 	@Inject
 	private Headers headers;
 
-	public void LogActivity(String token, String activityDescription, Long rootObjectId, Long subRootObjectId,
+	public void LogActivity(String authHeader, String activityDescription, Long rootObjectId, Long subRootObjectId,
 			String rootObjectType, Long activityId, String activityType, MailData mailData) {
 
 		try {
@@ -39,7 +40,7 @@ public class LogActivities {
 			activityLogging.setRootObjectType(rootObjectType);
 			activityLogging.setSubRootObjectId(subRootObjectId);
 			activityLogging.setMailData(mailData);
-			activityService = headers.addActivityHeader(activityService, token);
+			activityService = headers.addActivityHeader(activityService, authHeader);
 			activityService.logActivity(activityLogging);
 
 		} catch (Exception e) {
@@ -48,7 +49,7 @@ public class LogActivities {
 
 	}
 
-	public void logUserGroupActivities(String token, String activityDescription, Long rootObjectId,
+	public void logUserGroupActivities(String authHeader, String activityDescription, Long rootObjectId,
 			Long subRootObjectId, String rootObjectType, Long activityId, String activityType) {
 		try {
 			UserGroupActivityLogging ugActivityLogging = new UserGroupActivityLogging();
@@ -59,7 +60,7 @@ public class LogActivities {
 			ugActivityLogging.setRootObjectType(rootObjectType);
 			ugActivityLogging.setSubRootObjectId(subRootObjectId);
 
-			activityService = headers.addActivityHeader(activityService, token);
+			activityService = headers.addActivityHeader(activityService, authHeader);
 			activityService.logUserGroupActivity(ugActivityLogging);
 		} catch (Exception e) {
 			logger.error(e.getMessage());

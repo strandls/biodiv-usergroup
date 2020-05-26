@@ -3,7 +3,8 @@
  */
 package com.strandls.userGroup.service.impl;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
+
 import com.strandls.userGroup.service.CustomFieldServices;
 
 /**

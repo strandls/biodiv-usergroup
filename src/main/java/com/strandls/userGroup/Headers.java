@@ -14,13 +14,13 @@ import com.strandls.user.controller.UserServiceApi;
  */
 public class Headers {
 
-	public ActivitySerivceApi addActivityHeader(ActivitySerivceApi activityService, String token) {
-		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, token);
+	public ActivitySerivceApi addActivityHeader(ActivitySerivceApi activityService, String authHeader) {
+		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, authHeader);
 		return activityService;
 	}
 
-	public UserServiceApi addUserHeader(UserServiceApi userService, String token) {
-		userService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, token);
+	public UserServiceApi addUserHeader(UserServiceApi userService, String authHeader) {
+		userService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, authHeader);
 		return userService;
 	}
 
