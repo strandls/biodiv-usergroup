@@ -12,6 +12,7 @@ import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
+import com.strandls.userGroup.pojo.UserGroupHomePage;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
@@ -55,5 +56,7 @@ public interface UserGroupSerivce {
 	public List<UserGroupSpeciesGroup> getUserGroupSpeciesGroup(Long ugId);
 
 	public MailData updateMailData(Long observationId, MailData mailData);
+
+	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId);
 
 }

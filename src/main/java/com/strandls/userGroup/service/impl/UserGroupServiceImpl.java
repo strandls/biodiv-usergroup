@@ -25,6 +25,7 @@ import com.strandls.activity.pojo.UserGroupMailData;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.UserGroupMembersCount;
 import com.strandls.userGroup.dao.FeaturedDao;
+import com.strandls.userGroup.dao.StatsDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
@@ -32,7 +33,9 @@ import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.ObservationLatLon;
+import com.strandls.userGroup.pojo.Stats;
 import com.strandls.userGroup.pojo.UserGroup;
+import com.strandls.userGroup.pojo.UserGroupHomePage;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupObservation;
@@ -76,6 +79,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserServiceApi userService;
+
+	@Inject
+	private StatsDao statsDao;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -538,6 +544,15 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 		mailData.setUserGroupData(userGroup);
 		return mailData;
+	}
+
+	@Override
+	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId) {
+		UserGroup userGroup = userGroupDao.findById(userGroupId);
+		Stats stats = statsDao.fetchStats(userGroupId);
+		UserGroupHomePage result = new UserGroupHomePage(userGroup.getShowGallery(), userGroup.getShowStats(),
+				userGroup.getShowRecentObservations(), userGroup.getShowGridMap(), userGroup.getShowPartners(), stats);
+		return result;
 	}
 
 }

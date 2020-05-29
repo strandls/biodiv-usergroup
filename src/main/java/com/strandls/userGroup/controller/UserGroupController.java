@@ -30,6 +30,7 @@ import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.ObservationLatLon;
 import com.strandls.userGroup.pojo.UserGroup;
+import com.strandls.userGroup.pojo.UserGroupHomePage;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
@@ -338,6 +339,24 @@ public class UserGroupController {
 		try {
 			Long ugId = Long.parseLong(userGroupId);
 			List<UserGroupSpeciesGroup> result = ugServices.getUserGroupSpeciesGroup(ugId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.HOMEPAGE + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "fetches the stats of usergroup", notes = "Returns the userGroupStats", response = UserGroupHomePage.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable the fetch the stats", response = String.class) })
+
+	public Response getUserGroupHomePageData(@PathParam("userGroupId") String groupId) {
+		try {
+			Long userGroupId = Long.parseLong(groupId);
+			UserGroupHomePage result = ugServices.getUserGroupHomePageData(userGroupId);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
