@@ -31,6 +31,7 @@ import com.strandls.user.pojo.UserGroupMembersCount;
 import com.strandls.user.pojo.UserIbp;
 import com.strandls.userGroup.Headers;
 import com.strandls.userGroup.dao.FeaturedDao;
+import com.strandls.userGroup.dao.StatsDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupInvitaionDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
@@ -41,10 +42,12 @@ import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.InvitaionMailData;
+import com.strandls.userGroup.pojo.Stats;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
 import com.strandls.userGroup.pojo.UserGroupEditData;
+import com.strandls.userGroup.pojo.UserGroupHomePage;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitation;
 import com.strandls.userGroup.pojo.UserGroupInvitationData;
@@ -105,6 +108,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupFilterService ugFilterService;
+
+	@Inject
+	private StatsDao statsDao;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -1159,6 +1165,15 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			observationList.add(ugObv.getObservationId());
 		}
 		return observationList;
+	}
+
+	@Override
+	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId) {
+		UserGroup userGroup = userGroupDao.findById(userGroupId);
+		Stats stats = statsDao.fetchStats(userGroupId);
+		UserGroupHomePage result = new UserGroupHomePage(userGroup.getShowGallery(), userGroup.getShowStats(),
+				userGroup.getShowRecentObservations(), userGroup.getShowGridMap(), userGroup.getShowPartners(), stats);
+		return result;
 	}
 
 }

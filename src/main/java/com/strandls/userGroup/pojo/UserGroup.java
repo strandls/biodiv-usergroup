@@ -49,6 +49,11 @@ public class UserGroup implements Serializable {
 	private Date startDate;
 	private String filterRule;
 	private String newFilterRule;
+	private Boolean showGallery;
+	private Boolean showStats;
+	private Boolean showRecentObservations;
+	private Boolean showGridMap;
+	private Boolean showPartners;
 
 	/**
 	 * 
@@ -297,6 +302,51 @@ public class UserGroup implements Serializable {
 
 	public void setNewFilterRule(String newFilterRule) {
 		this.newFilterRule = newFilterRule;
+	}
+
+	@Column(name = "show_gallery",columnDefinition = "boolean default true")
+	public Boolean getShowGallery() {
+		return showGallery;
+	}
+
+	public void setShowGallery(Boolean showGallery) {
+		this.showGallery = showGallery;
+	}
+
+	@Column(name = "show_stats",columnDefinition = "boolean default true")
+	public Boolean getShowStats() {
+		return showStats;
+	}
+
+	public void setShowStats(Boolean showStats) {
+		this.showStats = showStats;
+	}
+
+	@Column(name = "show_recent_obv",columnDefinition = "boolean default true")
+	public Boolean getShowRecentObservations() {
+		return showRecentObservations;
+	}
+
+	public void setShowRecentObservations(Boolean showRecentObservations) {
+		this.showRecentObservations = showRecentObservations;
+	}
+
+	@Column(name = "show_grid_map",columnDefinition = "boolean default true")
+	public Boolean getShowGridMap() {
+		return showGridMap;
+	}
+
+	public void setShowGridMap(Boolean showGridMap) {
+		this.showGridMap = showGridMap;
+	}
+
+	@Column(name = "show_partners",columnDefinition = "boolean default true")
+	public Boolean getShowPartners() {
+		return showPartners;
+	}
+
+	public void setShowPartners(Boolean showPartners) {
+		this.showPartners = showPartners;
 	}
 
 }

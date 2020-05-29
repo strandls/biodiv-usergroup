@@ -45,5 +45,6 @@ public class ApiConstants {
 	public static final String DIRECT = "/direct";
 	public static final String SAVE = "/save";
 	public static final String ENABLE = "/enable";
+	public static final String HOMEPAGE = "/homePage";
 
 }

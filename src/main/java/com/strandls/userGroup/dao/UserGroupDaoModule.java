@@ -31,6 +31,7 @@ public class UserGroupDaoModule extends AbstractModule {
 		bind(UserGroupTaxonomicRuleDao.class).in(Scopes.SINGLETON);
 		bind(UserGroupCreatedOnDateRuleDao.class).in(Scopes.SINGLETON);
 		bind(UserGroupObservedOnDateRuleDao.class).in(Scopes.SINGLETON);
+		bind(StatsDao.class).in(Scopes.SINGLETON);
 	}
 
 }
