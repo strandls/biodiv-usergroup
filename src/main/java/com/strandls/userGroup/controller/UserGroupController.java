@@ -6,6 +6,7 @@ package com.strandls.userGroup.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -23,8 +24,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.pac4j.core.profile.CommonProfile;
 
-import javax.inject.Inject;
-
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
@@ -35,6 +34,7 @@ import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
 import com.strandls.userGroup.pojo.UserGroupEditData;
+import com.strandls.userGroup.pojo.UserGroupHomePage;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
@@ -359,6 +359,7 @@ public class UserGroupController {
 
 	@ApiOperation(value = "Sends out invitaions for founder and moedrators", notes = "Returns the success and failur", response = String.class)
 	@ApiResponses(value = {
+
 			@ApiResponse(code = 400, message = "Unable to send the invitaions", response = String.class) })
 
 	public Response addUserGroupMember(@Context HttpServletRequest request,
@@ -653,7 +654,24 @@ public class UserGroupController {
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.FORBIDDEN).entity("User not allowed to edit").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
 
+	@GET
+	@Path(ApiConstants.HOMEPAGE + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "fetches the stats of usergroup", notes = "Returns the userGroupStats", response = UserGroupHomePage.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable the fetch the stats", response = String.class) })
+
+	public Response getUserGroupHomePageData(@PathParam("userGroupId") String groupId) {
+		try {
+			Long userGroupId = Long.parseLong(groupId);
+			UserGroupHomePage result = ugServices.getUserGroupHomePageData(userGroupId);
+			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
