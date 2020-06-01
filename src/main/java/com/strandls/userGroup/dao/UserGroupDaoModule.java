@@ -26,6 +26,11 @@ public class UserGroupDaoModule extends AbstractModule {
 		bind(ObservationCustomFieldDao.class).in(Scopes.SINGLETON);
 		bind(NewsletterDao.class).in(Scopes.SINGLETON);
 		bind(UserGroupInvitaionDao.class).in(Scopes.SINGLETON);
+		bind(UserGroupFilterRuleDao.class).in(Scopes.SINGLETON);
+		bind(UserGroupSpatialDataDao.class).in(Scopes.SINGLETON);
+		bind(UserGroupTaxonomicRuleDao.class).in(Scopes.SINGLETON);
+		bind(UserGroupCreatedOnDateRuleDao.class).in(Scopes.SINGLETON);
+		bind(UserGroupObservedOnDateRuleDao.class).in(Scopes.SINGLETON);
 		bind(StatsDao.class).in(Scopes.SINGLETON);
 	}
 

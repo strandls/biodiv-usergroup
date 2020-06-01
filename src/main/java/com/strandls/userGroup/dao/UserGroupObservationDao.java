@@ -64,6 +64,23 @@ public class UserGroupObservationDao extends AbstractDAO<UserGroupObservation, L
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<UserGroupObservation> findByUserGroupId(Long userGroupId) {
+		String qry = "from UserGroupObservation where userGroupId = :ugId ";
+		List<UserGroupObservation> result = null;
+		Session session = sessionFactory.openSession();
+		try {
+			Query<UserGroupObservation> query = session.createQuery(qry);
+			query.setParameter("ugId", userGroupId);
+			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
 	public UserGroupObservation checkObservationUGMApping(Long obvId, Long userGroupId) {
 		String qry = "from UserGroupObservation where observationId = :obvId and userGroupId = :ugId";
 		UserGroupObservation result = null;

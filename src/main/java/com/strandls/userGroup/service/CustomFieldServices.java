@@ -40,11 +40,12 @@ public interface CustomFieldServices {
 
 	public List<CustomFieldDetails> getAllCustomField();
 
-	public List<CustomFieldDetails> getCustomField(CommonProfile profile, Long userGroupId);
+	public List<CustomFieldDetails> getCustomField(HttpServletRequest request, CommonProfile profile, Long userGroupId);
 
-	public List<CustomFieldDetails> addCustomFieldUG(CommonProfile profile, Long userId, Long userGroupId,
-			List<CustomFieldUGData> customFieldUGDataList);
+	public List<CustomFieldDetails> addCustomFieldUG(HttpServletRequest request, CommonProfile profile, Long userId,
+			Long userGroupId, List<CustomFieldUGData> customFieldUGDataList);
 
-	public List<CustomFieldDetails> removeCustomField(CommonProfile profile, Long userGroupId, Long customFieldId);
+	public List<CustomFieldDetails> removeCustomField(HttpServletRequest request, CommonProfile profile,
+			Long userGroupId, Long customFieldId);
 
 }
