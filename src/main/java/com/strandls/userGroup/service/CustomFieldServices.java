@@ -33,17 +33,19 @@ public interface CustomFieldServices {
 	public List<CustomFieldObservationData> insertUpdateCustomFieldData(HttpServletRequest request,
 			CommonProfile profile, CustomFieldFactsInsertData factsCreateData) throws Exception;
 
-	public void createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData);
+	public CustomFieldDetails createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData);
 
 	public List<CustomFieldPermission> getCustomFieldPermisison(HttpServletRequest request, CommonProfile profile,
 			String observationId) throws Exception;
 
 	public List<CustomFieldDetails> getAllCustomField();
 
-	public List<CustomFieldDetails> getCustomField(Long userGroupId);
+	public List<CustomFieldDetails> getCustomField(HttpServletRequest request, CommonProfile profile, Long userGroupId);
 
-	public List<CustomFieldDetails> addCustomFieldUG(Long userId, CustomFieldUGData customFieldUGData);
+	public List<CustomFieldDetails> addCustomFieldUG(HttpServletRequest request, CommonProfile profile, Long userId,
+			Long userGroupId, List<CustomFieldUGData> customFieldUGDataList);
 
-	public List<CustomFieldDetails> removeCustomField(Long userGroupId, Long customFieldId);
+	public List<CustomFieldDetails> removeCustomField(HttpServletRequest request, CommonProfile profile,
+			Long userGroupId, Long customFieldId);
 
 }

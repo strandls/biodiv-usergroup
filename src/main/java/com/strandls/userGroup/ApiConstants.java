@@ -32,6 +32,19 @@ public class ApiConstants {
 	public static final String ADD = "/add";
 	public static final String SPECIESGROUP = "speciesGroup";
 	public static final String NEWSLETTER = "/newsletter";
+	public static final String MEMBERS = "/members";
+	public static final String VALIDATE = "/validate";
+	public static final String LEAVE = "/leave";
+	public static final String JOIN = "/join";
+	public static final String SEND = "/send";
+	public static final String INVITES = "/invites";
+	public static final String POSTING = "/posting";
+	public static final String REMOVING = "/removing";
+	public static final String EDIT = "/edit";
+	public static final String SHOW = "/show";
+	public static final String DIRECT = "/direct";
+	public static final String SAVE = "/save";
+	public static final String ENABLE = "/enable";
 	public static final String HOMEPAGE = "/homePage";
 
 }
