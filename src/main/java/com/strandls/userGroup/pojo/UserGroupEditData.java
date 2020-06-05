@@ -3,6 +3,8 @@
  */
 package com.strandls.userGroup.pojo;
 
+import java.util.List;
+
 /**
  * @author Abhishek Rudra
  *
@@ -23,6 +25,8 @@ public class UserGroupEditData {
 	private Long languageId;
 	private Boolean sendDigestMail;
 	private String newFilterRule;
+	private List<Long> speciesGroupId;
+	private List<Long> habitatId;
 
 	/**
 	 * 
@@ -46,10 +50,13 @@ public class UserGroupEditData {
 	 * @param languageId
 	 * @param sendDigestMail
 	 * @param newFilterRule
+	 * @param speciesGroupId
+	 * @param habitatId
 	 */
 	public UserGroupEditData(Boolean allowUserToJoin, String description, String homePage, String icon,
 			String domainName, String name, Double neLatitude, Double neLongitude, Double swLatitude,
-			Double swLongitude, String theme, Long languageId, Boolean sendDigestMail, String newFilterRule) {
+			Double swLongitude, String theme, Long languageId, Boolean sendDigestMail, String newFilterRule,
+			List<Long> speciesGroupId, List<Long> habitatId) {
 		super();
 		this.allowUserToJoin = allowUserToJoin;
 		this.description = description;
@@ -65,6 +72,8 @@ public class UserGroupEditData {
 		this.languageId = languageId;
 		this.sendDigestMail = sendDigestMail;
 		this.newFilterRule = newFilterRule;
+		this.speciesGroupId = speciesGroupId;
+		this.habitatId = habitatId;
 	}
 
 	public Boolean getAllowUserToJoin() {
@@ -178,5 +187,23 @@ public class UserGroupEditData {
 	public void setNewFilterRule(String newFilterRule) {
 		this.newFilterRule = newFilterRule;
 	}
+
+	public List<Long> getSpeciesGroupId() {
+		return speciesGroupId;
+	}
+
+	public void setSpeciesGroupId(List<Long> speciesGroupId) {
+		this.speciesGroupId = speciesGroupId;
+	}
+
+	public List<Long> getHabitatId() {
+		return habitatId;
+	}
+
+	public void setHabitatId(List<Long> habitatId) {
+		this.habitatId = habitatId;
+	}
+
+	
 
 }
