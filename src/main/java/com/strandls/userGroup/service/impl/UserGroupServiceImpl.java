@@ -1091,14 +1091,43 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				userGroup = userGroupDao.update(userGroup);
 
+				List<UserGroupSpeciesGroup> ugSpeciesGroups = ugSGroupDao.findByUserGroupId(userGroupId);
+				List<UserGroupHabitat> ugHabitats = ugHabitatDao.findByUserGroupId(userGroupId);
+				List<Long> speciesGroupList = new ArrayList<Long>();
+				List<Long> habitatList = new ArrayList<Long>();
+				for (UserGroupSpeciesGroup ugSpeciesGroup : ugSpeciesGroups) {
+					speciesGroupList.add(ugSpeciesGroup.getSpeciesGroupId());
+				}
+				for (UserGroupHabitat ugHabitat : ugHabitats) {
+					habitatList.add(ugHabitat.getHabitatId());
+				}
+
 				for (Long speciesGroupId : ugEditData.getSpeciesGroupId()) {
-					UserGroupSpeciesGroup ugSpeciesGroup = new UserGroupSpeciesGroup(userGroup.getId(), speciesGroupId);
-					ugSGroupDao.save(ugSpeciesGroup);
+					if (!speciesGroupList.contains(speciesGroupId)) {
+						UserGroupSpeciesGroup ugSpeciesGroup = new UserGroupSpeciesGroup(userGroup.getId(),
+								speciesGroupId);
+						ugSGroupDao.save(ugSpeciesGroup);
+					}
+
+				}
+				for (Long sGroupid : speciesGroupList) {
+					if (!ugEditData.getSpeciesGroupId().contains(sGroupid)) {
+						UserGroupSpeciesGroup ugSpeciesGroup = new UserGroupSpeciesGroup(userGroup.getId(), sGroupid);
+						ugSGroupDao.delete(ugSpeciesGroup);
+					}
 				}
 
 				for (Long habitatId : ugEditData.getHabitatId()) {
-					UserGroupHabitat ugHabitat = new UserGroupHabitat(habitatId, userGroup.getId());
-					ugHabitatDao.save(ugHabitat);
+					if (!habitatList.contains(habitatId)) {
+						UserGroupHabitat ugHabitat = new UserGroupHabitat(habitatId, userGroup.getId());
+						ugHabitatDao.save(ugHabitat);
+					}
+				}
+				for (long habitatId : habitatList) {
+					if (!ugEditData.getHabitatId().contains(habitatId)) {
+						UserGroupHabitat ugHabitat = new UserGroupHabitat(habitatId, userGroupId);
+						ugHabitatDao.delete(ugHabitat);
+					}
 				}
 
 				logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), null,
