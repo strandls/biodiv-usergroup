@@ -3,11 +3,10 @@
  */
 package com.strandls.userGroup.pojo;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -20,14 +19,27 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Table(name = "user_group_species_group")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserGroupSpeciesGroup implements Serializable {
+@IdClass(UserGroupSpeciesGroupCompositeKey.class)
+public class UserGroupSpeciesGroup {
+	private Long userGroupId;
+	private Long speciesGroupId;
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -6436983258689514465L;
-	private Long userGroupId;
-	private Long speciesGroupId;
+	public UserGroupSpeciesGroup() {
+		super();
+	}
+
+	/**
+	 * @param userGroupId
+	 * @param speciesGroupId
+	 */
+	public UserGroupSpeciesGroup(Long userGroupId, Long speciesGroupId) {
+		super();
+		this.userGroupId = userGroupId;
+		this.speciesGroupId = speciesGroupId;
+	}
 
 	@Id
 	@Column(name = "user_group_species_groups_id")
@@ -39,6 +51,7 @@ public class UserGroupSpeciesGroup implements Serializable {
 		this.userGroupId = userGroupId;
 	}
 
+	@Id
 	@Column(name = "species_group_id")
 	public Long getSpeciesGroupId() {
 		return speciesGroupId;

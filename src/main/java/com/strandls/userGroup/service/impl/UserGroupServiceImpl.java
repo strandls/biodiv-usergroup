@@ -33,6 +33,7 @@ import com.strandls.userGroup.Headers;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.StatsDao;
 import com.strandls.userGroup.dao.UserGroupDao;
+import com.strandls.userGroup.dao.UserGroupHabitatDao;
 import com.strandls.userGroup.dao.UserGroupInvitaionDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
@@ -47,6 +48,7 @@ import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
 import com.strandls.userGroup.pojo.UserGroupEditData;
+import com.strandls.userGroup.pojo.UserGroupHabitat;
 import com.strandls.userGroup.pojo.UserGroupHomePage;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitation;
@@ -56,7 +58,6 @@ import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
-import com.strandls.userGroup.service.CustomFieldServices;
 import com.strandls.userGroup.service.UserGroupFilterService;
 import com.strandls.userGroup.service.UserGroupSerivce;
 
@@ -101,9 +102,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	private EncryptionUtils encryptionUtils;
 
 	@Inject
-	private CustomFieldServices cfServices;
-
-	@Inject
 	private Headers headers;
 
 	@Inject
@@ -111,6 +109,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private StatsDao statsDao;
+
+	@Inject
+	private UserGroupHabitatDao ugHabitatDao;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -1004,6 +1005,16 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 			userGroup = userGroupDao.save(userGroup);
 
+			for (Long speciesGroupId : ugCreateData.getSpeciesGroup()) {
+				UserGroupSpeciesGroup ugSpeciesGroup = new UserGroupSpeciesGroup(userGroup.getId(), speciesGroupId);
+				ugSGroupDao.save(ugSpeciesGroup);
+			}
+
+			for (Long habitatId : ugCreateData.getHabitatId()) {
+				UserGroupHabitat ugHabitat = new UserGroupHabitat(habitatId, userGroup.getId());
+				ugHabitatDao.save(ugHabitat);
+			}
+
 			if (ugCreateData.getInvitationData() != null) {
 				UserGroupInvitationData userGroupInvitations = ugCreateData.getInvitationData();
 				userGroupInvitations.setUserGroupId(userGroup.getId());
@@ -1011,10 +1022,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					userGroupInvitations.getFounderIds().add(userId);
 				addMemberRoleInvitaions(request, profile, userGroupInvitations);
 			}
-
-			if (ugCreateData.getCfUGMappingData() != null)
-				cfServices.addCustomFieldUG(request, profile, userId, userGroup.getId(),
-						ugCreateData.getCfUGMappingData());
 
 			logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), null, userGroup.getId(),
 					userGroup.getId(), "userGroup", null, "Group created");
@@ -1036,12 +1043,22 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				UserGroup userGroup = userGroupDao.findById(userGroupId);
 				if (userGroup != null) {
+					List<UserGroupSpeciesGroup> ugSpeciesGroups = ugSGroupDao.findByUserGroupId(userGroupId);
+					List<UserGroupHabitat> ugHabitats = ugHabitatDao.findByUserGroupId(userGroupId);
+					List<Long> speciesGroupId = new ArrayList<Long>();
+					List<Long> habitatId = new ArrayList<Long>();
+					for (UserGroupSpeciesGroup ugSpeciesGroup : ugSpeciesGroups) {
+						speciesGroupId.add(ugSpeciesGroup.getSpeciesGroupId());
+					}
+					for (UserGroupHabitat ugHabitat : ugHabitats) {
+						habitatId.add(ugHabitat.getHabitatId());
+					}
 					UserGroupEditData ugEditData = new UserGroupEditData(userGroup.getAllowUserToJoin(),
 							userGroup.getDescription(), userGroup.getHomePage(), userGroup.getIcon(),
 							userGroup.getDomianName(), userGroup.getName(), userGroup.getNeLatitude(),
 							userGroup.getNeLongitude(), userGroup.getSwLatitude(), userGroup.getSwLongitude(),
 							userGroup.getTheme(), userGroup.getLanguageId(), userGroup.getSendDigestMail(),
-							userGroup.getNewFilterRule());
+							userGroup.getNewFilterRule(), speciesGroupId, habitatId);
 					return ugEditData;
 				}
 			}
@@ -1073,6 +1090,16 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						ugEditData.getNewFilterRule());
 
 				userGroup = userGroupDao.update(userGroup);
+
+				for (Long speciesGroupId : ugEditData.getSpeciesGroupId()) {
+					UserGroupSpeciesGroup ugSpeciesGroup = new UserGroupSpeciesGroup(userGroup.getId(), speciesGroupId);
+					ugSGroupDao.save(ugSpeciesGroup);
+				}
+
+				for (Long habitatId : ugEditData.getHabitatId()) {
+					UserGroupHabitat ugHabitat = new UserGroupHabitat(habitatId, userGroup.getId());
+					ugHabitatDao.save(ugHabitat);
+				}
 
 				logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), null,
 						userGroup.getId(), userGroup.getId(), "userGroup", null, "Group updated");

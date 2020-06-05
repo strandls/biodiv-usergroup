@@ -18,6 +18,8 @@ public class UserGroupCreateData {
 	private String icon;
 	private String domainName;
 	private String name;
+	private List<Long> speciesGroup;
+	private List<Long> habitatId;
 	private Double neLatitude;
 	private Double neLongitude;
 	private Double swLatitude;
@@ -29,9 +31,6 @@ public class UserGroupCreateData {
 
 //	Founder and Moderator Invitation List
 	private UserGroupInvitationData invitationData;
-
-//	custom Field
-	private List<CustomFieldUGData> cfUGMappingData;
 
 	/**
 	 * 
@@ -47,6 +46,8 @@ public class UserGroupCreateData {
 	 * @param icon
 	 * @param domainName
 	 * @param name
+	 * @param speciesGroup
+	 * @param habitatId
 	 * @param neLatitude
 	 * @param neLongitude
 	 * @param swLatitude
@@ -56,12 +57,11 @@ public class UserGroupCreateData {
 	 * @param sendDigestMail
 	 * @param newFilterRule
 	 * @param invitationData
-	 * @param cfUGMappingData
 	 */
 	public UserGroupCreateData(Boolean allowUserToJoin, String description, String homePage, String icon,
-			String domainName, String name, Double neLatitude, Double neLongitude, Double swLatitude,
-			Double swLongitude, String theme, Long languageId, Boolean sendDigestMail, String newFilterRule,
-			UserGroupInvitationData invitationData, List<CustomFieldUGData> cfUGMappingData) {
+			String domainName, String name, List<Long> speciesGroup, List<Long> habitatId, Double neLatitude,
+			Double neLongitude, Double swLatitude, Double swLongitude, String theme, Long languageId,
+			Boolean sendDigestMail, String newFilterRule, UserGroupInvitationData invitationData) {
 		super();
 		this.allowUserToJoin = allowUserToJoin;
 		this.description = description;
@@ -69,6 +69,8 @@ public class UserGroupCreateData {
 		this.icon = icon;
 		this.domainName = domainName;
 		this.name = name;
+		this.speciesGroup = speciesGroup;
+		this.habitatId = habitatId;
 		this.neLatitude = neLatitude;
 		this.neLongitude = neLongitude;
 		this.swLatitude = swLatitude;
@@ -78,7 +80,6 @@ public class UserGroupCreateData {
 		this.sendDigestMail = sendDigestMail;
 		this.newFilterRule = newFilterRule;
 		this.invitationData = invitationData;
-		this.cfUGMappingData = cfUGMappingData;
 	}
 
 	public Boolean getAllowUserToJoin() {
@@ -127,6 +128,22 @@ public class UserGroupCreateData {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public List<Long> getSpeciesGroup() {
+		return speciesGroup;
+	}
+
+	public void setSpeciesGroup(List<Long> speciesGroup) {
+		this.speciesGroup = speciesGroup;
+	}
+
+	public List<Long> getHabitatId() {
+		return habitatId;
+	}
+
+	public void setHabitatId(List<Long> habitatId) {
+		this.habitatId = habitatId;
 	}
 
 	public Double getNeLatitude() {
@@ -199,14 +216,6 @@ public class UserGroupCreateData {
 
 	public void setInvitationData(UserGroupInvitationData invitationData) {
 		this.invitationData = invitationData;
-	}
-
-	public List<CustomFieldUGData> getCfUGMappingData() {
-		return cfUGMappingData;
-	}
-
-	public void setCfUGMappingData(List<CustomFieldUGData> cfUGMappingData) {
-		this.cfUGMappingData = cfUGMappingData;
 	}
 
 }
