@@ -54,6 +54,7 @@ public class UserGroup implements Serializable {
 	private Boolean showRecentObservations;
 	private Boolean showGridMap;
 	private Boolean showPartners;
+	private Boolean showDesc;
 
 	/**
 	 * 
@@ -304,7 +305,7 @@ public class UserGroup implements Serializable {
 		this.newFilterRule = newFilterRule;
 	}
 
-	@Column(name = "show_gallery",columnDefinition = "boolean default true")
+	@Column(name = "show_gallery", columnDefinition = "boolean default true")
 	public Boolean getShowGallery() {
 		return showGallery;
 	}
@@ -313,7 +314,7 @@ public class UserGroup implements Serializable {
 		this.showGallery = showGallery;
 	}
 
-	@Column(name = "show_stats",columnDefinition = "boolean default true")
+	@Column(name = "show_stats", columnDefinition = "boolean default true")
 	public Boolean getShowStats() {
 		return showStats;
 	}
@@ -322,7 +323,7 @@ public class UserGroup implements Serializable {
 		this.showStats = showStats;
 	}
 
-	@Column(name = "show_recent_obv",columnDefinition = "boolean default true")
+	@Column(name = "show_recent_obv", columnDefinition = "boolean default true")
 	public Boolean getShowRecentObservations() {
 		return showRecentObservations;
 	}
@@ -331,7 +332,7 @@ public class UserGroup implements Serializable {
 		this.showRecentObservations = showRecentObservations;
 	}
 
-	@Column(name = "show_grid_map",columnDefinition = "boolean default true")
+	@Column(name = "show_grid_map", columnDefinition = "boolean default true")
 	public Boolean getShowGridMap() {
 		return showGridMap;
 	}
@@ -340,7 +341,7 @@ public class UserGroup implements Serializable {
 		this.showGridMap = showGridMap;
 	}
 
-	@Column(name = "show_partners",columnDefinition = "boolean default true")
+	@Column(name = "show_partners", columnDefinition = "boolean default true")
 	public Boolean getShowPartners() {
 		return showPartners;
 	}
@@ -348,5 +349,16 @@ public class UserGroup implements Serializable {
 	public void setShowPartners(Boolean showPartners) {
 		this.showPartners = showPartners;
 	}
+
+	@Column(name = "show_desc", columnDefinition = "boolean default false")
+	public Boolean getShowDesc() {
+		return showDesc;
+	}
+
+	public void setShowDesc(Boolean showDesc) {
+		this.showDesc = showDesc;
+	}
+	
+	
 
 }
