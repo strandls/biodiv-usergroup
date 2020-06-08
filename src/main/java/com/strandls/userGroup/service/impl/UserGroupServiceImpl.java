@@ -6,6 +6,7 @@ package com.strandls.userGroup.service.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -996,23 +997,28 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			String webAddress = ugCreateData.getName().replace(" ", "_");
 			Long userId = Long.parseLong(profile.getId());
 
-			UserGroup userGroup = new UserGroup(null, ugCreateData.getAllowUserToJoin(), ugCreateData.getDescription(),
-					ugCreateData.getDomainName(), new Date(), ugCreateData.getHomePage(), ugCreateData.getIcon(), false,
-					ugCreateData.getName(), ugCreateData.getNeLatitude(), ugCreateData.getNeLongitude(),
-					ugCreateData.getSwLatitude(), ugCreateData.getSwLongitude(), ugCreateData.getTheme(), 1L,
-					webAddress, ugCreateData.getLanguageId(), ugCreateData.getSendDigestMail(), new Date(), null,
-					ugCreateData.getNewFilterRule());
+			UserGroup userGroup = new UserGroup(null, true, true, true, ugCreateData.getAllowUserToJoin(),
+					ugCreateData.getDescription(), ugCreateData.getDomainName(), new Date(), ugCreateData.getHomePage(),
+					ugCreateData.getIcon(), false, ugCreateData.getName(), ugCreateData.getNeLatitude(),
+					ugCreateData.getNeLongitude(), ugCreateData.getSwLatitude(), ugCreateData.getSwLongitude(),
+					ugCreateData.getTheme(), 1L, webAddress, ugCreateData.getLanguageId(),
+					ugCreateData.getSendDigestMail(), new Date(), null, ugCreateData.getNewFilterRule(), true, true,
+					true, true, true, true);
 
 			userGroup = userGroupDao.save(userGroup);
 
-			for (Long speciesGroupId : ugCreateData.getSpeciesGroup()) {
-				UserGroupSpeciesGroup ugSpeciesGroup = new UserGroupSpeciesGroup(userGroup.getId(), speciesGroupId);
-				ugSGroupDao.save(ugSpeciesGroup);
+			if (ugCreateData.getSpeciesGroup() != null && !ugCreateData.getSpeciesGroup().isEmpty()) {
+				for (Long speciesGroupId : ugCreateData.getSpeciesGroup()) {
+					UserGroupSpeciesGroup ugSpeciesGroup = new UserGroupSpeciesGroup(userGroup.getId(), speciesGroupId);
+					ugSGroupDao.save(ugSpeciesGroup);
+				}
 			}
 
-			for (Long habitatId : ugCreateData.getHabitatId()) {
-				UserGroupHabitat ugHabitat = new UserGroupHabitat(habitatId, userGroup.getId());
-				ugHabitatDao.save(ugHabitat);
+			if (ugCreateData.getHabitatId() != null && !ugCreateData.getHabitatId().isEmpty()) {
+				for (Long habitatId : ugCreateData.getHabitatId()) {
+					UserGroupHabitat ugHabitat = new UserGroupHabitat(habitatId, userGroup.getId());
+					ugHabitatDao.save(ugHabitat);
+				}
 			}
 
 			if (ugCreateData.getInvitationData() != null) {
@@ -1021,6 +1027,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				if (!userGroupInvitations.getFounderIds().contains(userId))
 					userGroupInvitations.getFounderIds().add(userId);
 				addMemberRoleInvitaions(request, profile, userGroupInvitations);
+			} else {
+				UserGroupAddMemebr memberList = new UserGroupAddMemebr(
+						new ArrayList<Long>(Arrays.asList(Long.parseLong(profile.getId()))), null, null);
+				addMemberDirectly(request, userGroup.getId(), memberList);
 			}
 
 			logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), null, userGroup.getId(),
@@ -1082,12 +1092,14 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 
 				String webAddress = ugEditData.getName().replace(" ", "_");
-				UserGroup userGroup = new UserGroup(null, ugEditData.getAllowUserToJoin(), ugEditData.getDescription(),
-						ugEditData.getDomainName(), new Date(), ugEditData.getHomePage(), ugEditData.getIcon(), false,
-						ugEditData.getName(), ugEditData.getNeLatitude(), ugEditData.getNeLongitude(),
-						ugEditData.getSwLatitude(), ugEditData.getSwLongitude(), ugEditData.getTheme(), 1L, webAddress,
-						ugEditData.getLanguageId(), ugEditData.getSendDigestMail(), new Date(), null,
-						ugEditData.getNewFilterRule());
+				UserGroup ug = userGroupDao.findById(userGroupId);
+				UserGroup userGroup = new UserGroup(null, true, true, true, ugEditData.getAllowUserToJoin(),
+						ugEditData.getDescription(), ugEditData.getDomainName(), new Date(), ugEditData.getHomePage(),
+						ugEditData.getIcon(), false, ugEditData.getName(), ugEditData.getNeLatitude(),
+						ugEditData.getNeLongitude(), ugEditData.getSwLatitude(), ugEditData.getSwLongitude(),
+						ugEditData.getTheme(), ug.getVisitCount(), webAddress, ugEditData.getLanguageId(),
+						ugEditData.getSendDigestMail(), new Date(), null, ugEditData.getNewFilterRule(), true, true,
+						true, true, true, true);
 
 				userGroup = userGroupDao.update(userGroup);
 
@@ -1095,11 +1107,15 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				List<UserGroupHabitat> ugHabitats = ugHabitatDao.findByUserGroupId(userGroupId);
 				List<Long> speciesGroupList = new ArrayList<Long>();
 				List<Long> habitatList = new ArrayList<Long>();
-				for (UserGroupSpeciesGroup ugSpeciesGroup : ugSpeciesGroups) {
-					speciesGroupList.add(ugSpeciesGroup.getSpeciesGroupId());
+				if (ugSpeciesGroups != null && !ugSpeciesGroups.isEmpty()) {
+					for (UserGroupSpeciesGroup ugSpeciesGroup : ugSpeciesGroups) {
+						speciesGroupList.add(ugSpeciesGroup.getSpeciesGroupId());
+					}
 				}
-				for (UserGroupHabitat ugHabitat : ugHabitats) {
-					habitatList.add(ugHabitat.getHabitatId());
+				if (ugHabitats != null && !ugHabitats.isEmpty()) {
+					for (UserGroupHabitat ugHabitat : ugHabitats) {
+						habitatList.add(ugHabitat.getHabitatId());
+					}
 				}
 
 				for (Long speciesGroupId : ugEditData.getSpeciesGroupId()) {
