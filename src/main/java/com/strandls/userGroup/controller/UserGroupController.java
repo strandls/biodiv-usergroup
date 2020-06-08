@@ -657,7 +657,9 @@ public class UserGroupController {
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
 			if (roles.contains("ROLE_ADMIN")) {
 				UserGroupIbp result = ugServices.createUserGroup(request, profile, ugCreateDate);
-				return Response.status(Status.OK).entity(result).build();
+				if (result != null)
+					return Response.status(Status.OK).entity(result).build();
+				return Response.status(Status.NOT_ACCEPTABLE).entity("Wrong set of data").build();
 			}
 			return Response.status(Status.FORBIDDEN).entity("User not allowed to create User group").build();
 
