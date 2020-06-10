@@ -93,4 +93,6 @@ public interface UserGroupSerivce {
 
 	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId);
 
+	public Boolean validateJoinRequest(HttpServletRequest request, String token);
+
 }
