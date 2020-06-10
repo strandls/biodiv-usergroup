@@ -31,7 +31,7 @@ public class MailUtils {
 	@Inject
 	private RabbitMQProducer producer;
 
-	public void sendInvites(List<InvitaionMailData> mailDataList) {
+	public void sendInvites(List<InvitaionMailData> mailDataList, String serverUrl) {
 
 		try {
 			for (InvitaionMailData mailData : mailDataList) {
@@ -40,8 +40,9 @@ public class MailUtils {
 					Map<String, Object> data = new HashMap<String, Object>();
 					data.put(FIELDS.TYPE.getAction(), MAIL_TYPE.SEND_INVITE.getAction());
 					data.put(FIELDS.TO.getAction(), new String[] { mailData.getInviteeEmail() });
-
 					Map<String, Object> inviteData = new HashMap<String, Object>();
+
+					inviteData.put(INVITATION_DATA.SERVER_URL.getAction(), serverUrl);
 					inviteData.put(INVITATION_DATA.ENCRYPTED_KEY.getAction(), mailData.getToken());
 					inviteData.put(INVITATION_DATA.GROUP_OBJ.getAction(), mailData.getUserGroup());
 					inviteData.put(INVITATION_DATA.INVITEE_NAME.getAction(), mailData.getInviteeName());
