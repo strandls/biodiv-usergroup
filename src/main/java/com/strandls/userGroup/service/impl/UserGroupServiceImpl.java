@@ -1105,7 +1105,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				String webAddress = ugEditData.getName().replace(" ", "_");
 				UserGroup ug = userGroupDao.findById(userGroupId);
-				UserGroup userGroup = new UserGroup(null, true, true, true, ugEditData.getAllowUserToJoin(),
+				UserGroup userGroup = new UserGroup(ug.getId(), true, true, true, ugEditData.getAllowUserToJoin(),
 						ugEditData.getDescription(), ugEditData.getDomainName(), new Date(), ugEditData.getHomePage(),
 						ugEditData.getIcon(), false, ugEditData.getName(), ugEditData.getNeLatitude(),
 						ugEditData.getNeLongitude(), ugEditData.getSwLatitude(), ugEditData.getSwLongitude(),
