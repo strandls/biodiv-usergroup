@@ -549,7 +549,7 @@ public class UserGroupController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
 			Boolean result = ugServices.sendInvitesForMemberRole(request, profile, ugId, userList);
-			if (result)
+			if (result != null)
 				return Response.status(Status.OK).entity("Invitaion Sent out").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Invitation Sending caused Problem").build();
 
