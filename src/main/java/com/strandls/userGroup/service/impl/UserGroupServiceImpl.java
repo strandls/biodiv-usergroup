@@ -521,6 +521,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				e.printStackTrace();
 			}
 
+			String serverUrl = properties.getProperty("serverUrl");
 			Long founderId = Long.parseLong(properties.getProperty("userGroupFounder"));
 			Long moderatorId = Long.parseLong(properties.getProperty("userGroupExpert"));
 			in.close();
@@ -564,7 +565,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							inviteData.add(mailData);
 					}
 				}
-				mailUtils.sendInvites(inviteData);
+				mailUtils.sendInvites(inviteData, serverUrl);
 				return true;
 			}
 			return false;
@@ -812,6 +813,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				e.printStackTrace();
 			}
 			Long memberId = Long.parseLong(properties.getProperty("userGroupMember"));
+			String serverUrl = properties.getProperty("serverUrl");
 			in.close();
 
 			Long inviterId = Long.parseLong(profile.getId());
@@ -854,7 +856,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					}
 				}
 			}
-			mailUtils.sendInvites(iniviteData);
+			mailUtils.sendInvites(iniviteData, serverUrl);
 			return true;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
