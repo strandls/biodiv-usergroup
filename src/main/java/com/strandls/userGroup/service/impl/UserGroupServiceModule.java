@@ -26,5 +26,6 @@ public class UserGroupServiceModule extends AbstractModule {
 		bind(NewsletterSerivce.class).to(NewsletterServiceImpl.class).in(Scopes.SINGLETON);
 		bind(EncryptionUtils.class).in(Scopes.SINGLETON);
 		bind(UserGroupFilterService.class).to(UserGroupFilterServiceImpl.class).in(Scopes.SINGLETON);
+		bind(MailUtils.class).in(Scopes.SINGLETON);
 	}
 }

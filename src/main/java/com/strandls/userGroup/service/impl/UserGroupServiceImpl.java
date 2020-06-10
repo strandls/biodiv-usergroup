@@ -28,6 +28,7 @@ import com.strandls.activity.pojo.UserGroupMailData;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.GroupAddMember;
+import com.strandls.user.pojo.User;
 import com.strandls.user.pojo.UserGroupMembersCount;
 import com.strandls.user.pojo.UserIbp;
 import com.strandls.userGroup.Headers;
@@ -113,6 +114,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupHabitatDao ugHabitatDao;
+
+	@Inject
+	private MailUtils mailUtils;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -560,8 +564,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							inviteData.add(mailData);
 					}
 				}
-//				LAST STEP
-//			TODO	forward the data to send out mails
+				mailUtils.sendInvites(inviteData);
 				return true;
 			}
 			return false;
@@ -601,12 +604,22 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			}
 //			create mail invitation data
 			String ugInviteStr = objectMapper.writeValueAsString(ugInvite);
-			UserIbp userIbp = null;
-			if (inviteeId != null)
-				userIbp = userService.getUserIbp(inviteeId.toString());
-			InvitaionMailData mailData = new InvitaionMailData(userIbp, email, userGroupIbp, role,
-					encryptionUtils.encrypt(ugInviteStr));
-			return mailData;
+			UserIbp inviterObject = userService.getUserIbp(inviterId.toString());
+			String inviteeName = "";
+			String inviteeEmail = "";
+			if (inviteeId != null) {
+				User inviteeObject = userService.getUser(inviteeId.toString());
+				inviteeName = inviteeObject.getName();
+				inviteeEmail = inviteeObject.getEmail();
+			} else if (email != null) {
+				inviteeName = email.split("@")[0];
+			}
+			if (inviteeEmail != null && inviteeEmail.length() > 0) {
+				InvitaionMailData mailData = new InvitaionMailData(inviterObject, inviteeName, inviteeEmail,
+						userGroupIbp, role, encryptionUtils.encrypt(ugInviteStr));
+
+				return mailData;
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -841,9 +854,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					}
 				}
 			}
-
-//			TODO  send mail for invitation
-
+			mailUtils.sendInvites(iniviteData);
+			return true;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

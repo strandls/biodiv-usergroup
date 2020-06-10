@@ -4,8 +4,9 @@ import com.strandls.user.pojo.UserIbp;
 
 public class InvitaionMailData {
 
-	private UserIbp user;
-	private String emailId;
+	private UserIbp inviterObject;
+	private String inviteeName;
+	private String inviteeEmail;
 	private UserGroupIbp userGroup;
 	private String role;
 	private String token;
@@ -18,27 +19,46 @@ public class InvitaionMailData {
 	}
 
 	/**
-	 * @param user
-	 * @param emailId
+	 * @param inviterObject
+	 * @param inviteeName
+	 * @param inviteeEmail
 	 * @param userGroup
 	 * @param role
 	 * @param token
 	 */
-	public InvitaionMailData(UserIbp user, String emailId, UserGroupIbp userGroup, String role, String token) {
+	public InvitaionMailData(UserIbp inviterObject, String inviteeName, String inviteeEmail, UserGroupIbp userGroup,
+			String role, String token) {
 		super();
-		this.user = user;
-		this.emailId = emailId;
+		this.inviterObject = inviterObject;
+		this.inviteeName = inviteeName;
+		this.inviteeEmail = inviteeEmail;
 		this.userGroup = userGroup;
 		this.role = role;
 		this.token = token;
 	}
 
-	public UserIbp getUser() {
-		return user;
+	public UserIbp getInviterObject() {
+		return inviterObject;
 	}
 
-	public void setUser(UserIbp user) {
-		this.user = user;
+	public void setInviterObject(UserIbp inviterObject) {
+		this.inviterObject = inviterObject;
+	}
+
+	public String getInviteeName() {
+		return inviteeName;
+	}
+
+	public void setInviteeName(String inviteeName) {
+		this.inviteeName = inviteeName;
+	}
+
+	public String getInviteeEmail() {
+		return inviteeEmail;
+	}
+
+	public void setInviteeEmail(String inviteeEmail) {
+		this.inviteeEmail = inviteeEmail;
 	}
 
 	public UserGroupIbp getUserGroup() {
@@ -63,14 +83,6 @@ public class InvitaionMailData {
 
 	public void setToken(String token) {
 		this.token = token;
-	}
-
-	public String getEmailId() {
-		return emailId;
-	}
-
-	public void setEmailId(String emailId) {
-		this.emailId = emailId;
 	}
 
 }
