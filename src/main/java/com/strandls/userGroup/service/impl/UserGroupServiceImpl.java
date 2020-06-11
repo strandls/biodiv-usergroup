@@ -1350,6 +1350,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 			}
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			logger.error(ex.getMessage());
 		}
 		return userData;
