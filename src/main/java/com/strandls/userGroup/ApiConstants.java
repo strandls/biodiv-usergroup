@@ -46,5 +46,8 @@ public class ApiConstants {
 	public static final String SAVE = "/save";
 	public static final String ENABLE = "/enable";
 	public static final String HOMEPAGE = "/homePage";
+	public static final String LOGIN = "/login";
+	public static final String REGISTER = "/register";
+	public static final String VERIFY_USER = "/verify-user";
 
 }
