@@ -1356,19 +1356,25 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					: null;
 			if (Boolean.parseBoolean(userData.get("status").toString())) {
 				boolean verificationRequired = Boolean.parseBoolean(userData.get("verificationRequired").toString());
-				MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
-				mutableRequest.putHeader(HttpHeaders.AUTHORIZATION,
-						"Bearer " + userData.get("access_token").toString());
-				CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-				Long userId = Long.parseLong(profile.getId());
 				if (!verificationRequired) {
-					joinGroup(mutableRequest, userId, String.valueOf(groupId));
+					MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+					mutableRequest.putHeader(HttpHeaders.AUTHORIZATION,
+							"Bearer " + userData.get("access_token").toString());
+					CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+					Long user = Long.parseLong(profile.getId());
+					joinGroup(mutableRequest, user, String.valueOf(groupId));
 				} else {
-					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.checkExistingGroupJoinRequest(userId,
-							groupId);
-					if (joinRequest == null) {
-						joinRequest = new UserGroupUserJoinRequest(groupId, userId);
-						userGroupUserRequestDao.save(joinRequest);
+					Long userId = null;
+					if (userData.containsKey("user")) {
+						userId = Long.parseLong(((Map<String, Object>) userData.get("user")).get("id").toString());
+					}
+					if (userId != null) {
+						UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao
+								.checkExistingGroupJoinRequest(userId, groupId);
+						if (joinRequest == null) {
+							joinRequest = new UserGroupUserJoinRequest(groupId, userId);
+							userGroupUserRequestDao.save(joinRequest);
+						}
 					}
 				}
 			}
