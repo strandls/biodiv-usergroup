@@ -468,6 +468,25 @@ public class UserGroupController {
 	}
 
 	@GET
+	@Path(ApiConstants.VALIDATE + ApiConstants.REQUEST + "/{token}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	public Response validateJoinRequest(@Context HttpServletRequest request, @PathParam("token") String token) {
+		try {
+			Boolean result = ugServices.validateJoinRequest(request, token);
+			if (result != null && result)
+				return Response.status(Status.OK).entity("User Request to join group accpeted").build();
+			return Response.status(Status.METHOD_NOT_ALLOWED).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
 	@Path(ApiConstants.REMOVE + ApiConstants.MEMBERS)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.TEXT_PLAIN)
