@@ -4,12 +4,14 @@
 package com.strandls.userGroup.service;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.pac4j.core.profile.CommonProfile;
 
 import com.strandls.activity.pojo.MailData;
+import com.strandls.userGroup.dto.AuthenticationDTO;
 import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
@@ -92,5 +94,11 @@ public interface UserGroupSerivce {
 	public Boolean addMemberDirectly(HttpServletRequest request, Long userGroupId, UserGroupAddMemebr memberList);
 
 	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId);
+
+	public Map<String, Object> registerUserProxy(HttpServletRequest request, AuthenticationDTO authDTO);
+
+	public Map<String, Object> signupProxy(HttpServletRequest request, String userName, String password, String mode);
+	
+	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp);
 
 }

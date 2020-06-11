@@ -26,9 +26,11 @@ import com.strandls.activity.pojo.MailData;
 import com.strandls.activity.pojo.UserGroupActivity;
 import com.strandls.activity.pojo.UserGroupMailData;
 import com.strandls.authentication_utility.util.AuthUtil;
+import com.strandls.user.controller.AuthenticationServiceApi;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.GroupAddMember;
 import com.strandls.user.pojo.User;
+import com.strandls.user.pojo.UserDTO;
 import com.strandls.user.pojo.UserGroupMembersCount;
 import com.strandls.user.pojo.UserIbp;
 import com.strandls.userGroup.Headers;
@@ -39,6 +41,9 @@ import com.strandls.userGroup.dao.UserGroupHabitatDao;
 import com.strandls.userGroup.dao.UserGroupInvitaionDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
+import com.strandls.userGroup.dao.UserGroupUserRequestDAO;
+import com.strandls.userGroup.dto.AuthenticationDTO;
+import com.strandls.userGroup.filter.MutableHttpServletRequest;
 import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
@@ -59,6 +64,7 @@ import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
+import com.strandls.userGroup.pojo.UserGroupUserJoinRequest;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
 import com.strandls.userGroup.service.UserGroupSerivce;
@@ -96,6 +102,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserServiceApi userService;
+	
+	@Inject
+	private AuthenticationServiceApi authenticationApi;
 
 	@Inject
 	private UserGroupInvitaionDao ugInvitationDao;
@@ -114,6 +123,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupHabitatDao ugHabitatDao;
+	
+	@Inject
+	private UserGroupUserRequestDAO userGroupUserRequestDao;
 
 	@Inject
 	private MailUtils mailUtils;
@@ -1261,5 +1273,87 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				userGroup.getShowRecentObservations(), userGroup.getShowGridMap(), userGroup.getShowPartners(), stats);
 		return result;
 	}
+	
+	@Override
+	public Map<String, Object> registerUserProxy(HttpServletRequest request, AuthenticationDTO authDTO) {
+		Map<String, Object> userData = new HashMap<String, Object>();
+		try {
+			userData = authenticationApi.signUp(authDTO.getCredentials());
+			Long groupId = (authDTO.getGroupId() == null || authDTO.getGroupId().toString().isEmpty()) ? 
+					Long.parseLong(authDTO.getGroupId().toString()) : null;
+			if (Boolean.parseBoolean(userData.get("status").toString())) {
+				boolean verificationRequired = Boolean.parseBoolean(userData.get("verificationRequired").toString());
+				MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+				mutableRequest.putHeader(HttpHeaders.AUTHORIZATION, "Bearer " + userData.get("access_token").toString());
+				CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+				Long userId = Long.parseLong(profile.getId());
+				if (!verificationRequired) {
+					joinGroup(mutableRequest, userId, String.valueOf(groupId));
+				} else {
+					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.checkExistingGroupJoinRequest(userId, groupId);
+					if (joinRequest == null) {
+						joinRequest = new UserGroupUserJoinRequest(groupId, userId);
+						userGroupUserRequestDao.save(joinRequest);						
+					}
+				}
+			}
+		} catch (Exception ex) {
+			logger.error(ex.getMessage());
+		}
+		return userData;
+	}
+
+	@Override
+	public Map<String, Object> signupProxy(HttpServletRequest request, String userName, String password, String mode) {
+		Map<String, Object> userData = new HashMap<String, Object>();
+		try {
+			userData = authenticationApi.authenticate(userName, password, mode);
+			if (Boolean.parseBoolean(userData.get("status").toString())) {
+				boolean verificationRequired = Boolean
+						.parseBoolean(userData.get("verificationRequired").toString());
+				if (!verificationRequired) {
+					MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+					mutableRequest.putHeader(HttpHeaders.AUTHORIZATION, "Bearer " + userData.get("access_token").toString());
+					CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+					Long userId = Long.parseLong(profile.getId());
+					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
+					if (joinRequest != null) {
+						joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+						userGroupUserRequestDao.delete(joinRequest);
+					}
+				}
+			}
+		} catch (Exception ex) {
+			logger.error(ex.getMessage());
+		}
+		return userData;
+	}
+	
+	@Override
+	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp) {
+		Map<String, Object> userData = new HashMap<String, Object>();
+		try {
+			userData = authenticationApi.validateAccount(id, otp);
+			if (Boolean.parseBoolean(userData.get("status").toString())) {
+				boolean verificationRequired = Boolean
+						.parseBoolean(userData.get("verificationRequired").toString());
+				if (!verificationRequired) {
+					MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+					mutableRequest.putHeader(HttpHeaders.AUTHORIZATION, "Bearer " + userData.get("access_token").toString());
+					CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+					Long userId = Long.parseLong(profile.getId());
+					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
+					if (joinRequest != null) {
+						joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+						userGroupUserRequestDao.delete(joinRequest);						
+					}
+				}
+			}
+		} catch (Exception ex) {
+			logger.error(ex.getMessage());
+		}
+		return userData;
+	}
+
 
 }
