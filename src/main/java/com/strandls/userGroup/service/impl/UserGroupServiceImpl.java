@@ -1351,9 +1351,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		Map<String, Object> userData = new HashMap<String, Object>();
 		try {
 			userData = authenticationApi.signUp(authDTO.getCredentials());
-			Long groupId = (authDTO.getGroupId() == null || authDTO.getGroupId().toString().isEmpty())
-					? Long.parseLong(authDTO.getGroupId().toString())
-					: null;
+			Long groupId = authDTO.getGroupId() != null ? Long.parseLong(authDTO.getGroupId().toString()) : null;
 			if (Boolean.parseBoolean(userData.get("status").toString())) {
 				boolean verificationRequired = Boolean.parseBoolean(userData.get("verificationRequired").toString());
 				if (!verificationRequired) {
@@ -1375,7 +1373,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							System.out.println("\n\n**** Inside join request  ****\n\n");
 							joinRequest = new UserGroupUserJoinRequest(groupId, userId);
 							joinRequest = userGroupUserRequestDao.save(joinRequest);
-							System.out.println("\n\n**** Join Request Id: " + joinRequest + "  ****\n\n");							
+							System.out.println("\n\n**** Join Request Id: " + joinRequest + "  ****\n\n");
 						}
 					}
 				}
