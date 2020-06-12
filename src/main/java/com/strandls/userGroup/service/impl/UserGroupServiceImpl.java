@@ -1286,7 +1286,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
 					mutableRequest.putHeader(HttpHeaders.AUTHORIZATION,
 							"Bearer " + userData.get("access_token").toString());
-					CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+					CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 					Long user = Long.parseLong(profile.getId());
 					joinGroup(mutableRequest, user, String.valueOf(groupId));
 				} else {
@@ -1324,7 +1324,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
 					mutableRequest.putHeader(HttpHeaders.AUTHORIZATION,
 							"Bearer " + userData.get("access_token").toString());
-					CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+					CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 					Long userId = Long.parseLong(profile.getId());
 					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
 					if (joinRequest != null) {
@@ -1349,7 +1349,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
 				mutableRequest.putHeader(HttpHeaders.AUTHORIZATION,
 						"Bearer " + userData.get("access_token").toString());
-				CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+				CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 				Long userId = Long.parseLong(profile.getId());
 				UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
 				if (joinRequest != null) {
