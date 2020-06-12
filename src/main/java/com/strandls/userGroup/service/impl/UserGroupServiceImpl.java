@@ -1372,8 +1372,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao
 								.checkExistingGroupJoinRequest(userId, groupId);
 						if (joinRequest == null) {
+							System.out.println("\n\n**** Inside join request  ****\n\n");
 							joinRequest = new UserGroupUserJoinRequest(groupId, userId);
-							userGroupUserRequestDao.save(joinRequest);
+							joinRequest = userGroupUserRequestDao.save(joinRequest);
+							System.out.println("\n\n**** Join Request Id: " + joinRequest + "  ****\n\n");							
 						}
 					}
 				}
