@@ -1400,7 +1400,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					Long userId = Long.parseLong(profile.getId());
 					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
 					if (joinRequest != null) {
+						System.out.println("\n\n**** Inside join request != null  ****\n\n");
 						joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+						System.out.println("\n\n**** join request: " + joinRequest + "  ****\n\n");
 						userGroupUserRequestDao.delete(joinRequest);
 					}
 				}
@@ -1425,7 +1427,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				Long userId = Long.parseLong(profile.getId());
 				UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
 				if (joinRequest != null) {
+					System.out.println("\n\n**** Inside join request != null  ****\n\n");
 					joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+					System.out.println("\n\n**** join request: " + joinRequest + "  ****\n\n");
 					userGroupUserRequestDao.delete(joinRequest);
 				}
 			}
