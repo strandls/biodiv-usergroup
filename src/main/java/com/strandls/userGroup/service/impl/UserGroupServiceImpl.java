@@ -1326,6 +1326,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							"Bearer " + userData.get("access_token").toString());
 					CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 					Long userId = Long.parseLong(profile.getId());
+					System.out.println("\n\n**** UserID: " + userId + " *****\n\n");
 					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
 					if (joinRequest != null) {
 						System.out.println("\n\n**** Inside join request != null  ****\n\n");
@@ -1353,6 +1354,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						"Bearer " + userData.get("access_token").toString());
 				CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 				Long userId = Long.parseLong(profile.getId());
+				System.out.println("\n\n**** UserID: " + userId + " *****\n\n");
 				UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
 				if (joinRequest != null) {
 					System.out.println("\n\n**** Inside join request != null  ****\n\n");
