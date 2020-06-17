@@ -27,6 +27,7 @@ import org.pac4j.core.profile.CommonProfile;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
+import com.strandls.userGroup.pojo.AdministrationList;
 import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
@@ -429,6 +430,26 @@ public class UserGroupController {
 			if (result)
 				return Response.status(Status.OK).entity("Sent out Invitations to all").build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("User not allowed to send invitations").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@GET
+	@Path(ApiConstants.ADMINSTRATION + ApiConstants.MEMBERS + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "find the founder and moderator list", notes = "Return the founder and moderator list", response = AdministrationList.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to find the data", response = String.class) })
+
+	public Response getAdminstrationMember(@PathParam("userGroupId") String groupId) {
+		try {
+			AdministrationList result = ugServices.getAdminMembers(groupId);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}

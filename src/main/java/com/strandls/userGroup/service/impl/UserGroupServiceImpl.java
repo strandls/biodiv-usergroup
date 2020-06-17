@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.inject.Inject;
@@ -40,6 +41,7 @@ import com.strandls.userGroup.dao.UserGroupInvitaionDao;
 import com.strandls.userGroup.dao.UserGroupJoinRequestDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
+import com.strandls.userGroup.pojo.AdministrationList;
 import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
@@ -299,6 +301,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			}
 			for (UserGroupMembersCount ugm : count) {
 				result.add(ugMap.get(ugm.getUserGroupId()));
+				ugMap.remove(ugm.getUserGroupId());
+			}
+			for(Entry<Long, UserGroupIbp> entry:ugMap.entrySet()) {
+				result.add(entry.getValue());
 			}
 
 		} catch (Exception e) {
@@ -1107,16 +1113,16 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 			}
 
+			UserGroupAddMemebr memberList = new UserGroupAddMemebr(
+					new ArrayList<Long>(Arrays.asList(Long.parseLong(profile.getId()))), null, null);
+			addMemberDirectly(request, userGroup.getId(), memberList);
+
 			if (ugCreateData.getInvitationData() != null) {
 				UserGroupInvitationData userGroupInvitations = ugCreateData.getInvitationData();
 				userGroupInvitations.setUserGroupId(userGroup.getId());
 				if (!userGroupInvitations.getFounderIds().contains(userId))
 					userGroupInvitations.getFounderIds().add(userId);
 				addMemberRoleInvitaions(request, profile, userGroupInvitations);
-			} else {
-				UserGroupAddMemebr memberList = new UserGroupAddMemebr(
-						new ArrayList<Long>(Arrays.asList(Long.parseLong(profile.getId()))), null, null);
-				addMemberDirectly(request, userGroup.getId(), memberList);
 			}
 
 			logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), null, userGroup.getId(),
@@ -1332,6 +1338,19 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		UserGroupHomePage result = new UserGroupHomePage(userGroup.getShowGallery(), userGroup.getShowStats(),
 				userGroup.getShowRecentObservations(), userGroup.getShowGridMap(), userGroup.getShowPartners(), stats);
 		return result;
+	}
+
+	@Override
+	public AdministrationList getAdminMembers(String userGroupId) {
+		try {
+			List<UserIbp> founderList = userService.getFounderList(userGroupId);
+			List<UserIbp> moderatorList = userService.getModeratorList(userGroupId);
+			AdministrationList result = new AdministrationList(founderList, moderatorList);
+			return result;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
 }

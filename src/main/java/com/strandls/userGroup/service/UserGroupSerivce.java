@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.pac4j.core.profile.CommonProfile;
 
 import com.strandls.activity.pojo.MailData;
+import com.strandls.userGroup.pojo.AdministrationList;
 import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
@@ -94,5 +95,7 @@ public interface UserGroupSerivce {
 	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId);
 
 	public Boolean validateJoinRequest(HttpServletRequest request, String token);
+
+	public AdministrationList getAdminMembers(String userGroupId);
 
 }
