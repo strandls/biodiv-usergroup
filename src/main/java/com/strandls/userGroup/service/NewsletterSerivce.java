@@ -17,5 +17,5 @@ public interface NewsletterSerivce {
 	
 	public Newsletter findById(Long id);
 	
-	public List<NewsletterWithParentChildRelationship> getByUserGroupAndLanguage(Long userGroupId, Long languageId);
+	public List<NewsletterWithParentChildRelationship> getByUserGroupAndLanguage(Long userGroupId, Long languageId, Boolean showSticky);
 }
