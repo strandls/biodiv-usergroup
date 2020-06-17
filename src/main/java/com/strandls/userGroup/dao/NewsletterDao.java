@@ -53,7 +53,7 @@ public class NewsletterDao extends AbstractDAO<Newsletter, Long>{
 	public List<Newsletter> getByUserGroupAndLanguage(Long userGroupId, Long languageId) {
 		String queryStr = ""
 				+ "from " + daoType.getSimpleName() + " t "
-						+ " where ((t.userGroupId is null and :userGroupId is null) or t.userGroupId = :userGroupId) and t.languageId = :languageId"
+						+ " where ((t.userGroupId is null and :userGroupId is null) or t.userGroupId = :userGroupId) and t.languageId = :languageId and sticky = true "
 						+ " order by displayOrder";
 		
 		Session session = sessionFactory.openSession();
