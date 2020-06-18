@@ -3,6 +3,7 @@
  */
 package com.strandls.userGroup.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -50,7 +51,7 @@ public class UserGroupHabitatDao extends AbstractDAO<UserGroupHabitat, Long> {
 	public List<UserGroupHabitat> findByUserGroupId(Long userGroupId) {
 		String qry = "from UserGroupHabitat where userGroupId = :ugId";
 		Session session = sessionFactory.openSession();
-		List<UserGroupHabitat> result = null;
+		List<UserGroupHabitat> result = new ArrayList<UserGroupHabitat>();
 		try {
 			Query<UserGroupHabitat> query = session.createQuery(qry);
 			query.setParameter("ugId", userGroupId);
