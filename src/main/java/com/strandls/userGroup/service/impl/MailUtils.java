@@ -15,10 +15,14 @@ import org.slf4j.LoggerFactory;
 import com.strandls.mail_utility.model.EnumModel.FIELDS;
 import com.strandls.mail_utility.model.EnumModel.INVITATION_DATA;
 import com.strandls.mail_utility.model.EnumModel.MAIL_TYPE;
+import com.strandls.mail_utility.model.EnumModel.REQUEST_DATA;
 import com.strandls.mail_utility.producer.RabbitMQProducer;
 import com.strandls.mail_utility.util.JsonUtil;
+import com.strandls.user.pojo.User;
+import com.strandls.user.pojo.UserIbp;
 import com.strandls.userGroup.RabbitMqConnection;
 import com.strandls.userGroup.pojo.InvitaionMailData;
+import com.strandls.userGroup.pojo.UserGroupIbp;
 
 /**
  * @author Abhishek Rudra
@@ -60,6 +64,37 @@ public class MailUtils {
 			logger.error(e.getMessage());
 		}
 
+	}
+
+	public void sendRequest(List<User> requesteeDetails, UserIbp requesterObject, UserGroupIbp userGroupIbp,
+			String encryptionKey, String serverUrl) {
+		try {
+
+			for (User requestee : requesteeDetails) {
+				if (requestee.getEmail() != null && !requestee.getEmail().contains("@ibp.org")) {
+					Map<String, Object> data = new HashMap<String, Object>();
+					data.put(FIELDS.TYPE.getAction(), MAIL_TYPE.SEND_REQUEST.getAction());
+					data.put(FIELDS.TO.getAction(), new String[] { requestee.getEmail() });
+
+					Map<String, Object> requestData = new HashMap<String, Object>();
+					requestData.put(REQUEST_DATA.REQUESTEE_NAME.getAction(), requestee.getName());
+					requestData.put(REQUEST_DATA.REQUESTOR.getAction(), requesterObject);
+					requestData.put(REQUEST_DATA.SERVER_URL.getAction(), serverUrl);
+					requestData.put(REQUEST_DATA.GROUP.getAction(), userGroupIbp);
+					requestData.put(REQUEST_DATA.ENCRYPTED_KEY.getAction(), encryptionKey);
+
+					data.put(FIELDS.DATA.getAction(), JsonUtil.unflattenJSON(requestData));
+
+					producer.produceNotification(RabbitMqConnection.EXCHANGE_BIODIV,
+							RabbitMqConnection.MAILING_ROUTINGKEY, null, JsonUtil.mapToJSON(data));
+
+				}
+
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
 	}
 
 }

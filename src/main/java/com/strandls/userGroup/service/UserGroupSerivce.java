@@ -66,7 +66,7 @@ public interface UserGroupSerivce {
 	public Boolean addMemberRoleInvitaions(HttpServletRequest request, CommonProfile profile,
 			UserGroupInvitationData userGroupInvitations);
 
-	public Boolean validateMember(HttpServletRequest request, Long userId, String token);
+	public UserGroupIbp validateMember(HttpServletRequest request, Long userId, String token);
 
 	public Boolean removeUser(HttpServletRequest request, String userGroupId, String userId);
 
@@ -94,7 +94,7 @@ public interface UserGroupSerivce {
 
 	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId);
 
-	public Boolean validateJoinRequest(HttpServletRequest request, String token);
+	public UserGroupIbp validateJoinRequest(HttpServletRequest request, String token);
 
 	public AdministrationList getAdminMembers(String userGroupId);
 

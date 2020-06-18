@@ -303,7 +303,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				result.add(ugMap.get(ugm.getUserGroupId()));
 				ugMap.remove(ugm.getUserGroupId());
 			}
-			for(Entry<Long, UserGroupIbp> entry:ugMap.entrySet()) {
+			for (Entry<Long, UserGroupIbp> entry : ugMap.entrySet()) {
 				result.add(entry.getValue());
 			}
 
@@ -639,7 +639,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean validateMember(HttpServletRequest request, Long userId, String token) {
+	public UserGroupIbp validateMember(HttpServletRequest request, Long userId, String token) {
 		try {
 
 			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
@@ -679,7 +679,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 								ugInviteDB.getUserGroupId(), ugInviteDB.getUserGroupId(), "userGroup", userId,
 								"Joined group");
 
-						return true;
+						return fetchByGroupIdIbp(ugInviteDB.getUserGroupId());
 					} else {
 //						code for role update
 
@@ -747,7 +747,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 								ugInviteDB.getUserGroupId(), ugInviteDB.getUserGroupId(), "userGroup", userId,
 								"Role updated");
 
-						return true;
+						return fetchByGroupIdIbp(ugInviteDB.getUserGroupId());
 
 					}
 
@@ -757,7 +757,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			logger.error(e.getMessage());
 		}
 
-		return false;
+		return null;
 	}
 
 	@Override
@@ -811,6 +811,17 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			} else {
 //				CLOSED GROUP - send out a Request
 
+				InputStream in = Thread.currentThread().getContextClassLoader()
+						.getResourceAsStream("config.properties");
+				Properties properties = new Properties();
+				try {
+					properties.load(in);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				String serverUrl = properties.getProperty("serverUrl");
+				in.close();
+
 				UserGroupJoinRequest ugJoin = ugJoinRequestDao.findByuserIdUGId(userId, Long.parseLong(userGroupId));
 				if (ugJoin == null) {
 					ugJoin = new UserGroupJoinRequest(null, Long.parseLong(userGroupId), userId);
@@ -824,9 +835,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					String ugJoinStr = objectMapper.writeValueAsString(ugJoin);
 					String encrptyedKey = encryptionUtils.encrypt(ugJoinStr);
 					List<User> userList = userService.getFounderModeratorList(userGroupId);
-//					recepient list, userData, usergroupData, encrpty data
+					UserGroupIbp userGroupIbp = fetchByGroupIdIbp(Long.parseLong(userGroupId));
 
-//					TODO send mail for request
+					mailUtils.sendRequest(userList, userIbp, userGroupIbp, encrptyedKey, serverUrl);
 				}
 			}
 
@@ -837,7 +848,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public Boolean validateJoinRequest(HttpServletRequest request, String token) {
+	public UserGroupIbp validateJoinRequest(HttpServletRequest request, String token) {
 		try {
 			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
 			Properties properties = new Properties();
@@ -865,12 +876,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 								originalObject.getUserGroupId(), originalObject.getUserGroupId(), "userGroup",
 								originalObject.getUserId(), "Joined group");
 						ugJoinRequestDao.delete(originalObject);
-						return true;
+					} else {
+						ugJoinRequestDao.delete(originalObject);
 					}
-					ugJoinRequestDao.delete(originalObject);
+					return fetchByGroupIdIbp(originalObject.getUserGroupId());
 				}
 			}
-			return false;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -1087,7 +1098,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			UserGroupCreateData ugCreateData) {
 		try {
 			String webAddress = ugCreateData.getName().replace(" ", "_");
-			Long userId = Long.parseLong(profile.getId());
 
 			UserGroup userGroup = new UserGroup(null, true, true, true, ugCreateData.getAllowUserToJoin(),
 					ugCreateData.getDescription(), ugCreateData.getDomainName(), new Date(), ugCreateData.getHomePage(),
@@ -1120,8 +1130,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (ugCreateData.getInvitationData() != null) {
 				UserGroupInvitationData userGroupInvitations = ugCreateData.getInvitationData();
 				userGroupInvitations.setUserGroupId(userGroup.getId());
-				if (!userGroupInvitations.getFounderIds().contains(userId))
-					userGroupInvitations.getFounderIds().add(userId);
 				addMemberRoleInvitaions(request, profile, userGroupInvitations);
 			}
 

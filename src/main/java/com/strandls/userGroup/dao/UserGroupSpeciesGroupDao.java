@@ -55,7 +55,7 @@ public class UserGroupSpeciesGroupDao extends AbstractDAO<UserGroupSpeciesGroup,
 		Session session = sessionFactory.openSession();
 		try {
 			Query<UserGroupSpeciesGroup> query = session.createQuery(qry);
-			query.setParameter("ugIf", userGroupId);
+			query.setParameter("ugId", userGroupId);
 			result = query.getResultList();
 
 		} catch (Exception e) {

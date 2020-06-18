@@ -463,7 +463,7 @@ public class UserGroupController {
 
 	@ValidateUser
 
-	@ApiOperation(value = "Validate the inivation request", notes = "validates the invitaion request", response = String.class)
+	@ApiOperation(value = "Validate the inivation request", notes = "validates the invitaion request", response = UserGroupIbp.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "unable to validate the invitation", response = String.class) })
 
@@ -472,9 +472,9 @@ public class UserGroupController {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
-			Boolean result = ugServices.validateMember(request, userId, token);
-			if (result)
-				return Response.status(Status.OK).entity("User added to userGroup").build();
+			UserGroupIbp result = ugServices.validateMember(request, userId, token);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("user Not allowed to join the group").build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -489,11 +489,15 @@ public class UserGroupController {
 
 	@ValidateUser
 
+	@ApiOperation(value = "validate the join request for closed groups", notes = "In success returns the usergroup data", response = UserGroupIbp.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to validate the request", response = String.class) })
+
 	public Response validateJoinRequest(@Context HttpServletRequest request, @PathParam("token") String token) {
 		try {
-			Boolean result = ugServices.validateJoinRequest(request, token);
-			if (result != null && result)
-				return Response.status(Status.OK).entity("User Request to join group accpeted").build();
+			UserGroupIbp result = ugServices.validateJoinRequest(request, token);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.METHOD_NOT_ALLOWED).build();
 
 		} catch (Exception e) {
