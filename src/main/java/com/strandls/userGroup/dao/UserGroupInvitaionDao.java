@@ -36,7 +36,7 @@ public class UserGroupInvitaionDao extends AbstractDAO<UserGroupInvitation, Long
 
 	@SuppressWarnings("unchecked")
 	public UserGroupInvitation findByUserIdUGId(Long userId, Long userGroupId) {
-		String qry = "from UserGroupInvitaion where inviteeId = :userId and userGroupId = :ugId";
+		String qry = "from UserGroupInvitation where inviteeId = :userId and userGroupId = :ugId";
 		UserGroupInvitation result = null;
 		Session session = sessionFactory.openSession();
 		try {
