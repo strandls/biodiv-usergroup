@@ -456,8 +456,8 @@ public class UserGroupController {
 
 	}
 
-	@GET
-	@Path(ApiConstants.VALIDATE + ApiConstants.MEMBERS + "/{token}")
+	@POST
+	@Path(ApiConstants.VALIDATE + ApiConstants.MEMBERS)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -468,7 +468,7 @@ public class UserGroupController {
 			@ApiResponse(code = 400, message = "unable to validate the invitation", response = String.class) })
 
 	public Response validateUserGroupMemberInvite(@Context HttpServletRequest request,
-			@PathParam("token") String token) {
+			@ApiParam(name = "token") String token) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
@@ -482,8 +482,8 @@ public class UserGroupController {
 
 	}
 
-	@GET
-	@Path(ApiConstants.VALIDATE + ApiConstants.REQUEST + "/{token}")
+	@POST
+	@Path(ApiConstants.VALIDATE + ApiConstants.REQUEST)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -493,7 +493,7 @@ public class UserGroupController {
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "unable to validate the request", response = String.class) })
 
-	public Response validateJoinRequest(@Context HttpServletRequest request, @PathParam("token") String token) {
+	public Response validateJoinRequest(@Context HttpServletRequest request, @ApiParam(name = "token") String token) {
 		try {
 			UserGroupIbp result = ugServices.validateJoinRequest(request, token);
 			if (result != null)
