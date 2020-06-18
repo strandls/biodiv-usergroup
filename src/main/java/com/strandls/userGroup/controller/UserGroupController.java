@@ -861,6 +861,7 @@ public class UserGroupController {
 			@FormParam("password") String password, @FormParam("mode") String mode) {
 		try {
 			Map<String, Object> data = ugServices.signupProxy(request, userEmail, password, mode);
+			System.out.println("\n\n***** Response: " + data + " *****\n\n");
 			ResponseBuilder response = Response.ok().entity(data);
 			if (Boolean.parseBoolean(data.get("status").toString())
 					&& !Boolean.parseBoolean(data.get("verificationRequired").toString())) {
@@ -885,6 +886,7 @@ public class UserGroupController {
 			@FormParam("otp") String otp) {
 		try {
 			Map<String, Object> data = ugServices.verifyOTPProxy(request, id, otp);
+			System.out.println("\n\n***** Response: " + data + " *****\n\n");
 			ResponseBuilder response = Response.ok();
 			if (Boolean.parseBoolean(data.get("status").toString())) {
 				NewCookie accessToken = new NewCookie("BAToken", data.get("access_token").toString(), "/",
