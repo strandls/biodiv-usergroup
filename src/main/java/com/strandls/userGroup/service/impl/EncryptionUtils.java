@@ -2,6 +2,8 @@ package com.strandls.userGroup.service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import javax.crypto.Cipher;
@@ -42,6 +44,7 @@ public class EncryptionUtils {
 
 	}
 
+	@SuppressWarnings("deprecation")
 	public String encrypt(String plainText) {
 		String strData = "";
 
@@ -51,6 +54,7 @@ public class EncryptionUtils {
 			cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
 			byte[] encrypted = cipher.doFinal(plainText.getBytes("UTF-8"));
 			strData = DatatypeConverter.printBase64Binary(encrypted);
+			strData = URLEncoder.encode(strData,StandardCharsets.UTF_8.toString());
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
