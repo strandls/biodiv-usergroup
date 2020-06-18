@@ -35,6 +35,7 @@ import com.strandls.userGroup.dto.AuthenticationDTO;
 import com.strandls.userGroup.pojo.AdministrationList;
 import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
+import com.strandls.userGroup.pojo.EncryptionKey;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.ShowFilterRule;
@@ -474,11 +475,11 @@ public class UserGroupController {
 			@ApiResponse(code = 400, message = "unable to validate the invitation", response = String.class) })
 
 	public Response validateUserGroupMemberInvite(@Context HttpServletRequest request,
-			@ApiParam(name = "token") String token) {
+			@ApiParam(name = "encryptionKey") EncryptionKey encryptionKey) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long userId = Long.parseLong(profile.getId());
-			UserGroupIbp result = ugServices.validateMember(request, userId, token);
+			UserGroupIbp result = ugServices.validateMember(request, userId, encryptionKey.getToken());
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("user Not allowed to join the group").build();
@@ -490,7 +491,7 @@ public class UserGroupController {
 
 	@POST
 	@Path(ApiConstants.VALIDATE + ApiConstants.REQUEST)
-	@Consumes(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
@@ -499,9 +500,10 @@ public class UserGroupController {
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "unable to validate the request", response = String.class) })
 
-	public Response validateJoinRequest(@Context HttpServletRequest request, @ApiParam(name = "token") String token) {
+	public Response validateJoinRequest(@Context HttpServletRequest request,
+			@ApiParam(name = "encryptionKey") EncryptionKey encryptionKey) {
 		try {
-			UserGroupIbp result = ugServices.validateJoinRequest(request, token);
+			UserGroupIbp result = ugServices.validateJoinRequest(request, encryptionKey.getToken());
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.METHOD_NOT_ALLOWED).build();
