@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +46,11 @@ public class EncryptionUtils {
 		String strData = "";
 
 		try {
-			SecretKeySpec skeyspec = new SecretKeySpec(key.getBytes(), "Blowfish");
+			SecretKeySpec skeyspec = new SecretKeySpec(key.getBytes("UTF-8"), "Blowfish");
 			Cipher cipher = Cipher.getInstance("Blowfish");
 			cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
-			byte[] encrypted = cipher.doFinal(plainText.getBytes());
-			strData = new String(encrypted);
-
+			byte[] encrypted = cipher.doFinal(plainText.getBytes("UTF-8"));
+			strData = DatatypeConverter.printBase64Binary(encrypted);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -61,11 +61,11 @@ public class EncryptionUtils {
 		String strData = "";
 
 		try {
-			SecretKeySpec skeyspec = new SecretKeySpec(key.getBytes(), "Blowfish");
+			SecretKeySpec skeyspec = new SecretKeySpec(key.getBytes("UTF-8"), "Blowfish");
 			Cipher cipher = Cipher.getInstance("Blowfish");
 			cipher.init(Cipher.DECRYPT_MODE, skeyspec);
-			byte[] decrypted = cipher.doFinal(encryptedText.getBytes());
-			strData = new String(decrypted);
+			byte[] decrypted = cipher.doFinal(DatatypeConverter.parseBase64Binary(encryptedText));
+			strData = new String(decrypted, "UTF-8");
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
