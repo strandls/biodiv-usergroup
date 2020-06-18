@@ -44,7 +44,6 @@ public class EncryptionUtils {
 
 	}
 
-	@SuppressWarnings("deprecation")
 	public String encrypt(String plainText) {
 		String strData = "";
 
