@@ -695,49 +695,20 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 //						code for role update
 
 						String previousRole = "Member";
-						if (ugInviteDB.getRoleId().equals(founderId)) {
-							userService = headers.addUserHeader(userService,
-									request.getHeader(HttpHeaders.AUTHORIZATION));
-							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
-							if (isFounder)
-								return null;
+						userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+						Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
+						if (isFounder)
+							previousRole = "Founder";
+						else {
 							userService = headers.addUserHeader(userService,
 									request.getHeader(HttpHeaders.AUTHORIZATION));
 							Boolean isModerator = userService
 									.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
 							if (isModerator)
 								previousRole = "Moderator";
-						} else if (ugInviteDB.getRoleId().equals(moderatorId)) {
-							userService = headers.addUserHeader(userService,
-									request.getHeader(HttpHeaders.AUTHORIZATION));
-							Boolean isModerator = userService
-									.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
-							if (isModerator)
-								return null;
-							userService = headers.addUserHeader(userService,
-									request.getHeader(HttpHeaders.AUTHORIZATION));
-							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
-							if (isFounder)
-								previousRole = "Founder";
-						} else {
-							userService = headers.addUserHeader(userService,
-									request.getHeader(HttpHeaders.AUTHORIZATION));
-							Boolean isFounder = userService.checkFounderRole(ugInviteDB.getUserGroupId().toString());
-							if (!isFounder) {
-								userService = headers.addUserHeader(userService,
-										request.getHeader(HttpHeaders.AUTHORIZATION));
-								Boolean isModerator = userService
-										.checkModeratorRole(ugInviteDB.getUserGroupId().toString());
-								if (!isModerator)
-									return null;
-								else
-									previousRole = "Moderator";
-
-							} else {
-								previousRole = "Founder";
-							}
 
 						}
+
 						userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
 						userService.removeGroupMember(ugInviteDB.getInviteeId().toString(),
 								ugInviteDB.getUserGroupId().toString());
