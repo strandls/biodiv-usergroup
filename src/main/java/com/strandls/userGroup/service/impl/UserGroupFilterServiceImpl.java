@@ -188,8 +188,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				Coordinate c = new Coordinate(lon, lat);
 				Geometry point = geofactory.createPoint(c);
 				for (UserGroupSpatialData ugSpatialData : spatialList) {
-					UserGroupWKT wkt = objectMapper.readValue(ugSpatialData.getSpatialData(), UserGroupWKT.class);
-					Geometry groupBoundries = reader.read(wkt.getWkt());
+					Geometry groupBoundries = reader.read(ugSpatialData.getSpatialData());
 					if (groupBoundries.intersects(point))
 						return true;
 				}
