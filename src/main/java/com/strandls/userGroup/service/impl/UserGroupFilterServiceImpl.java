@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 
@@ -18,8 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.inject.Inject;
-
 import com.strandls.activity.pojo.UserGroupActivity;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
@@ -45,7 +44,6 @@ import com.strandls.userGroup.pojo.UserGroupObservedonDateRule;
 import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupSpatialData;
 import com.strandls.userGroup.pojo.UserGroupTaxonomicRule;
-import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
 import com.strandls.userGroup.service.UserGroupSerivce;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -348,7 +346,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 			if (ugFilter != null) {
 				if (ugFilter.getHasSpatialRule()) {
 					Boolean isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(),
-							ugFilterData.getLatitude());
+							ugFilterData.getLongitude());
 					if (!isSpartial)
 						return false;
 				}
