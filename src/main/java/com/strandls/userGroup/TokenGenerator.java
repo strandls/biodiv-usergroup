@@ -73,6 +73,7 @@ public class TokenGenerator {
 		Map<String, Object> token = AuthUtil.generateToken(u1, false);
 
 		String accessToken = (String) token.get("access_token");
+		accessToken = "Bearer "+accessToken;
 
 		return accessToken;
 	}
