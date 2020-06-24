@@ -625,6 +625,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				inviteeEmail = inviteeObject.getEmail();
 			} else if (email != null) {
 				inviteeName = email.split("@")[0];
+				inviteeEmail = email;
 			}
 			if (inviteeEmail != null && inviteeEmail.length() > 0) {
 				InvitaionMailData mailData = new InvitaionMailData(inviterObject, inviteeName, inviteeEmail,
