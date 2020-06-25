@@ -3,9 +3,6 @@
  */
 package com.strandls.userGroup.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -14,31 +11,31 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
-import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
+import com.strandls.userGroup.pojo.UserGroupFilterRule;
 import com.strandls.userGroup.util.AbstractDAO;
 
 /**
  * @author Abhishek Rudra
  *
  */
-public class UserGroupSpeciesGroupDao extends AbstractDAO<UserGroupSpeciesGroup, Long> {
+public class UserGroupFilterRuleDao extends AbstractDAO<UserGroupFilterRule, Long> {
 
-	private final Logger logger = LoggerFactory.getLogger(UserGroupSpeciesGroupDao.class);
+	private final Logger logger = LoggerFactory.getLogger(UserGroupFilterRuleDao.class);
 
 	/**
 	 * @param sessionFactory
 	 */
 	@Inject
-	protected UserGroupSpeciesGroupDao(SessionFactory sessionFactory) {
+	protected UserGroupFilterRuleDao(SessionFactory sessionFactory) {
 		super(sessionFactory);
 	}
 
 	@Override
-	public UserGroupSpeciesGroup findById(Long id) {
-		UserGroupSpeciesGroup result = null;
+	public UserGroupFilterRule findById(Long id) {
+		UserGroupFilterRule result = null;
 		Session session = sessionFactory.openSession();
 		try {
-			result = session.get(UserGroupSpeciesGroup.class, id);
+			result = session.get(UserGroupFilterRule.class, id);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {
@@ -48,15 +45,14 @@ public class UserGroupSpeciesGroupDao extends AbstractDAO<UserGroupSpeciesGroup,
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<UserGroupSpeciesGroup> findByUserGroupId(Long userGroupId) {
-
-		List<UserGroupSpeciesGroup> result = new ArrayList<UserGroupSpeciesGroup>();
-		String qry = "from UserGroupSpeciesGroup where userGroupId = :ugId";
+	public UserGroupFilterRule findByUserGroupId(Long userGroupId) {
+		String qry = "from UserGroupFilterRule where userGroupId = :ugId";
 		Session session = sessionFactory.openSession();
+		UserGroupFilterRule result = null;
 		try {
-			Query<UserGroupSpeciesGroup> query = session.createQuery(qry);
+			Query<UserGroupFilterRule> query = session.createQuery(qry);
 			query.setParameter("ugId", userGroupId);
-			result = query.getResultList();
+			result = query.getSingleResult();
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());

@@ -402,11 +402,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	@Override
-	public void createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData) {
+	public CustomFieldDetails createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData) {
 		try {
-
 			Long authorId = Long.parseLong(profile.getId());
-
 //			create custom field
 			CustomFields customFields = new CustomFields(null, authorId, customFieldCreateData.getName(),
 					customFieldCreateData.getDataType(), customFieldCreateData.getFieldType(),
@@ -416,38 +414,34 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 			customFields = cfsDao.save(customFields);
 
 //			create custom Field values if any
+			List<CustomFieldValues> cfValueList = new ArrayList<CustomFieldValues>();
+			CustomFieldValues cfValues = null;
 			if (customFields.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
 					|| customFields.getFieldType().equals("MULTIPLE CATEGORICAL")) {
 
 				for (CustomFieldValuesCreateData cfValuesCreate : customFieldCreateData.getValues()) {
-					CustomFieldValues cfValues = new CustomFieldValues(null, customFields.getId(),
-							cfValuesCreate.getValue(), authorId, cfValuesCreate.getIconURL(),
-							cfValuesCreate.getNotes());
-					cfValueDao.save(cfValues);
+					cfValues = new CustomFieldValues(null, customFields.getId(), cfValuesCreate.getValue(), authorId,
+							cfValuesCreate.getIconURL(), cfValuesCreate.getNotes());
+					cfValues = cfValueDao.save(cfValues);
+					cfValueList.add(cfValues);
 
 				}
 
 			}
 			if (customFields.getFieldType().equalsIgnoreCase("RANGE")) {
-				CustomFieldValues cfValues = new CustomFieldValues(null, customFields.getId(), "MIN", authorId, null,
-						null);
-				cfValueDao.save(cfValues);
+				cfValues = new CustomFieldValues(null, customFields.getId(), "MIN", authorId, null, null);
+				cfValues = cfValueDao.save(cfValues);
+				cfValueList.add(cfValues);
 				cfValues = new CustomFieldValues(null, customFields.getId(), "MAX", authorId, null, null);
-				cfValueDao.save(cfValues);
+				cfValues = cfValueDao.save(cfValues);
+				cfValueList.add(cfValues);
 			}
-
-//			create custom field userGroup mapping and user Group specific properties
-
-			UserGroupCustomFieldMapping ugCustomFieldMapping = new UserGroupCustomFieldMapping(null, authorId,
-					customFieldCreateData.getUserGroupId(), customFields.getId(),
-					customFieldCreateData.getDefaultValue(), customFieldCreateData.getDisplayOrder(),
-					customFieldCreateData.getIsMandatory(), customFieldCreateData.getAllowedParticipation());
-
-			ugCustomFieldMapping = ugCFMappingDao.save(ugCustomFieldMapping);
-
+			CustomFieldDetails cfDetails = new CustomFieldDetails(customFields, cfValueList, null, null, null, null);
+			return cfDetails;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
+		return null;
 
 	}
 
@@ -481,9 +475,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 								+ factsCreateData.getSingleCategorical();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
-						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
-								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
-								"Custom field edited", mailData);
+						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+								factsCreateData.getObservationId(), factsCreateData.getObservationId(), "observation",
+								factsCreateData.getObservationId(), "Custom field edited", mailData);
 
 					} else if (customFields.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
 
@@ -511,9 +505,11 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 								MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 										factsInsertData.getMailData());
-								logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
-										factsCreateData.getObservationId(), "observation",
-										factsCreateData.getObservationId(), "Custom field edited", mailData);
+
+								logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+										factsCreateData.getObservationId(), factsCreateData.getObservationId(),
+										"observation", factsCreateData.getObservationId(), "Custom field edited",
+										mailData);
 							}
 						}
 
@@ -552,9 +548,10 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ factsCreateData.getMaxValue();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
-									factsCreateData.getObservationId(), "observation",
-									factsCreateData.getObservationId(), "Custom field edited", mailData);
+
+							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+									factsCreateData.getObservationId(), factsCreateData.getObservationId(),
+									"observation", factsCreateData.getObservationId(), "Custom field edited", mailData);
 
 						}
 
@@ -581,9 +578,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 								+ factsCreateData.getSingleCategorical();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
-						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
-								factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
-								"Custom field edited", mailData);
+						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+								factsCreateData.getObservationId(), factsCreateData.getObservationId(), "observation",
+								factsCreateData.getObservationId(), "Custom field edited", mailData);
 
 					} else if (customFields.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
 						for (Long cfValuesId : factsCreateData.getMultipleCategorical()) {
@@ -595,9 +592,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ cfValueDao.findById(cfValuesId).getValues();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
-									factsCreateData.getObservationId(), "observation",
-									factsCreateData.getObservationId(), "Custom field edited", mailData);
+							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+									factsCreateData.getObservationId(), factsCreateData.getObservationId(),
+									"observation", factsCreateData.getObservationId(), "Custom field edited", mailData);
 						}
 					} else if (customFields.getFieldType().equalsIgnoreCase("RANGE")) {
 
@@ -615,9 +612,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 									+ factsCreateData.getMaxValue();
 							MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 									factsInsertData.getMailData());
-							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
-									factsCreateData.getObservationId(), "observation",
-									factsCreateData.getObservationId(), "Custom field edited", mailData);
+							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+									factsCreateData.getObservationId(), factsCreateData.getObservationId(),
+									"observation", factsCreateData.getObservationId(), "Custom field edited", mailData);
 
 						}
 
@@ -661,9 +658,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					+ factsCreateData.getTextBoxValue();
 			MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 					factsInsertData.getMailData());
-			logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, factsCreateData.getObservationId(),
-					factsCreateData.getObservationId(), "observation", factsCreateData.getObservationId(),
-					"Custom field edited", mailData);
+			logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+					factsCreateData.getObservationId(), factsCreateData.getObservationId(), "observation",
+					factsCreateData.getObservationId(), "Custom field edited", mailData);
 
 			return obvCF;
 		} catch (Exception e) {
@@ -738,34 +735,64 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	@Override
-	public List<CustomFieldDetails> getCustomField(Long userGroupId) {
-		List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
-		List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
-		List<UserGroupCustomFieldMapping> ugCFMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
-		for (UserGroupCustomFieldMapping ugCFMapping : ugCFMappingList) {
-			CustomFields customField = cfsDao.findById(ugCFMapping.getCustomFieldId());
-			if (customField.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
-					|| customField.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
-				cfValues = cfValueDao.findByCustomFieldId(customField.getId());
+	public List<CustomFieldDetails> getCustomField(HttpServletRequest request, CommonProfile profile,
+			Long userGroupId) {
 
+		try {
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+
+				List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
+				List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
+				List<UserGroupCustomFieldMapping> ugCFMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
+				for (UserGroupCustomFieldMapping ugCFMapping : ugCFMappingList) {
+					CustomFields customField = cfsDao.findById(ugCFMapping.getCustomFieldId());
+					if (customField.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+							|| customField.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
+						cfValues = cfValueDao.findByCustomFieldId(customField.getId());
+
+					}
+
+					result.add(new CustomFieldDetails(customField, cfValues, ugCFMapping.getDefaultValue(),
+							ugCFMapping.getDisplayOrder(), ugCFMapping.getIsMandatory(),
+							ugCFMapping.getAllowedParticipation()));
+				}
+				return result;
 			}
-
-			result.add(new CustomFieldDetails(customField, cfValues, ugCFMapping.getDefaultValue(),
-					ugCFMapping.getDisplayOrder(), ugCFMapping.getIsMandatory(),
-					ugCFMapping.getAllowedParticipation()));
-
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
-
-		return result;
-
+		return null;
 	}
 
 	@Override
-	public List<CustomFieldDetails> removeCustomField(Long userGroupId, Long customFieldId) {
-		UserGroupCustomFieldMapping ugCFMapping = ugCFMappingDao.findByUserGroupCustomFieldId(userGroupId,
-				customFieldId);
-		ugCFMappingDao.delete(ugCFMapping);
-		return getCustomField(userGroupId);
+	public List<CustomFieldDetails> removeCustomField(HttpServletRequest request, CommonProfile profile,
+			Long userGroupId, Long customFieldId) {
+		try {
+
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				UserGroupCustomFieldMapping ugCFMapping = ugCFMappingDao.findByUserGroupCustomFieldId(userGroupId,
+						customFieldId);
+
+				if (ugCFMapping == null)
+					return null;
+				ugCFMappingDao.delete(ugCFMapping);
+				logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), null, userGroupId,
+						userGroupId, "userGroup", customFieldId, "Removed Custom Field");
+
+				return getCustomField(request, profile, userGroupId);
+
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
 	@Override
@@ -791,14 +818,31 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	@Override
-	public List<CustomFieldDetails> addCustomFieldUG(Long userId, CustomFieldUGData customFieldUGData) {
-		UserGroupCustomFieldMapping ugCFMapping = new UserGroupCustomFieldMapping(null, userId,
-				customFieldUGData.getUserGroupId(), customFieldUGData.getCustomFieldId(),
-				customFieldUGData.getDefaultValue(), customFieldUGData.getDisplayOrder(),
-				customFieldUGData.getIsMandatory(), customFieldUGData.getAllowedParticipation());
-		ugCFMappingDao.save(ugCFMapping);
+	public List<CustomFieldDetails> addCustomFieldUG(HttpServletRequest request, CommonProfile profile, Long userId,
+			Long userGroupId, List<CustomFieldUGData> customFieldUGDataList) {
+		try {
 
-		return getCustomField(customFieldUGData.getUserGroupId());
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				for (CustomFieldUGData customFieldUGData : customFieldUGDataList) {
+					UserGroupCustomFieldMapping ugCFMapping = new UserGroupCustomFieldMapping(null, userId, userGroupId,
+							customFieldUGData.getCustomFieldId(), customFieldUGData.getDefaultValue(),
+							customFieldUGData.getDisplayOrder(), customFieldUGData.getIsMandatory(),
+							customFieldUGData.getAllowedParticipation());
+					ugCFMappingDao.save(ugCFMapping);
+					String desc = "Custom Field : " + cfsDao.findById(customFieldUGData.getCustomFieldId()).getName()
+							+ " to Group : " + userGroupDao.findById(userGroupId).getName();
+					logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc, userGroupId,
+							userGroupId, "userGroup", customFieldUGData.getCustomFieldId(), "Added Custom Field");
+				}
+				return getCustomField(request, profile, userGroupId);
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
 }
