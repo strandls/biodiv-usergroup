@@ -711,8 +711,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						}
 
 						userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-						userService.removeGroupMember(ugInviteDB.getInviteeId().toString(),
-								ugInviteDB.getUserGroupId().toString());
+						userService.leaveGroup(ugInviteDB.getUserGroupId().toString());
 
 						userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
 						userService.addMemberRoleUG(ugInviteDB.getUserGroupId().toString(),

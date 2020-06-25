@@ -319,8 +319,8 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						ugActivity.setUserGroupId(ugIbp.getId());
 						ugActivity.setUserGroupName(ugIbp.getName());
 						ugActivity.setWebAddress(ugIbp.getWebAddress());
-						ugActivity.setReason(
-								"Removed Through Filter Rules" + findReason(ugid, userId, ugObvFilterData));
+						ugActivity
+								.setReason("Removed Through Filter Rules" + findReason(ugid, userId, ugObvFilterData));
 						try {
 							description = objectMapper.writeValueAsString(ugActivity);
 						} catch (Exception e) {
