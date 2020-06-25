@@ -251,7 +251,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 							ugActivity.setUserGroupId(ugIbp.getId());
 							ugActivity.setUserGroupName(ugIbp.getName());
 							ugActivity.setWebAddress(ugIbp.getWebAddress());
-							ugActivity.setReason("Admin Added Through Filter Rules");
+							ugActivity.setReason("Added Through Filter Rules");
 							try {
 								description = objectMapper.writeValueAsString(ugActivity);
 							} catch (Exception e) {
@@ -320,14 +320,14 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						ugActivity.setUserGroupName(ugIbp.getName());
 						ugActivity.setWebAddress(ugIbp.getWebAddress());
 						ugActivity.setReason(
-								"Admin Removed Through Filter Rules" + findReason(ugid, userId, ugObvFilterData));
+								"Removed Through Filter Rules" + findReason(ugid, userId, ugObvFilterData));
 						try {
 							description = objectMapper.writeValueAsString(ugActivity);
 						} catch (Exception e) {
 							logger.error(e.getMessage());
 						}
 						logActivity.LogActivity(token, description, ugObvFilterData.getObservationId(),
-								ugObvFilterData.getObservationId(), "observation", ugid, "Posted resource", null);
+								ugObvFilterData.getObservationId(), "observation", ugid, "Removed resoruce", null);
 
 					}
 
@@ -750,7 +750,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						ugActivity.setUserGroupId(ugIbp.getId());
 						ugActivity.setUserGroupName(ugIbp.getName());
 						ugActivity.setWebAddress(ugIbp.getWebAddress());
-						ugActivity.setReason("Admin Added Through Filter Rules");
+						ugActivity.setReason("Added Through Filter Rules");
 						try {
 							description = objectMapper.writeValueAsString(ugActivity);
 						} catch (Exception e) {
@@ -809,14 +809,14 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						ugActivity.setUserGroupName(ugIbp.getName());
 						ugActivity.setWebAddress(ugIbp.getWebAddress());
 						ugActivity.setReason(
-								"Admin Removed Through Filter Rules " + findReason(userGroupId, userId, ugFilterData));
+								"Removed Through Filter Rules " + findReason(userGroupId, userId, ugFilterData));
 						try {
 							description = objectMapper.writeValueAsString(ugActivity);
 						} catch (Exception e) {
 							logger.error(e.getMessage());
 						}
 						logActivity.LogActivity(token, description, ugFilterData.getObservationId(),
-								ugFilterData.getObservationId(), "observation", userGroupId, "Posted resource", null);
+								ugFilterData.getObservationId(), "observation", userGroupId, "Removed resoruce", null);
 
 					}
 
