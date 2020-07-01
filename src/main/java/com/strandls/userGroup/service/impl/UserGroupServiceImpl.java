@@ -136,10 +136,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		UserGroup ug = userGroupDao.findById(id);
 		UserGroupIbp ibp;
 		if (ug.getDomianName() != null)
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName());
+			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName(), ug.getAllowUserToJoin());
 		else {
 			String webAddress = "/group/" + ug.getWebAddress();
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress);
+			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress, ug.getAllowUserToJoin());
 		}
 		return ibp;
 	}
@@ -292,10 +292,11 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				if (userGroup.getDomianName() != null)
 					ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(),
-							userGroup.getDomianName());
+							userGroup.getDomianName(), userGroup.getAllowUserToJoin());
 				else {
 					String webAddress = "/group/" + userGroup.getWebAddress();
-					ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(), webAddress);
+					ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(), webAddress,
+							userGroup.getAllowUserToJoin());
 				}
 				ugMap.put(userGroup.getId(), ibp);
 			}
