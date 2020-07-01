@@ -48,5 +48,6 @@ public class ApiConstants {
 	public static final String HOMEPAGE = "/homePage";
 	public static final String REQUEST = "/request";
 	public static final String ADMINSTRATION = "/adminstration";
+	public static final String DOCUMENT = "/document";
 
 }

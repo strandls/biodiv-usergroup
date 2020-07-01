@@ -36,6 +36,7 @@ import com.strandls.userGroup.Headers;
 import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.StatsDao;
 import com.strandls.userGroup.dao.UserGroupDao;
+import com.strandls.userGroup.dao.UserGroupDocumentDao;
 import com.strandls.userGroup.dao.UserGroupHabitatDao;
 import com.strandls.userGroup.dao.UserGroupInvitaionDao;
 import com.strandls.userGroup.dao.UserGroupJoinRequestDao;
@@ -52,6 +53,8 @@ import com.strandls.userGroup.pojo.Stats;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
+import com.strandls.userGroup.pojo.UserGroupDocCreateData;
+import com.strandls.userGroup.pojo.UserGroupDocument;
 import com.strandls.userGroup.pojo.UserGroupEditData;
 import com.strandls.userGroup.pojo.UserGroupHabitat;
 import com.strandls.userGroup.pojo.UserGroupHomePage;
@@ -124,6 +127,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupJoinRequestDao ugJoinRequestDao;
+
+	@Inject
+	private UserGroupDocumentDao ugDocumentDao;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -1330,6 +1336,27 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			logger.error(e.getMessage());
 		}
 		return null;
+	}
+
+	@Override
+	public List<UserGroupIbp> fetchByDocumentId(Long documentId) {
+		List<UserGroupDocument> UserGroupDocuments = ugDocumentDao.findByDocumentId(documentId);
+		List<UserGroupIbp> userGroupIbp = new ArrayList<UserGroupIbp>();
+		for (UserGroupDocument ugDoc : UserGroupDocuments) {
+			userGroupIbp.add(fetchByGroupIdIbp(ugDoc.getUserGroupId()));
+		}
+		return userGroupIbp;
+	}
+
+	@Override
+	public List<UserGroupIbp> createUGDocMapping(HttpServletRequest request, UserGroupDocCreateData ugDocCreate) {
+
+		for (Long ugId : ugDocCreate.getUserGroupIds()) {
+			UserGroupDocument ugDoc = new UserGroupDocument(ugId, ugDocCreate.getDocumentId());
+			ugDocumentDao.save(ugDoc);
+		}
+
+		return fetchByDocumentId(ugDocCreate.getDocumentId());
 	}
 
 }
