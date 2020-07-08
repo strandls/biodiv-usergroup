@@ -809,6 +809,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					UserGroupIbp userGroupIbp = fetchByGroupIdIbp(Long.parseLong(userGroupId));
 
 					mailUtils.sendRequest(userList, userIbp, userGroupIbp, encrptyedKey, serverUrl);
+					return true;
 				}
 			}
 
