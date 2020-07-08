@@ -821,6 +821,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					UserGroupIbp userGroupIbp = fetchByGroupIdIbp(Long.parseLong(userGroupId));
 
 					mailUtils.sendRequest(userList, userIbp, userGroupIbp, encrptyedKey, serverUrl);
+					return true;
 				}
 			}
 
@@ -833,6 +834,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Override
 	public UserGroupIbp validateJoinRequest(HttpServletRequest request, String token) {
 		try {
+
 			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
 			Properties properties = new Properties();
 			try {
@@ -844,27 +846,40 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			in.close();
 			String decryptedStr = encryptionUtils.decrypt(token);
 			UserGroupJoinRequest userGroupJoin = objectMapper.readValue(decryptedStr, UserGroupJoinRequest.class);
-			UserGroupJoinRequest originalObject = ugJoinRequestDao.findById(userGroupJoin.getId());
-			if (originalObject != null) {
-				if (userGroupJoin.equals(originalObject)) {
-					userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-					Boolean isMember = userService.checkGroupMemberByUserId(originalObject.getUserGroupId().toString(),
-							originalObject.getUserId().toString());
-					if (!isMember) {
-						userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-						userService.addMemberRoleUG(originalObject.getUserGroupId().toString(), memberId.toString());
 
-						String desc = "Joined Group with Role: Member";
-						logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc,
-								originalObject.getUserGroupId(), originalObject.getUserGroupId(), "userGroup",
-								originalObject.getUserId(), "Joined group");
-						ugJoinRequestDao.delete(originalObject);
-					} else {
-						ugJoinRequestDao.delete(originalObject);
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupJoin.getUserGroupId().toString());
+			Boolean isModerator = userService.checkModeratorRole(userGroupJoin.getUserGroupId().toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
+				UserGroupJoinRequest originalObject = ugJoinRequestDao.findById(userGroupJoin.getId());
+				if (originalObject != null) {
+					if (userGroupJoin.equals(originalObject)) {
+						userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+						Boolean isMember = userService.checkGroupMemberByUserId(
+								originalObject.getUserGroupId().toString(), originalObject.getUserId().toString());
+						if (!isMember) {
+							userService = headers.addUserHeader(userService,
+									request.getHeader(HttpHeaders.AUTHORIZATION));
+							userService.addMemberRoleUG(originalObject.getUserGroupId().toString(),
+									memberId.toString());
+
+							String desc = "Joined Group with Role: Member";
+							logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc,
+									originalObject.getUserGroupId(), originalObject.getUserGroupId(), "userGroup",
+									originalObject.getUserId(), "Joined group");
+							ugJoinRequestDao.delete(originalObject);
+						} else {
+							ugJoinRequestDao.delete(originalObject);
+						}
+						return fetchByGroupIdIbp(originalObject.getUserGroupId());
 					}
-					return fetchByGroupIdIbp(originalObject.getUserGroupId());
 				}
+
 			}
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
