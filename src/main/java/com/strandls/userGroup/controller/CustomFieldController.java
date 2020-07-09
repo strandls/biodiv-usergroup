@@ -149,7 +149,7 @@ public class CustomFieldController {
 
 	@ValidateUser
 
-	@ApiOperation(value = "Adds a new Custom Field", notes = "Adds a new Custom Field", response = CustomFieldDetails.class)
+	@ApiOperation(value = "Adds a new Custom Field", notes = "Adds a new Custom Field", response = CustomFieldDetails.class, responseContainer = "List")
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "Unable to create a new CustomField", response = String.class) })
 
@@ -157,7 +157,7 @@ public class CustomFieldController {
 			@ApiParam("customFieldData") CustomFieldCreateData customFieldCreateData) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			CustomFieldDetails result = cfService.createCustomFields(profile, customFieldCreateData);
+			List<CustomFieldDetails> result = cfService.createCustomFields(request, profile, customFieldCreateData);
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Could create the custom Field").build();
@@ -206,7 +206,9 @@ public class CustomFieldController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
 			List<CustomFieldDetails> customField = cfService.getCustomField(request, profile, ugId);
-			return Response.status(Status.OK).entity(customField).build();
+			if (customField != null)
+				return Response.status(Status.OK).entity(customField).build();
+			return Response.status(Status.NOT_ACCEPTABLE).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

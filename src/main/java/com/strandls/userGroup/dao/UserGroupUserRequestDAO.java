@@ -14,7 +14,7 @@ import com.strandls.userGroup.util.AbstractDAO;
 public class UserGroupUserRequestDAO extends AbstractDAO<UserGroupUserJoinRequest, Long> {
 
 	private final Logger logger = LoggerFactory.getLogger(UserGroupUserRequestDAO.class);
-	
+
 	@Inject
 	protected UserGroupUserRequestDAO(SessionFactory sessionFactory) {
 		super(sessionFactory);
@@ -33,7 +33,7 @@ public class UserGroupUserRequestDAO extends AbstractDAO<UserGroupUserJoinReques
 		}
 		return entity;
 	}
-	
+
 	public UserGroupUserJoinRequest checkExistingGroupJoinRequest(Long userId, Long groupId) {
 		Session session = sessionFactory.openSession();
 		UserGroupUserJoinRequest entity = null;
@@ -50,7 +50,7 @@ public class UserGroupUserRequestDAO extends AbstractDAO<UserGroupUserJoinReques
 		}
 		return entity;
 	}
-	
+
 	public UserGroupUserJoinRequest getGroupJoinRequestByUser(Long userId) {
 		Session session = sessionFactory.openSession();
 		UserGroupUserJoinRequest entity = null;

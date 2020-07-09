@@ -33,7 +33,8 @@ public interface CustomFieldServices {
 	public List<CustomFieldObservationData> insertUpdateCustomFieldData(HttpServletRequest request,
 			CommonProfile profile, CustomFieldFactsInsertData factsCreateData) throws Exception;
 
-	public CustomFieldDetails createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData);
+	public List<CustomFieldDetails> createCustomFields(HttpServletRequest request, CommonProfile profile,
+			CustomFieldCreateData customFieldCreateData);
 
 	public List<CustomFieldPermission> getCustomFieldPermisison(HttpServletRequest request, CommonProfile profile,
 			String observationId) throws Exception;

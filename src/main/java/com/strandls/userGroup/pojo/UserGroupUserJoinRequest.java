@@ -13,18 +13,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table(name = "usergroup_user_join_request")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserGroupUserJoinRequest {
-	
+
 	private Long id;
 	private Long userGroupId;
 	private Long userId;
-	
+
 	public UserGroupUserJoinRequest(Long userGroupId, Long userId) {
 		this.userId = userId;
 		this.userGroupId = userGroupId;
 	}
-	
-	public UserGroupUserJoinRequest() {}
-	
+
+	public UserGroupUserJoinRequest() {
+	}
+
 	public UserGroupUserJoinRequest(Long id, Long userGroupId, Long userId) {
 		super();
 		this.id = id;
