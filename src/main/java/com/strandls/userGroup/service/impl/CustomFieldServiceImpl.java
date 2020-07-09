@@ -5,6 +5,7 @@ package com.strandls.userGroup.service.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -402,42 +403,80 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	@Override
-	public CustomFieldDetails createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData) {
+	public List<CustomFieldDetails> createCustomFields(HttpServletRequest request, CommonProfile profile,
+			CustomFieldCreateData customFieldCreateData) {
 		try {
-			Long authorId = Long.parseLong(profile.getId());
-//			create custom field
-			CustomFields customFields = new CustomFields(null, authorId, customFieldCreateData.getName(),
-					customFieldCreateData.getDataType(), customFieldCreateData.getFieldType(),
-					customFieldCreateData.getUnits(), customFieldCreateData.getIconURL(),
-					customFieldCreateData.getNotes());
 
-			customFields = cfsDao.save(customFields);
+			List<String> fieldTypesList = new ArrayList<String>(
+					Arrays.asList("SINGLE CATEGORICAL", "MULTIPLE CATEGORICAL", "FIELD TEXT", "RANGE"));
+			List<String> dataTypeList = new ArrayList<String>(Arrays.asList("STRING", "INTEGER", "DECIMAL", "DATE"));
 
-//			create custom Field values if any
-			List<CustomFieldValues> cfValueList = new ArrayList<CustomFieldValues>();
-			CustomFieldValues cfValues = null;
-			if (customFields.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
-					|| customFields.getFieldType().equals("MULTIPLE CATEGORICAL")) {
+			if (fieldTypesList.contains(customFieldCreateData.getFieldType())
+					&& dataTypeList.contains(customFieldCreateData.getDataType())) {
 
-				for (CustomFieldValuesCreateData cfValuesCreate : customFieldCreateData.getValues()) {
-					cfValues = new CustomFieldValues(null, customFields.getId(), cfValuesCreate.getValue(), authorId,
-							cfValuesCreate.getIconURL(), cfValuesCreate.getNotes());
-					cfValues = cfValueDao.save(cfValues);
-					cfValueList.add(cfValues);
+//				single and multiple categorical should be allowed only for string
+				if (customFieldCreateData.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+						|| customFieldCreateData.getFieldType().equals("MULTIPLE CATEGORICAL")) {
+					if (!customFieldCreateData.getDataType().equals("STRING"))
+						return null;
+				}
+
+//				Range field type should not have String data type
+				if (customFieldCreateData.getFieldType().equalsIgnoreCase("RANGE")) {
+					if (customFieldCreateData.getDataType().equals("STRING"))
+						return null;
+				}
+
+				JSONArray roles = (JSONArray) profile.getAttribute("roles");
+				userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+				Boolean isFounder = userService.checkFounderRole(customFieldCreateData.getUserGroupId().toString());
+				if (roles.contains("ROLE_ADMIN") || isFounder) {
+
+					Long authorId = Long.parseLong(profile.getId());
+//					create custom field
+					CustomFields customFields = new CustomFields(null, authorId, customFieldCreateData.getName(),
+							customFieldCreateData.getDataType(), customFieldCreateData.getFieldType(),
+							customFieldCreateData.getUnits(), customFieldCreateData.getIconURL(),
+							customFieldCreateData.getNotes());
+
+					customFields = cfsDao.save(customFields);
+
+//					create custom Field values if any
+					List<CustomFieldValues> cfValueList = new ArrayList<CustomFieldValues>();
+					CustomFieldValues cfValues = null;
+					if (customFields.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+							|| customFields.getFieldType().equals("MULTIPLE CATEGORICAL")) {
+
+						for (CustomFieldValuesCreateData cfValuesCreate : customFieldCreateData.getValues()) {
+							cfValues = new CustomFieldValues(null, customFields.getId(), cfValuesCreate.getValue(),
+									authorId, cfValuesCreate.getIconURL(), cfValuesCreate.getNotes());
+							cfValues = cfValueDao.save(cfValues);
+							cfValueList.add(cfValues);
+
+						}
+
+					}
+					if (customFields.getFieldType().equalsIgnoreCase("RANGE")) {
+						cfValues = new CustomFieldValues(null, customFields.getId(), "MIN", authorId, null, null);
+						cfValues = cfValueDao.save(cfValues);
+						cfValueList.add(cfValues);
+						cfValues = new CustomFieldValues(null, customFields.getId(), "MAX", authorId, null, null);
+						cfValues = cfValueDao.save(cfValues);
+						cfValueList.add(cfValues);
+					}
+
+					List<CustomFieldUGData> customFieldUGDataList = new ArrayList<CustomFieldUGData>();
+					customFieldUGDataList.add(new CustomFieldUGData(customFields.getId(),
+							customFieldCreateData.getDefaultValue(), customFieldCreateData.getDisplayOrder(),
+							customFieldCreateData.getIsMandatory(), customFieldCreateData.getAllowedParticipation()));
+					List<CustomFieldDetails> result = addCustomFieldUG(request, profile, authorId,
+							customFieldCreateData.getUserGroupId(), customFieldUGDataList);
+					return result;
 
 				}
 
 			}
-			if (customFields.getFieldType().equalsIgnoreCase("RANGE")) {
-				cfValues = new CustomFieldValues(null, customFields.getId(), "MIN", authorId, null, null);
-				cfValues = cfValueDao.save(cfValues);
-				cfValueList.add(cfValues);
-				cfValues = new CustomFieldValues(null, customFields.getId(), "MAX", authorId, null, null);
-				cfValues = cfValueDao.save(cfValues);
-				cfValueList.add(cfValues);
-			}
-			CustomFieldDetails cfDetails = new CustomFieldDetails(customFields, cfValueList, null, null, null, null);
-			return cfDetails;
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -823,6 +862,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		try {
 
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
 			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				for (CustomFieldUGData customFieldUGData : customFieldUGDataList) {
