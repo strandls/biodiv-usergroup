@@ -37,7 +37,7 @@ public class UserGroupUserRequestDAO extends AbstractDAO<UserGroupUserJoinReques
 	public UserGroupUserJoinRequest checkExistingGroupJoinRequest(Long userId, Long groupId) {
 		Session session = sessionFactory.openSession();
 		UserGroupUserJoinRequest entity = null;
-		String hql = "from UserGroupJoinRequest u where u.userGroupId = :group and u.userId = :user";
+		String hql = "from UserGroupUserJoinRequest u where u.userGroupId = :group and u.userId = :user";
 		try {
 			Query<UserGroupUserJoinRequest> q = session.createQuery(hql);
 			q.setParameter("group", groupId);
@@ -54,7 +54,7 @@ public class UserGroupUserRequestDAO extends AbstractDAO<UserGroupUserJoinReques
 	public UserGroupUserJoinRequest getGroupJoinRequestByUser(Long userId) {
 		Session session = sessionFactory.openSession();
 		UserGroupUserJoinRequest entity = null;
-		String hql = "from UserGroupJoinRequest u where u.userId = :user";
+		String hql = "from UserGroupUserJoinRequest u where u.userId = :user";
 		try {
 			Query<UserGroupUserJoinRequest> q = session.createQuery(hql);
 			q.setParameter("user", userId);

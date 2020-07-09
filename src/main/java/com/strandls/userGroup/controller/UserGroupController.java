@@ -938,7 +938,7 @@ public class UserGroupController {
 						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
 				response.cookie(accessToken).cookie(refreshToken);
 			}
-			return response.build();
+			return response.entity(data).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
