@@ -5,11 +5,13 @@ package com.strandls.userGroup.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -19,7 +21,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.pac4j.core.profile.CommonProfile;
@@ -27,6 +31,7 @@ import org.pac4j.core.profile.CommonProfile;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
+import com.strandls.userGroup.dto.AuthenticationDTO;
 import com.strandls.userGroup.pojo.AdministrationList;
 import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
@@ -50,6 +55,7 @@ import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
 import com.strandls.userGroup.service.UserGroupSerivce;
+import com.strandls.userGroup.util.AppUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -865,6 +871,74 @@ public class UserGroupController {
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+	
+	@POST
+	@Path(ApiConstants.REGISTER)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response registerUser(@Context HttpServletRequest request, AuthenticationDTO authDTO) {
+		try {
+			Map<String, Object> data = ugServices.registerUserProxy(request, authDTO);
+			ResponseBuilder response = Response.ok().entity(data);
+			if (Boolean.parseBoolean(data.get("status").toString())
+					&& !Boolean.parseBoolean(data.get("verificationRequired").toString())) {
+				NewCookie accessToken = new NewCookie("BAToken", data.get("access_token").toString(), "/",
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
+				NewCookie refreshToken = new NewCookie("BRToken", data.get("refresh_token").toString(), "/",
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
+				response.cookie(accessToken).cookie(refreshToken);
+			}
+			return response.build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.LOGIN)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response loginProxy(@Context HttpServletRequest request, @FormParam("username") String userEmail,
+			@FormParam("password") String password, @FormParam("mode") String mode) {
+		try {
+			Map<String, Object> data = ugServices.signupProxy(request, userEmail, password, mode);
+			ResponseBuilder response = Response.ok().entity(data);
+			if (Boolean.parseBoolean(data.get("status").toString())
+					&& !Boolean.parseBoolean(data.get("verificationRequired").toString())) {
+				NewCookie accessToken = new NewCookie("BAToken", data.get("access_token").toString(), "/",
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
+				NewCookie refreshToken = new NewCookie("BRToken", data.get("refresh_token").toString(), "/",
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
+				response.cookie(accessToken).cookie(refreshToken);
+			}
+			return response.build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.VERIFY_USER)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response verifyUserOTPProxy(@Context HttpServletRequest request, @FormParam("id") Long id,
+			@FormParam("otp") String otp) {
+		try {
+			Map<String, Object> data = ugServices.verifyOTPProxy(request, id, otp);
+			ResponseBuilder response = Response.ok();
+			if (Boolean.parseBoolean(data.get("status").toString())
+					&& !Boolean.parseBoolean(data.get("verificationRequired").toString())) {
+				NewCookie accessToken = new NewCookie("BAToken", data.get("access_token").toString(), "/",
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
+				NewCookie refreshToken = new NewCookie("BRToken", data.get("refresh_token").toString(), "/",
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
+				response.cookie(accessToken).cookie(refreshToken);
+			}
+			return response.entity(data).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
