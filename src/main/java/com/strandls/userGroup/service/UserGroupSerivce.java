@@ -96,12 +96,6 @@ public interface UserGroupSerivce {
 
 	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId);
 
-	public Map<String, Object> registerUserProxy(HttpServletRequest request, AuthenticationDTO authDTO);
-
-	public Map<String, Object> signupProxy(HttpServletRequest request, String userName, String password, String mode);
-
-	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp);
-
 	public UserGroupIbp validateJoinRequest(HttpServletRequest request, String token);
 
 	public AdministrationList getAdminMembers(String userGroupId);
