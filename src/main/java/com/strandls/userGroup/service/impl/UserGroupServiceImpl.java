@@ -1358,6 +1358,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> registerUserProxy(HttpServletRequest request, AuthenticationDTO authDTO) {
 		Map<String, Object> userData = new HashMap<String, Object>();

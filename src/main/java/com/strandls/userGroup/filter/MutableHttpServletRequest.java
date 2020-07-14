@@ -36,7 +36,6 @@ public class MutableHttpServletRequest extends HttpServletRequestWrapper {
 
 	public Enumeration<String> getHeaderNames() {
 		Set<String> set = new HashSet<String>(customHeaders.keySet());
-		@SuppressWarnings("unchecked")
 		Enumeration<String> e = ((HttpServletRequest) getRequest()).getHeaderNames();
 		while (e.hasMoreElements()) {
 			String n = e.nextElement();

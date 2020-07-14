@@ -34,6 +34,7 @@ public class UserGroupUserRequestDAO extends AbstractDAO<UserGroupUserJoinReques
 		return entity;
 	}
 
+	@SuppressWarnings("unchecked")
 	public UserGroupUserJoinRequest checkExistingGroupJoinRequest(Long userId, Long groupId) {
 		Session session = sessionFactory.openSession();
 		UserGroupUserJoinRequest entity = null;
@@ -51,6 +52,7 @@ public class UserGroupUserRequestDAO extends AbstractDAO<UserGroupUserJoinReques
 		return entity;
 	}
 
+	@SuppressWarnings("unchecked")
 	public UserGroupUserJoinRequest getGroupJoinRequestByUser(Long userId) {
 		Session session = sessionFactory.openSession();
 		UserGroupUserJoinRequest entity = null;
