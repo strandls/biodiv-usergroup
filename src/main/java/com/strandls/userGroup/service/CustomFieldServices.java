@@ -14,6 +14,7 @@ import com.strandls.userGroup.pojo.CustomFieldDetails;
 import com.strandls.userGroup.pojo.CustomFieldFactsInsertData;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
+import com.strandls.userGroup.pojo.CustomFieldReordering;
 import com.strandls.userGroup.pojo.CustomFieldUGData;
 import com.strandls.userGroup.pojo.CustomFieldValues;
 
@@ -48,5 +49,8 @@ public interface CustomFieldServices {
 
 	public List<CustomFieldDetails> removeCustomField(HttpServletRequest request, CommonProfile profile,
 			Long userGroupId, Long customFieldId);
+
+	public List<CustomFieldDetails> reorderingCustomFields(HttpServletRequest request, Long userGroupId,
+			List<CustomFieldReordering> customFieldReorderings);
 
 }
