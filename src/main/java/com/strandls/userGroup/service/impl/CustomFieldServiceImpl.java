@@ -5,10 +5,12 @@ package com.strandls.userGroup.service.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.strandls.activity.pojo.MailData;
+import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.userGroup.Headers;
 import com.strandls.userGroup.dao.CustomFieldDao;
@@ -38,6 +41,7 @@ import com.strandls.userGroup.pojo.CustomFieldFactsInsert;
 import com.strandls.userGroup.pojo.CustomFieldFactsInsertData;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
+import com.strandls.userGroup.pojo.CustomFieldReordering;
 import com.strandls.userGroup.pojo.CustomFieldUG18;
 import com.strandls.userGroup.pojo.CustomFieldUG37;
 import com.strandls.userGroup.pojo.CustomFieldUGData;
@@ -402,42 +406,80 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	}
 
 	@Override
-	public CustomFieldDetails createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData) {
+	public List<CustomFieldDetails> createCustomFields(HttpServletRequest request, CommonProfile profile,
+			CustomFieldCreateData customFieldCreateData) {
 		try {
-			Long authorId = Long.parseLong(profile.getId());
-//			create custom field
-			CustomFields customFields = new CustomFields(null, authorId, customFieldCreateData.getName(),
-					customFieldCreateData.getDataType(), customFieldCreateData.getFieldType(),
-					customFieldCreateData.getUnits(), customFieldCreateData.getIconURL(),
-					customFieldCreateData.getNotes());
 
-			customFields = cfsDao.save(customFields);
+			List<String> fieldTypesList = new ArrayList<String>(
+					Arrays.asList("SINGLE CATEGORICAL", "MULTIPLE CATEGORICAL", "FIELD TEXT", "RANGE"));
+			List<String> dataTypeList = new ArrayList<String>(Arrays.asList("STRING", "INTEGER", "DECIMAL", "DATE"));
 
-//			create custom Field values if any
-			List<CustomFieldValues> cfValueList = new ArrayList<CustomFieldValues>();
-			CustomFieldValues cfValues = null;
-			if (customFields.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
-					|| customFields.getFieldType().equals("MULTIPLE CATEGORICAL")) {
+			if (fieldTypesList.contains(customFieldCreateData.getFieldType())
+					&& dataTypeList.contains(customFieldCreateData.getDataType())) {
 
-				for (CustomFieldValuesCreateData cfValuesCreate : customFieldCreateData.getValues()) {
-					cfValues = new CustomFieldValues(null, customFields.getId(), cfValuesCreate.getValue(), authorId,
-							cfValuesCreate.getIconURL(), cfValuesCreate.getNotes());
-					cfValues = cfValueDao.save(cfValues);
-					cfValueList.add(cfValues);
+//				single and multiple categorical should be allowed only for string
+				if (customFieldCreateData.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+						|| customFieldCreateData.getFieldType().equals("MULTIPLE CATEGORICAL")) {
+					if (!customFieldCreateData.getDataType().equals("STRING"))
+						return null;
+				}
+
+//				Range field type should not have String data type
+				if (customFieldCreateData.getFieldType().equalsIgnoreCase("RANGE")) {
+					if (customFieldCreateData.getDataType().equals("STRING"))
+						return null;
+				}
+
+				JSONArray roles = (JSONArray) profile.getAttribute("roles");
+				userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+				Boolean isFounder = userService.checkFounderRole(customFieldCreateData.getUserGroupId().toString());
+				if (roles.contains("ROLE_ADMIN") || isFounder) {
+
+					Long authorId = Long.parseLong(profile.getId());
+//					create custom field
+					CustomFields customFields = new CustomFields(null, authorId, customFieldCreateData.getName(),
+							customFieldCreateData.getDataType(), customFieldCreateData.getFieldType(),
+							customFieldCreateData.getUnits(), customFieldCreateData.getIconURL(),
+							customFieldCreateData.getNotes());
+
+					customFields = cfsDao.save(customFields);
+
+//					create custom Field values if any
+					List<CustomFieldValues> cfValueList = new ArrayList<CustomFieldValues>();
+					CustomFieldValues cfValues = null;
+					if (customFields.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+							|| customFields.getFieldType().equals("MULTIPLE CATEGORICAL")) {
+
+						for (CustomFieldValuesCreateData cfValuesCreate : customFieldCreateData.getValues()) {
+							cfValues = new CustomFieldValues(null, customFields.getId(), cfValuesCreate.getValue(),
+									authorId, cfValuesCreate.getIconURL(), cfValuesCreate.getNotes());
+							cfValues = cfValueDao.save(cfValues);
+							cfValueList.add(cfValues);
+
+						}
+
+					}
+					if (customFields.getFieldType().equalsIgnoreCase("RANGE")) {
+						cfValues = new CustomFieldValues(null, customFields.getId(), "MIN", authorId, null, null);
+						cfValues = cfValueDao.save(cfValues);
+						cfValueList.add(cfValues);
+						cfValues = new CustomFieldValues(null, customFields.getId(), "MAX", authorId, null, null);
+						cfValues = cfValueDao.save(cfValues);
+						cfValueList.add(cfValues);
+					}
+
+					List<CustomFieldUGData> customFieldUGDataList = new ArrayList<CustomFieldUGData>();
+					customFieldUGDataList.add(new CustomFieldUGData(customFields.getId(),
+							customFieldCreateData.getDefaultValue(), customFieldCreateData.getDisplayOrder(),
+							customFieldCreateData.getIsMandatory(), customFieldCreateData.getAllowedParticipation()));
+					List<CustomFieldDetails> result = addCustomFieldUG(request, profile, authorId,
+							customFieldCreateData.getUserGroupId(), customFieldUGDataList);
+					return result;
 
 				}
 
 			}
-			if (customFields.getFieldType().equalsIgnoreCase("RANGE")) {
-				cfValues = new CustomFieldValues(null, customFields.getId(), "MIN", authorId, null, null);
-				cfValues = cfValueDao.save(cfValues);
-				cfValueList.add(cfValues);
-				cfValues = new CustomFieldValues(null, customFields.getId(), "MAX", authorId, null, null);
-				cfValues = cfValueDao.save(cfValues);
-				cfValueList.add(cfValues);
-			}
-			CustomFieldDetails cfDetails = new CustomFieldDetails(customFields, cfValueList, null, null, null, null);
-			return cfDetails;
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -823,6 +865,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		try {
 
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
 			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				for (CustomFieldUGData customFieldUGData : customFieldUGDataList) {
@@ -837,6 +880,52 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 							userGroupId, "userGroup", customFieldUGData.getCustomFieldId(), "Added Custom Field");
 				}
 				return getCustomField(request, profile, userGroupId);
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public List<CustomFieldDetails> reorderingCustomFields(HttpServletRequest request, Long userGroupId,
+			List<CustomFieldReordering> customFieldReorderings) {
+
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				List<UserGroupCustomFieldMapping> ugCFMappings = ugCFMappingDao.findByUserGroupId(userGroupId);
+				Map<Long, Long> displayOrder = new HashMap<Long, Long>();
+				List<Long> associatedCF = new ArrayList<Long>();
+				for (UserGroupCustomFieldMapping ugCFMapping : ugCFMappings) {
+					associatedCF.add(ugCFMapping.getCustomFieldId());
+				}
+
+				for (CustomFieldReordering cfReordering : customFieldReorderings) {
+					if (associatedCF.contains(cfReordering.getCfId())) {
+						if (!displayOrder.containsKey(cfReordering.getDisplayOrder())
+								&& !displayOrder.containsValue(cfReordering.getCfId())) {
+							displayOrder.put(cfReordering.getDisplayOrder(), cfReordering.getCfId());
+						} else {
+//							duplicate element either display order or cfid
+							return null;
+						}
+					}
+				}
+
+				for (Entry<Long, Long> entry : displayOrder.entrySet()) {
+					UserGroupCustomFieldMapping ugCfMapping = ugCFMappingDao.findByUserGroupCustomFieldId(userGroupId,
+							entry.getValue());
+					ugCfMapping.setDisplayOrder(Integer.parseInt(entry.getKey().toString()));
+					ugCFMappingDao.update(ugCfMapping);
+				}
+
+				return getCustomField(request, profile, userGroupId);
+
 			}
 
 		} catch (Exception e) {

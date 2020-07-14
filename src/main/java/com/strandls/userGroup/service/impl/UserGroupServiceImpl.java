@@ -129,10 +129,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupJoinRequestDao ugJoinRequestDao;
-	
+
 	@Inject
 	private UserGroupUserRequestDAO userGroupUserRequestDao;
-	
+
 	@Inject
 	private AuthenticationServiceApi authenticationApi;
 
@@ -1358,7 +1358,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		}
 		return null;
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> registerUserProxy(HttpServletRequest request, AuthenticationDTO authDTO) {
 		Map<String, Object> userData = new HashMap<String, Object>();
@@ -1423,7 +1424,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		}
 		return userData;
 	}
-	
+
 	@Override
 	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp) {
 		Map<String, Object> userData = new HashMap<String, Object>();
