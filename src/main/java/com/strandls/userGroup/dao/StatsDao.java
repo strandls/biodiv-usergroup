@@ -22,11 +22,16 @@ public class StatsDao {
 		Stats stats = new Stats();
 		Session session = sessionFactory.openSession();
 
-		String obvQry = "select count(*) from user_group_observations where user_group_id = " + userGroupId;
-		String docQry = "select count(*) from user_group_documents where user_group_id = " + userGroupId;
-		String speciesQry = "SELECT count(*) from public.user_group_species where user_group_id = " + userGroupId;
-		String discussionQry = "select count(*) from user_group_discussions where user_group_id = " + userGroupId;
-		String actUserQry = "select count(*) from user_group_member_role where user_group_id = " + userGroupId;
+		String obvQry = "select count(distinct(o.id)) from observation o join user_group_observations ugo on o.id = ugo.observation_id where o.is_deleted = false and ugo.user_group_id = "
+				+ userGroupId;
+		String docQry = "select count(distinct(d.id)) from document d join user_group_documents ugd on d.id = ugd.document_id where d.is_deleted = false and ugd.user_group_id = "
+				+ userGroupId;
+		String speciesQry = "select count(distinct(s.id)) from species s join user_group_species ugs on s.id = ugs.species_id where s.is_deleted = false and ugs.user_group_id = "
+				+ userGroupId;
+		String discussionQry = "select count(distinct(d.id)) from discussion d join user_group_discussions ugd on d.id = ugd.discussion_id where d.is_deleted = false and ugd.user_group_id = "
+				+ userGroupId;
+		String actUserQry = "select count(distinct(ugmr.s_user_id)) from user_group ug join user_group_member_role ugmr on ug.id = ugmr.user_group_id where ug.is_deleted = false and ugmr.user_group_id = "
+				+ userGroupId;
 		try {
 			Query<Object> obvquery = session.createNativeQuery(obvQry);
 			Query<Object> docQuery = session.createNativeQuery(docQry);
