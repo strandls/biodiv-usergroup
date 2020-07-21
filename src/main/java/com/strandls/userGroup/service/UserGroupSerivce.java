@@ -20,6 +20,7 @@ import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
+import com.strandls.userGroup.pojo.UserGroupDocCreateData;
 import com.strandls.userGroup.pojo.UserGroupEditData;
 import com.strandls.userGroup.pojo.UserGroupHomePage;
 import com.strandls.userGroup.pojo.UserGroupIbp;
@@ -105,5 +106,9 @@ public interface UserGroupSerivce {
 	public Map<String, Object> signupProxy(HttpServletRequest request, String userName, String password, String mode);
 	
 	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp);
+
+	public List<UserGroupIbp> fetchByDocumentId(Long documentId);
+
+	public List<UserGroupIbp> createUGDocMapping(HttpServletRequest request,UserGroupDocCreateData ugDocCreate);
 
 }

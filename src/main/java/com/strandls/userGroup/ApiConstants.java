@@ -52,5 +52,6 @@ public class ApiConstants {
 	public static final String REQUEST = "/request";
 	public static final String ADMINSTRATION = "/adminstration";
 	public static final String REORDERING = "/reordering";
+	public static final String DOCUMENT = "/document";
 
 }
