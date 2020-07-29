@@ -13,6 +13,7 @@ public class UserGroupIbp {
 	private String name;
 	private String icon;
 	private String webAddress;
+	private Boolean isParticipatory;
 
 	/**
 	 * 
@@ -26,13 +27,15 @@ public class UserGroupIbp {
 	 * @param name
 	 * @param icon
 	 * @param webAddress
+	 * @param isParticipatory
 	 */
-	public UserGroupIbp(Long id, String name, String icon, String webAddress) {
+	public UserGroupIbp(Long id, String name, String icon, String webAddress, Boolean isParticipatory) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.icon = icon;
 		this.webAddress = webAddress;
+		this.isParticipatory = isParticipatory;
 	}
 
 	public Long getId() {
@@ -65,6 +68,14 @@ public class UserGroupIbp {
 
 	public void setWebAddress(String webAddress) {
 		this.webAddress = webAddress;
+	}
+
+	public Boolean getIsParticipatory() {
+		return isParticipatory;
+	}
+
+	public void setIsParticipatory(Boolean isParticipatory) {
+		this.isParticipatory = isParticipatory;
 	}
 
 }

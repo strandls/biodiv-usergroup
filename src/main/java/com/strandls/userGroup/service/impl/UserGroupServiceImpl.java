@@ -27,6 +27,7 @@ import com.strandls.activity.pojo.MailData;
 import com.strandls.activity.pojo.UserGroupActivity;
 import com.strandls.activity.pojo.UserGroupMailData;
 import com.strandls.authentication_utility.util.AuthUtil;
+import com.strandls.user.controller.AuthenticationServiceApi;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.GroupAddMember;
 import com.strandls.user.pojo.User;
@@ -42,6 +43,9 @@ import com.strandls.userGroup.dao.UserGroupInvitaionDao;
 import com.strandls.userGroup.dao.UserGroupJoinRequestDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
 import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
+import com.strandls.userGroup.dao.UserGroupUserRequestDAO;
+import com.strandls.userGroup.dto.AuthenticationDTO;
+import com.strandls.userGroup.filter.MutableHttpServletRequest;
 import com.strandls.userGroup.pojo.AdministrationList;
 import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
@@ -66,6 +70,7 @@ import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
+import com.strandls.userGroup.pojo.UserGroupUserJoinRequest;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
 import com.strandls.userGroup.service.UserGroupSerivce;
@@ -131,6 +136,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Inject
 	private UserGroupDocumentDao ugDocumentDao;
 
+	@Inject
+	private UserGroupUserRequestDAO userGroupUserRequestDao;
+
+	@Inject
+	private AuthenticationServiceApi authenticationApi;
+
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
 		UserGroup userGroup = userGroupDao.findById(id);
@@ -142,10 +153,10 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		UserGroup ug = userGroupDao.findById(id);
 		UserGroupIbp ibp;
 		if (ug.getDomianName() != null)
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName());
+			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName(), ug.getAllowUserToJoin());
 		else {
 			String webAddress = "/group/" + ug.getWebAddress();
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress);
+			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress, ug.getAllowUserToJoin());
 		}
 		return ibp;
 	}
@@ -298,10 +309,11 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				if (userGroup.getDomianName() != null)
 					ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(),
-							userGroup.getDomianName());
+							userGroup.getDomianName(), userGroup.getAllowUserToJoin());
 				else {
 					String webAddress = "/group/" + userGroup.getWebAddress();
-					ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(), webAddress);
+					ibp = new UserGroupIbp(userGroup.getId(), userGroup.getName(), userGroup.getIcon(), webAddress,
+							userGroup.getAllowUserToJoin());
 				}
 				ugMap.put(userGroup.getId(), ibp);
 			}
@@ -815,6 +827,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					UserGroupIbp userGroupIbp = fetchByGroupIdIbp(Long.parseLong(userGroupId));
 
 					mailUtils.sendRequest(userList, userIbp, userGroupIbp, encrptyedKey, serverUrl);
+					return true;
 				}
 			}
 
@@ -827,6 +840,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Override
 	public UserGroupIbp validateJoinRequest(HttpServletRequest request, String token) {
 		try {
+
 			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
 			Properties properties = new Properties();
 			try {
@@ -838,27 +852,40 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			in.close();
 			String decryptedStr = encryptionUtils.decrypt(token);
 			UserGroupJoinRequest userGroupJoin = objectMapper.readValue(decryptedStr, UserGroupJoinRequest.class);
-			UserGroupJoinRequest originalObject = ugJoinRequestDao.findById(userGroupJoin.getId());
-			if (originalObject != null) {
-				if (userGroupJoin.equals(originalObject)) {
-					userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-					Boolean isMember = userService.checkGroupMemberByUserId(originalObject.getUserGroupId().toString(),
-							originalObject.getUserId().toString());
-					if (!isMember) {
-						userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-						userService.addMemberRoleUG(originalObject.getUserGroupId().toString(), memberId.toString());
 
-						String desc = "Joined Group with Role: Member";
-						logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc,
-								originalObject.getUserGroupId(), originalObject.getUserGroupId(), "userGroup",
-								originalObject.getUserId(), "Joined group");
-						ugJoinRequestDao.delete(originalObject);
-					} else {
-						ugJoinRequestDao.delete(originalObject);
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupJoin.getUserGroupId().toString());
+			Boolean isModerator = userService.checkModeratorRole(userGroupJoin.getUserGroupId().toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
+				UserGroupJoinRequest originalObject = ugJoinRequestDao.findById(userGroupJoin.getId());
+				if (originalObject != null) {
+					if (userGroupJoin.equals(originalObject)) {
+						userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+						Boolean isMember = userService.checkGroupMemberByUserId(
+								originalObject.getUserGroupId().toString(), originalObject.getUserId().toString());
+						if (!isMember) {
+							userService = headers.addUserHeader(userService,
+									request.getHeader(HttpHeaders.AUTHORIZATION));
+							userService.addMemberRoleUG(originalObject.getUserGroupId().toString(),
+									memberId.toString());
+
+							String desc = "Joined Group with Role: Member";
+							logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc,
+									originalObject.getUserGroupId(), originalObject.getUserGroupId(), "userGroup",
+									originalObject.getUserId(), "Joined group");
+							ugJoinRequestDao.delete(originalObject);
+						} else {
+							ugJoinRequestDao.delete(originalObject);
+						}
+						return fetchByGroupIdIbp(originalObject.getUserGroupId());
 					}
-					return fetchByGroupIdIbp(originalObject.getUserGroupId());
 				}
+
 			}
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -1357,6 +1384,96 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		}
 
 		return fetchByDocumentId(ugDocCreate.getDocumentId());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> registerUserProxy(HttpServletRequest request, AuthenticationDTO authDTO) {
+		Map<String, Object> userData = new HashMap<String, Object>();
+		try {
+			userData = authenticationApi.signUp(authDTO.getCredentials());
+			Long groupId = authDTO.getGroupId() != null ? Long.parseLong(authDTO.getGroupId().toString()) : null;
+			if (Boolean.parseBoolean(userData.get("status").toString())) {
+				boolean verificationRequired = Boolean.parseBoolean(userData.get("verificationRequired").toString());
+				if (!verificationRequired) {
+					MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+					mutableRequest.putHeader(HttpHeaders.AUTHORIZATION,
+							"Bearer " + userData.get("access_token").toString());
+					CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
+					Long user = Long.parseLong(profile.getId());
+					joinGroup(mutableRequest, user, String.valueOf(groupId));
+				} else {
+					Long userId = null;
+					if (userData.containsKey("user")) {
+						userId = Long.parseLong(((Map<String, Object>) userData.get("user")).get("id").toString());
+					}
+					if (userId != null) {
+						UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao
+								.checkExistingGroupJoinRequest(userId, groupId);
+						if (joinRequest == null) {
+							System.out.println("\n\n**** Inside join request  ****\n\n");
+							joinRequest = new UserGroupUserJoinRequest(groupId, userId);
+							joinRequest = userGroupUserRequestDao.save(joinRequest);
+							System.out.println("\n\n**** Join Request Id: " + joinRequest + "  ****\n\n");
+						}
+					}
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			logger.error(ex.getMessage());
+		}
+		return userData;
+	}
+
+	@Override
+	public Map<String, Object> signupProxy(HttpServletRequest request, String userName, String password, String mode) {
+		Map<String, Object> userData = new HashMap<String, Object>();
+		try {
+			userData = authenticationApi.authenticate(userName, password, mode);
+			if (Boolean.parseBoolean(userData.get("status").toString())) {
+				boolean verificationRequired = Boolean.parseBoolean(userData.get("verificationRequired").toString());
+				if (!verificationRequired) {
+					MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+					mutableRequest.putHeader(HttpHeaders.AUTHORIZATION,
+							"Bearer " + userData.get("access_token").toString());
+					CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
+					Long userId = Long.parseLong(profile.getId());
+					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
+					if (joinRequest != null) {
+						joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+						userGroupUserRequestDao.delete(joinRequest);
+					}
+				}
+			}
+		} catch (Exception ex) {
+			logger.error(ex.getMessage());
+		}
+		return userData;
+	}
+
+	@Override
+	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp) {
+		Map<String, Object> userData = new HashMap<String, Object>();
+		try {
+			userData = authenticationApi.validateAccount(id, otp);
+			if (Boolean.parseBoolean(userData.get("status").toString())) {
+				MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+				mutableRequest.putHeader(HttpHeaders.AUTHORIZATION,
+						"Bearer " + userData.get("access_token").toString());
+				CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
+				Long userId = Long.parseLong(profile.getId());
+				UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
+				if (joinRequest != null) {
+					joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+					userGroupUserRequestDao.delete(joinRequest);
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			logger.error(ex.getMessage());
+		}
+		return userData;
 	}
 
 }

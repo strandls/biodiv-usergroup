@@ -5,6 +5,7 @@ package com.strandls.userGroup.controller;
 
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -20,8 +21,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.pac4j.core.profile.CommonProfile;
 
-import javax.inject.Inject;
-
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.userGroup.ApiConstants;
@@ -30,6 +29,7 @@ import com.strandls.userGroup.pojo.CustomFieldDetails;
 import com.strandls.userGroup.pojo.CustomFieldFactsInsertData;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
+import com.strandls.userGroup.pojo.CustomFieldReordering;
 import com.strandls.userGroup.pojo.CustomFieldUGData;
 import com.strandls.userGroup.pojo.CustomFieldValues;
 import com.strandls.userGroup.service.CustomFieldServices;
@@ -149,7 +149,7 @@ public class CustomFieldController {
 
 	@ValidateUser
 
-	@ApiOperation(value = "Adds a new Custom Field", notes = "Adds a new Custom Field", response = CustomFieldDetails.class)
+	@ApiOperation(value = "Adds a new Custom Field", notes = "Adds a new Custom Field", response = CustomFieldDetails.class, responseContainer = "List")
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "Unable to create a new CustomField", response = String.class) })
 
@@ -157,7 +157,7 @@ public class CustomFieldController {
 			@ApiParam("customFieldData") CustomFieldCreateData customFieldCreateData) {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			CustomFieldDetails result = cfService.createCustomFields(profile, customFieldCreateData);
+			List<CustomFieldDetails> result = cfService.createCustomFields(request, profile, customFieldCreateData);
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Could create the custom Field").build();
@@ -206,7 +206,9 @@ public class CustomFieldController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			Long ugId = Long.parseLong(userGroupId);
 			List<CustomFieldDetails> customField = cfService.getCustomField(request, profile, ugId);
-			return Response.status(Status.OK).entity(customField).build();
+			if (customField != null)
+				return Response.status(Status.OK).entity(customField).build();
+			return Response.status(Status.NOT_ACCEPTABLE).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -285,6 +287,31 @@ public class CustomFieldController {
 		} catch (
 
 		Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.REORDERING + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Reordering a custom field related with a userGroup", notes = "Returns all the customField related with a userGroup", response = CustomFieldDetails.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to retrive the data", response = String.class) })
+
+	public Response reorderingCustomFields(@Context HttpServletRequest request,
+			@PathParam("userGroupId") String userGroupId,
+			@ApiParam(name = "customFieldReordering") List<CustomFieldReordering> customFieldReorderings) {
+		try {
+			Long groupId = Long.parseLong(userGroupId);
+			List<CustomFieldDetails> result = cfService.reorderingCustomFields(request, groupId,
+					customFieldReorderings);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}

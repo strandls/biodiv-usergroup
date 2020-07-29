@@ -14,6 +14,7 @@ import com.strandls.userGroup.pojo.CustomFieldDetails;
 import com.strandls.userGroup.pojo.CustomFieldFactsInsertData;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
+import com.strandls.userGroup.pojo.CustomFieldReordering;
 import com.strandls.userGroup.pojo.CustomFieldUGData;
 import com.strandls.userGroup.pojo.CustomFieldValues;
 
@@ -33,7 +34,8 @@ public interface CustomFieldServices {
 	public List<CustomFieldObservationData> insertUpdateCustomFieldData(HttpServletRequest request,
 			CommonProfile profile, CustomFieldFactsInsertData factsCreateData) throws Exception;
 
-	public CustomFieldDetails createCustomFields(CommonProfile profile, CustomFieldCreateData customFieldCreateData);
+	public List<CustomFieldDetails> createCustomFields(HttpServletRequest request, CommonProfile profile,
+			CustomFieldCreateData customFieldCreateData);
 
 	public List<CustomFieldPermission> getCustomFieldPermisison(HttpServletRequest request, CommonProfile profile,
 			String observationId) throws Exception;
@@ -47,5 +49,8 @@ public interface CustomFieldServices {
 
 	public List<CustomFieldDetails> removeCustomField(HttpServletRequest request, CommonProfile profile,
 			Long userGroupId, Long customFieldId);
+
+	public List<CustomFieldDetails> reorderingCustomFields(HttpServletRequest request, Long userGroupId,
+			List<CustomFieldReordering> customFieldReorderings);
 
 }

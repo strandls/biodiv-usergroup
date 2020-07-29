@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.strandls.authentication_utility.util.AuthUtil;
-import com.strandls.user.pojo.FirebaseTokens;
 import com.strandls.user.pojo.Role;
 import com.strandls.user.pojo.User;
 
@@ -60,12 +59,6 @@ public class TokenGenerator {
 		u1.setSexType(user.getSexType());
 
 		Set<com.strandls.authentication_utility.model.FirebaseTokens> fb = new HashSet<com.strandls.authentication_utility.model.FirebaseTokens>();
-		for (FirebaseTokens fireBase : user.getTokens()) {
-			com.strandls.authentication_utility.model.FirebaseTokens fb1 = new com.strandls.authentication_utility.model.FirebaseTokens();
-			fb1.setId(fireBase.getId());
-			fb1.setToken(fireBase.getToken());
-		}
-
 		u1.setTokens(fb);
 		u1.setUserName(user.getUserName());
 		u1.setVersion(user.getVersion());
@@ -73,7 +66,7 @@ public class TokenGenerator {
 		Map<String, Object> token = AuthUtil.generateToken(u1, false);
 
 		String accessToken = (String) token.get("access_token");
-		accessToken = "Bearer "+accessToken;
+		accessToken = "Bearer " + accessToken;
 
 		return accessToken;
 	}

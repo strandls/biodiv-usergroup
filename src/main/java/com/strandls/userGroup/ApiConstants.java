@@ -49,5 +49,9 @@ public class ApiConstants {
 	public static final String REQUEST = "/request";
 	public static final String ADMINSTRATION = "/adminstration";
 	public static final String DOCUMENT = "/document";
+	public static final String LOGIN = "/login";
+	public static final String REGISTER = "/register";
+	public static final String VERIFY_USER = "/verify-user";
+	public static final String REORDERING = "/reordering";
 
 }

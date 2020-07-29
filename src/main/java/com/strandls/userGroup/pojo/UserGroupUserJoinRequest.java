@@ -1,9 +1,4 @@
-/**
- * 
- */
 package com.strandls.userGroup.pojo;
-
-import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,36 +9,23 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * @author Abhishek Rudra
- *
- */
 @Entity
-@Table(name = "user_group_join_request")
+@Table(name = "usergroup_user_join_request")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserGroupJoinRequest implements Serializable {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7835441147501867976L;
+public class UserGroupUserJoinRequest {
+	
 	private Long id;
 	private Long userGroupId;
 	private Long userId;
-
-	/**
-	 * 
-	 */
-	public UserGroupJoinRequest() {
-		super();
+	
+	public UserGroupUserJoinRequest(Long userGroupId, Long userId) {
+		this.userId = userId;
+		this.userGroupId = userGroupId;
 	}
-
-	/**
-	 * @param id
-	 * @param userGroupId
-	 * @param userId
-	 */
-	public UserGroupJoinRequest(Long id, Long userGroupId, Long userId) {
+	
+	public UserGroupUserJoinRequest() {}
+	
+	public UserGroupUserJoinRequest(Long id, Long userGroupId, Long userId) {
 		super();
 		this.id = id;
 		this.userGroupId = userGroupId;
@@ -51,8 +33,8 @@ public class UserGroupJoinRequest implements Serializable {
 	}
 
 	@Id
-	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "id")
 	public Long getId() {
 		return id;
 	}
@@ -97,7 +79,7 @@ public class UserGroupJoinRequest implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		UserGroupJoinRequest other = (UserGroupJoinRequest) obj;
+		UserGroupUserJoinRequest other = (UserGroupUserJoinRequest) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -114,6 +96,11 @@ public class UserGroupJoinRequest implements Serializable {
 		} else if (!userId.equals(other.userId))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "UserGroupUserJoinRequest [id=" + id + ", userGroupId=" + userGroupId + ", userId=" + userId + "]";
 	}
 
 }
