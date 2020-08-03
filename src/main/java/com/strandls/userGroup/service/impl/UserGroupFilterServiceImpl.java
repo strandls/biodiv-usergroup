@@ -45,6 +45,7 @@ import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupSpatialData;
 import com.strandls.userGroup.pojo.UserGroupTaxonomicRule;
 import com.strandls.userGroup.service.UserGroupFilterService;
+import com.strandls.userGroup.service.UserGroupMemberService;
 import com.strandls.userGroup.service.UserGroupSerivce;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -96,6 +97,9 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	@Inject
 	private LogActivities logActivity;
 
+	@Inject
+	private UserGroupMemberService ugMemberSerivce;
+
 //	check observed on date filter
 	private Boolean checkObservedOnDateFilter(Long userGroupId, Date observedOnDate) {
 		List<UserGroupObservedonDateRule> observedDateData = ugObservedDateDao.findByUserGroupIdIsEnabled(userGroupId);
@@ -143,7 +147,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 //	check user rule filter
 	private Boolean checkUserRule(Long userGroupId, Long userId) {
 		try {
-			Boolean result = userService.checkGroupMemberByUserId(userGroupId.toString(), userId.toString());
+			Boolean result = ugMemberSerivce.checkUserGroupMember(userId, userGroupId);
 			return result;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
