@@ -502,7 +502,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 							: new Date(0).toString();
 					String toDate = observedOnDate.getToDate() != null ? observedOnDate.getToDate().toString()
 							: "Presently";
-					String desc = "Observed Date Rule Added :" + fromDate + " to " + toDate;
+					String desc = "Observed Date Rule Removed :" + fromDate + " to " + toDate;
 					logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc, userGroupId,
 							userGroupId, "userGroup", ugFilter.getId(), "Removed Filter Rule");
 				}
@@ -515,7 +515,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 							: new Date(0).toString();
 					String toDate = createdOnDate.getToDate() != null ? createdOnDate.getToDate().toString()
 							: "Presently";
-					String desc = "CreatedOn Date Rule Added :" + fromDate + " to " + toDate;
+					String desc = "CreatedOn Date Rule Removed :" + fromDate + " to " + toDate;
 					logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc, userGroupId,
 							userGroupId, "userGroup", ugFilter.getId(), "Removed Filter Rule");
 				}
