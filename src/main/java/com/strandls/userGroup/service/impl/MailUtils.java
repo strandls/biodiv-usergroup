@@ -44,7 +44,7 @@ public class MailUtils {
 					Map<String, Object> data = new HashMap<String, Object>();
 					data.put(FIELDS.TYPE.getAction(), MAIL_TYPE.SEND_INVITE.getAction());
 					data.put(FIELDS.TO.getAction(), new String[] { mailData.getInviteeEmail() });
-					data.put(FIELDS.SUBSCRIPTION.getAction(), Boolean.valueOf(true));
+					data.put(FIELDS.SUBSCRIPTION.getAction(), true);
 					Map<String, Object> inviteData = new HashMap<String, Object>();
 
 					inviteData.put(INVITATION_DATA.SERVER_URL.getAction(), serverUrl);
@@ -76,7 +76,7 @@ public class MailUtils {
 					Map<String, Object> data = new HashMap<String, Object>();
 					data.put(FIELDS.TYPE.getAction(), MAIL_TYPE.SEND_REQUEST.getAction());
 					data.put(FIELDS.TO.getAction(), new String[] { requestee.getEmail() });
-					data.put(FIELDS.SUBSCRIPTION.getAction(), Boolean.valueOf(true));
+					data.put(FIELDS.SUBSCRIPTION.getAction(), true);
 
 					Map<String, Object> requestData = new HashMap<String, Object>();
 					requestData.put(REQUEST_DATA.REQUESTEE_NAME.getAction(), requestee.getName());
