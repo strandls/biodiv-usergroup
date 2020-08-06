@@ -140,6 +140,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	private UserGroupJoinRequestDao ugJoinRequestDao;
 
 	@Inject
+	private UserGroupUserRequestDAO userGroupUserRequestDao;
+
+	@Inject
 	private UserGroupDocumentDao ugDocumentDao;
 
 	@Override
