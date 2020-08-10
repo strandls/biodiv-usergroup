@@ -1419,7 +1419,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 					Long userId = Long.parseLong(profile.getId());
 					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
-					if (joinRequest != null) {
+					if (joinRequest != null && joinRequest.getUserGroupId() != null) {
 						joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
 						userGroupUserRequestDao.delete(joinRequest);
 					}
@@ -1443,7 +1443,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 				Long userId = Long.parseLong(profile.getId());
 				UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
-				if (joinRequest != null) {
+				if (joinRequest != null && joinRequest.getUserGroupId() != null) {
 					joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
 					userGroupUserRequestDao.delete(joinRequest);
 				}
