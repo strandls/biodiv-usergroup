@@ -3,6 +3,7 @@
  */
 package com.strandls.userGroup.service.impl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.strandls.mail_utility.model.EnumModel.FIELDS;
+import com.strandls.mail_utility.model.EnumModel.INFO_FIELDS;
 import com.strandls.mail_utility.model.EnumModel.INVITATION_DATA;
 import com.strandls.mail_utility.model.EnumModel.MAIL_TYPE;
 import com.strandls.mail_utility.model.EnumModel.REQUEST_DATA;
@@ -42,7 +44,6 @@ public class MailUtils {
 
 				if (!mailData.getInviteeEmail().contains("@ibp.org")) {
 					Map<String, Object> data = new HashMap<String, Object>();
-					data.put(FIELDS.TYPE.getAction(), MAIL_TYPE.SEND_INVITE.getAction());
 					data.put(FIELDS.TO.getAction(), new String[] { mailData.getInviteeEmail() });
 					data.put(FIELDS.SUBSCRIPTION.getAction(), true);
 					Map<String, Object> inviteData = new HashMap<String, Object>();
@@ -55,9 +56,13 @@ public class MailUtils {
 					inviteData.put(INVITATION_DATA.ROLE.getAction(), mailData.getRole());
 
 					data.put(FIELDS.DATA.getAction(), JsonUtil.unflattenJSON(inviteData));
+					
+					Map<String, Object> mData = new HashMap<String, Object>();
+					mData.put(INFO_FIELDS.TYPE.getAction(), MAIL_TYPE.SEND_INVITE.getAction());
+					mData.put(INFO_FIELDS.RECIPIENTS.getAction(), Arrays.asList(data));
 
 					producer.produceMail(RabbitMqConnection.EXCHANGE_BIODIV,
-							RabbitMqConnection.MAILING_ROUTINGKEY, null, JsonUtil.mapToJSON(data));
+							RabbitMqConnection.MAILING_ROUTINGKEY, null, JsonUtil.mapToJSON(mData));
 				}
 
 			}
@@ -74,7 +79,6 @@ public class MailUtils {
 			for (User requestee : requesteeDetails) {
 				if (requestee.getEmail() != null && !requestee.getEmail().contains("@ibp.org")) {
 					Map<String, Object> data = new HashMap<String, Object>();
-					data.put(FIELDS.TYPE.getAction(), MAIL_TYPE.SEND_REQUEST.getAction());
 					data.put(FIELDS.TO.getAction(), new String[] { requestee.getEmail() });
 					data.put(FIELDS.SUBSCRIPTION.getAction(), true);
 
@@ -86,9 +90,13 @@ public class MailUtils {
 					requestData.put(REQUEST_DATA.ENCRYPTED_KEY.getAction(), encryptionKey);
 
 					data.put(FIELDS.DATA.getAction(), JsonUtil.unflattenJSON(requestData));
+					
+					Map<String, Object> mData = new HashMap<String, Object>();
+					mData.put(INFO_FIELDS.TYPE.getAction(), MAIL_TYPE.SEND_REQUEST.getAction());
+					mData.put(INFO_FIELDS.RECIPIENTS.getAction(), Arrays.asList(data));
 
 					producer.produceMail(RabbitMqConnection.EXCHANGE_BIODIV,
-							RabbitMqConnection.MAILING_ROUTINGKEY, null, JsonUtil.mapToJSON(data));
+							RabbitMqConnection.MAILING_ROUTINGKEY, null, JsonUtil.mapToJSON(mData));
 
 				}
 
