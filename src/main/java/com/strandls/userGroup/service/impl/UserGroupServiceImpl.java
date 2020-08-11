@@ -1391,6 +1391,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					if (userId != null && groupId != null) {
 						UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao
 								.checkExistingGroupJoinRequest(userId, groupId);
+						System.out.println("\n\n*****\n\n");
+						System.out.println(joinRequest != null ? joinRequest.toString() : "null");
+						System.out.println("\n\n*****\n\n");
 						if (joinRequest == null) {
 							System.out.println("\n\n**** Inside join request  ****\n\n");
 							joinRequest = new UserGroupUserJoinRequest(groupId, userId);
@@ -1421,6 +1424,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 					Long userId = Long.parseLong(profile.getId());
 					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
+					System.out.println("\n\n*****\n\n");
+					System.out.println(joinRequest != null ? joinRequest.toString() : "null");
+					System.out.println("\n\n*****\n\n");
 					if (joinRequest != null) {
 						if (joinRequest.getUserGroupId() != null) {
 							joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
@@ -1448,6 +1454,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 				Long userId = Long.parseLong(profile.getId());
 				UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
+				System.out.println("\n\n*****\n\n");
+				System.out.println(joinRequest != null ? joinRequest.toString() : "null");
+				System.out.println("\n\n*****\n\n");
 				if (joinRequest != null) {
 					if (joinRequest.getUserGroupId() != null) {
 						joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
