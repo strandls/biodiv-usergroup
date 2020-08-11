@@ -1463,6 +1463,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					}
 					userGroupUserRequestDao.delete(joinRequest);
 				}
+				System.out.println(userData);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
