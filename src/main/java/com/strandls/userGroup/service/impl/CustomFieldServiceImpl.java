@@ -778,28 +778,23 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	public List<CustomFieldDetails> getCustomField(HttpServletRequest request, CommonProfile profile,
 			Long userGroupId) {
 		try {
-			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			Long userId = Long.parseLong(profile.getId());
-			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
-			if (roles.contains("ROLE_ADMIN") || isFounder) {
 
-				List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
-				List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
-				List<UserGroupCustomFieldMapping> ugCFMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
-				for (UserGroupCustomFieldMapping ugCFMapping : ugCFMappingList) {
-					CustomFields customField = cfsDao.findById(ugCFMapping.getCustomFieldId());
-					if (customField.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
-							|| customField.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
-						cfValues = cfValueDao.findByCustomFieldId(customField.getId());
+			List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
+			List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
+			List<UserGroupCustomFieldMapping> ugCFMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
+			for (UserGroupCustomFieldMapping ugCFMapping : ugCFMappingList) {
+				CustomFields customField = cfsDao.findById(ugCFMapping.getCustomFieldId());
+				if (customField.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+						|| customField.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
+					cfValues = cfValueDao.findByCustomFieldId(customField.getId());
 
-					}
-
-					result.add(new CustomFieldDetails(customField, cfValues, ugCFMapping.getDefaultValue(),
-							ugCFMapping.getDisplayOrder(), ugCFMapping.getIsMandatory(),
-							ugCFMapping.getAllowedParticipation()));
 				}
-				return result;
+
+				result.add(new CustomFieldDetails(customField, cfValues, ugCFMapping.getDefaultValue(),
+						ugCFMapping.getDisplayOrder(), ugCFMapping.getIsMandatory(),
+						ugCFMapping.getAllowedParticipation()));
 			}
+			return result;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
