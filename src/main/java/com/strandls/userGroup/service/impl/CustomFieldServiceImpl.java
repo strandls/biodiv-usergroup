@@ -507,8 +507,11 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 						observationCFDao.update(observationCF.get(0));
 
 //						logging activity for signle categorical
+
+						CustomFieldValues cfValue = cfValueDao.findById(factsCreateData.getSingleCategorical());
+
 						String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + " : "
-								+ factsCreateData.getSingleCategorical();
+								+ cfValue.getValues();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
 						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
@@ -610,8 +613,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 						observationCFDao.save(obvCF);
 
 //						logging activity for multiple categorical
+						CustomFieldValues cfValue = cfValueDao.findById(factsCreateData.getSingleCategorical());
 						String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + " : "
-								+ factsCreateData.getSingleCategorical();
+								+ cfValue.getValues();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
 						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
@@ -773,7 +777,6 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	@Override
 	public List<CustomFieldDetails> getCustomField(HttpServletRequest request, CommonProfile profile,
 			Long userGroupId) {
-
 		try {
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
 			Long userId = Long.parseLong(profile.getId());

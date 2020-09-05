@@ -935,8 +935,7 @@ public class UserGroupController {
 		try {
 			Map<String, Object> data = ugServices.verifyOTPProxy(request, id, otp);
 			ResponseBuilder response = Response.ok();
-			if (Boolean.parseBoolean(data.get("status").toString())
-					&& !Boolean.parseBoolean(data.get("verificationRequired").toString())) {
+			if (Boolean.parseBoolean(data.get("status").toString())) {
 				NewCookie accessToken = new NewCookie("BAToken", data.get("access_token").toString(), "/",
 						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
 				NewCookie refreshToken = new NewCookie("BRToken", data.get("refresh_token").toString(), "/",

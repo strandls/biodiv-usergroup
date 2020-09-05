@@ -1361,13 +1361,15 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							"Bearer " + userData.get("access_token").toString());
 					CommonProfile profile = AuthUtil.getProfileFromRequest(mutableRequest);
 					Long user = Long.parseLong(profile.getId());
-					joinGroup(mutableRequest, user, String.valueOf(groupId));
+					if (groupId != null) {
+						joinGroup(mutableRequest, user, String.valueOf(groupId));
+					}
 				} else {
 					Long userId = null;
 					if (userData.containsKey("user")) {
 						userId = Long.parseLong(((Map<String, Object>) userData.get("user")).get("id").toString());
 					}
-					if (userId != null) {
+					if (userId != null && groupId != null) {
 						UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao
 								.checkExistingGroupJoinRequest(userId, groupId);
 						if (joinRequest == null) {
@@ -1401,7 +1403,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					Long userId = Long.parseLong(profile.getId());
 					UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
 					if (joinRequest != null) {
-						joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+						if (joinRequest.getUserGroupId() != null) {
+							joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+						}
 						userGroupUserRequestDao.delete(joinRequest);
 					}
 				}
@@ -1425,7 +1429,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				Long userId = Long.parseLong(profile.getId());
 				UserGroupUserJoinRequest joinRequest = userGroupUserRequestDao.getGroupJoinRequestByUser(userId);
 				if (joinRequest != null) {
-					joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+					if (joinRequest.getUserGroupId() != null) {
+						joinGroup(mutableRequest, userId, String.valueOf(joinRequest.getUserGroupId()));
+					}
 					userGroupUserRequestDao.delete(joinRequest);
 				}
 			}
