@@ -42,7 +42,7 @@ public class MailUtils {
 		try {
 			for (InvitaionMailData mailData : mailDataList) {
 
-				if (!mailData.getInviteeEmail() != null) {
+				if (mailData.getInviteeEmail() != null) {
 					Map<String, Object> data = new HashMap<String, Object>();
 					data.put(FIELDS.TO.getAction(), new String[] { mailData.getInviteeEmail() });
 					data.put(FIELDS.SUBSCRIPTION.getAction(), true);
