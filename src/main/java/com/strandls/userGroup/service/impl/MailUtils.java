@@ -42,7 +42,7 @@ public class MailUtils {
 		try {
 			for (InvitaionMailData mailData : mailDataList) {
 
-				if (!mailData.getInviteeEmail().contains("@ibp.org")) {
+				if (!mailData.getInviteeEmail() != null) {
 					Map<String, Object> data = new HashMap<String, Object>();
 					data.put(FIELDS.TO.getAction(), new String[] { mailData.getInviteeEmail() });
 					data.put(FIELDS.SUBSCRIPTION.getAction(), true);
@@ -77,7 +77,7 @@ public class MailUtils {
 		try {
 
 			for (User requestee : requesteeDetails) {
-				if (requestee.getEmail() != null && !requestee.getEmail().contains("@ibp.org")) {
+				if (requestee.getEmail() != null) {
 					Map<String, Object> data = new HashMap<String, Object>();
 					data.put(FIELDS.TO.getAction(), new String[] { requestee.getEmail() });
 					data.put(FIELDS.SUBSCRIPTION.getAction(), true);
