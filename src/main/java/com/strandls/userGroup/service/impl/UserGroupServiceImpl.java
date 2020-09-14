@@ -32,6 +32,7 @@ import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.User;
 import com.strandls.user.pojo.UserIbp;
 import com.strandls.userGroup.dao.FeaturedDao;
+import com.strandls.userGroup.dao.GroupGallerySliderDao;
 import com.strandls.userGroup.dao.StatsDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupDocumentDao;
@@ -50,6 +51,8 @@ import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.GroupAddMember;
+import com.strandls.userGroup.pojo.GroupGallerySlider;
+import com.strandls.userGroup.pojo.GroupHomePageData;
 import com.strandls.userGroup.pojo.InvitaionMailData;
 import com.strandls.userGroup.pojo.Stats;
 import com.strandls.userGroup.pojo.UserGroup;
@@ -59,7 +62,7 @@ import com.strandls.userGroup.pojo.UserGroupDocCreateData;
 import com.strandls.userGroup.pojo.UserGroupDocument;
 import com.strandls.userGroup.pojo.UserGroupEditData;
 import com.strandls.userGroup.pojo.UserGroupHabitat;
-import com.strandls.userGroup.pojo.UserGroupHomePage;
+import com.strandls.userGroup.pojo.UserGroupHomePageEditData;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitation;
 import com.strandls.userGroup.pojo.UserGroupInvitationData;
@@ -135,12 +138,15 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupJoinRequestDao ugJoinRequestDao;
-	
+
 	@Inject
 	private UserGroupDocumentDao ugDocumentDao;
 
 	@Inject
 	private UserGroupMemberService ugMemberService;
+
+	@Inject
+	private GroupGallerySliderDao groupGallerySliderDao;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -1332,14 +1338,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId) {
-		UserGroup userGroup = userGroupDao.findById(userGroupId);
-		Stats stats = statsDao.fetchStats(userGroupId);
-		UserGroupHomePage result = new UserGroupHomePage(userGroup.getShowGallery(), userGroup.getShowStats(),
-				userGroup.getShowRecentObservations(), userGroup.getShowGridMap(), userGroup.getShowPartners(), stats);
-		return result;
-	}
-
 	public AdministrationList getAdminMembers(String userGroupId) {
 		try {
 			List<UserIbp> founderList = ugMemberService.getFounderList(Long.parseLong(userGroupId));
@@ -1478,6 +1476,75 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		}
 
 		return fetchByDocumentId(ugDocCreate.getDocumentId());
+	}
+
+	public UserGroupHomePageEditData getGroupHomePageEditData(Long userGroupId) {
+		try {
+			UserGroup userGroup = userGroupDao.findById(userGroupId);
+
+			List<GroupGallerySlider> gallerySlider = groupGallerySliderDao.findByUsergroupId(userGroupId);
+
+			UserGroupHomePageEditData result = new UserGroupHomePageEditData(userGroup.getShowGallery(),
+					userGroup.getShowStats(), userGroup.getShowRecentObservations(), userGroup.getShowGridMap(),
+					userGroup.getShowPartners(), userGroup.getShowDesc(), userGroup.getDescription(), gallerySlider);
+
+			return result;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public GroupHomePageData getGroupHomePageData(Long userGroupId) {
+		try {
+			UserGroup userGroup = userGroupDao.findById(userGroupId);
+
+			List<GroupGallerySlider> gallerySlider = groupGallerySliderDao.findByUsergroupId(userGroupId);
+
+			Stats stats = statsDao.fetchStats(userGroupId);
+
+			GroupHomePageData result = new GroupHomePageData(userGroup.getShowGallery(), userGroup.getShowStats(),
+					userGroup.getShowRecentObservations(), userGroup.getShowGridMap(), userGroup.getShowPartners(),
+					userGroup.getShowDesc(), userGroup.getDescription(), stats, gallerySlider);
+
+			return result;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public GroupHomePageData updateGroupHomePage(Long userGroupId, UserGroupHomePageEditData editData) {
+		UserGroup userGroup = userGroupDao.findById(userGroupId);
+		userGroup.setShowDesc(editData.getShowDesc());
+		userGroup.setShowGallery(editData.getShowGallery());
+		userGroup.setShowGridMap(editData.getShowGridMap());
+		userGroup.setShowPartners(editData.getShowPartners());
+		userGroup.setShowRecentObservations(editData.getShowRecentObservation());
+		userGroup.setShowStats(editData.getShowStats());
+		userGroup.setDescription(editData.getDescription());
+
+		userGroupDao.update(userGroup);
+
+//		update gallery slider
+
+		List<GroupGallerySlider> galleryData = editData.getGallerySlider();
+		if (galleryData != null && !galleryData.isEmpty())
+			for (GroupGallerySlider gallery : galleryData) {
+				groupGallerySliderDao.save(gallery);
+			}
+
+		return getGroupHomePageData(userGroupId);
+	}
+
+	@Override
+	public GroupHomePageData removeHomePage(Long userGroupId, Long groupGalleryId) {
+		GroupGallerySlider entity = groupGallerySliderDao.findById(groupGalleryId);
+		groupGallerySliderDao.delete(entity);
+		return getGroupHomePageData(userGroupId);
 	}
 
 }
