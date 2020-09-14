@@ -1060,6 +1060,7 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
+
 	@ApiOperation(value = "Delete group homepage gallery data", notes = "return group home page data", response = GroupHomePageData.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "unable to retrieve the data", response = String.class) })
@@ -1107,10 +1108,34 @@ public class UserGroupController {
 				return Response.status(Status.NOT_FOUND).build();
 			}
 			return Response.status(Status.NOT_ACCEPTABLE).build();
-
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
+	@GET
+	@Path(ApiConstants.MEMBER + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "check user is a member of the group or not", notes = "returns true and false", response = Boolean.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response checkUserMember(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			Long userGroupId = Long.parseLong(ugId);
+			Boolean result = ugMemberService.checkUserGroupMember(userId, userGroupId);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
 }
