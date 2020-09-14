@@ -38,6 +38,7 @@ import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.EncryptionKey;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
+import com.strandls.userGroup.pojo.GroupHomePageData;
 import com.strandls.userGroup.pojo.ShowFilterRule;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
@@ -46,7 +47,7 @@ import com.strandls.userGroup.pojo.UserGroupEditData;
 import com.strandls.userGroup.pojo.UserGroupFilterEnable;
 import com.strandls.userGroup.pojo.UserGroupFilterRemove;
 import com.strandls.userGroup.pojo.UserGroupFilterRuleInputData;
-import com.strandls.userGroup.pojo.UserGroupHomePage;
+import com.strandls.userGroup.pojo.UserGroupHomePageEditData;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
@@ -769,24 +770,6 @@ public class UserGroupController {
 	}
 
 	@GET
-	@Path(ApiConstants.HOMEPAGE + "/{userGroupId}")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "fetches the stats of usergroup", notes = "Returns the userGroupStats", response = UserGroupHomePage.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable the fetch the stats", response = String.class) })
-
-	public Response getUserGroupHomePageData(@PathParam("userGroupId") String groupId) {
-		try {
-			Long userGroupId = Long.parseLong(groupId);
-			UserGroupHomePage result = ugServices.getUserGroupHomePageData(userGroupId);
-			return Response.status(Status.OK).entity(result).build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-		}
-	}
-
-	@GET
 	@Path(ApiConstants.FILTERRULE + ApiConstants.SHOW + "/{userGroupId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -875,7 +858,7 @@ public class UserGroupController {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
-	
+
 	@POST
 	@Path(ApiConstants.REGISTER)
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -938,6 +921,121 @@ public class UserGroupController {
 				response.cookie(accessToken).cookie(refreshToken);
 			}
 			return response.entity(data).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.HOMEPAGE + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "find group homepage data", notes = "return group home page data", response = GroupHomePageData.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to retrieve the data", response = String.class) })
+
+	public Response getGroupHomePage(@PathParam("userGroupId") String ugId) {
+		try {
+			Long userGroupId = Long.parseLong(ugId);
+			GroupHomePageData result = ugServices.getGroupHomePageData(userGroupId);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.HOMEPAGE + ApiConstants.EDIT + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "find group edit homepage data", notes = "return group home page data", response = UserGroupHomePageEditData.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to retrieve the data", response = String.class) })
+
+	public Response getGroupHomePageEditData(@Context HttpServletRequest request,
+			@PathParam("userGroupId") String ugId) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			if (roles.contains("ROLE_ADMIN")) {
+				Long userGroupId = Long.parseLong(ugId);
+				UserGroupHomePageEditData result = ugServices.getGroupHomePageEditData(userGroupId);
+				if (result != null)
+					return Response.status(Status.OK).entity(result).build();
+
+				return Response.status(Status.NOT_FOUND).build();
+			}
+
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.HOMEPAGE + ApiConstants.REMOVE + "/{userGroupId}/{galleryId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Delete group homepage gallery data", notes = "return group home page data", response = GroupHomePageData.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to retrieve the data", response = String.class) })
+
+	public Response removeGalleryData(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId,
+			@PathParam("galleryId") String galleryId) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			if (roles.contains("ROLE_ADMIN")) {
+				Long userGroupId = Long.parseLong(ugId);
+				Long groupGalleryId = Long.parseLong(galleryId);
+				GroupHomePageData result = ugServices.removeHomePage(userGroupId, groupGalleryId);
+				if (result != null)
+					return Response.status(Status.OK).entity(result).build();
+				return Response.status(Status.NOT_FOUND).build();
+			}
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.HOMEPAGE + ApiConstants.UPDATE + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "update group homepage gallery data", notes = "return group home page data", response = GroupHomePageData.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to retrieve the data", response = String.class) })
+	public Response updateGalleryData(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId,
+			@ApiParam(name = "editData") UserGroupHomePageEditData editData) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			if (roles.contains("ROLE_ADMIN")) {
+				Long userGroupId = Long.parseLong(ugId);
+				GroupHomePageData result = ugServices.updateGroupHomePage(userGroupId, editData);
+				if (result != null)
+					return Response.status(Status.OK).entity(result).build();
+				return Response.status(Status.NOT_FOUND).build();
+			}
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}

@@ -931,4 +931,29 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		return null;
 	}
 
+	@Override
+	public List<CustomFieldDetails> addCustomFieldValues(HttpServletRequest request, Long customFieldId,
+			Long userGroupId, CustomFieldValuesCreateData cfVCreateData) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				Long authorId = Long.parseLong(profile.getId());
+				CustomFieldValues cfValues = new CustomFieldValues(null, customFieldId, cfVCreateData.getValue(),
+						authorId, cfVCreateData.getIconURL(), cfVCreateData.getNotes());
+				cfValues = cfValueDao.save(cfValues);
+				if (cfValues.getId() != null)
+					return getCustomField(request, profile, userGroupId);
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
 }

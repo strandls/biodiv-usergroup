@@ -32,6 +32,7 @@ import com.strandls.userGroup.pojo.CustomFieldPermission;
 import com.strandls.userGroup.pojo.CustomFieldReordering;
 import com.strandls.userGroup.pojo.CustomFieldUGData;
 import com.strandls.userGroup.pojo.CustomFieldValues;
+import com.strandls.userGroup.pojo.CustomFieldValuesCreateData;
 import com.strandls.userGroup.service.CustomFieldServices;
 import com.strandls.userGroup.service.impl.CustomFieldMigrationThread;
 
@@ -184,6 +185,33 @@ public class CustomFieldController {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			List<CustomFieldPermission> result = cfService.getCustomFieldPermisison(request, profile, observationId);
 			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@PUT
+	@Path(ApiConstants.ADD + ApiConstants.VALUES + "/{ugId}/{cfId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Add custom field values for categorical field type", notes = "Returns all the customField related with a userGroup", response = CustomFieldDetails.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to retrive the data", response = String.class) })
+
+	public Response addCFValues(@Context HttpServletRequest request, @PathParam("ugId") String ugId,
+			@PathParam("cfId") String cfId,
+			@ApiParam(name = "cfVCreateData") CustomFieldValuesCreateData cfVCreateData) {
+		try {
+			Long customFieldId = Long.parseLong(cfId);
+			Long userGroupId = Long.parseLong(ugId);
+			List<CustomFieldDetails> customField = cfService.addCustomFieldValues(request, customFieldId, userGroupId,
+					cfVCreateData);
+			if (customField != null)
+				return Response.status(Status.OK).entity(customField).build();
+			return Response.status(Status.NOT_ACCEPTABLE).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
