@@ -39,6 +39,7 @@ import com.strandls.userGroup.pojo.EncryptionKey;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.GroupHomePageData;
+import com.strandls.userGroup.pojo.ReorderingHomePage;
 import com.strandls.userGroup.pojo.ShowFilterRule;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
@@ -962,19 +963,11 @@ public class UserGroupController {
 	public Response getGroupHomePageEditData(@Context HttpServletRequest request,
 			@PathParam("userGroupId") String ugId) {
 		try {
-
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			if (roles.contains("ROLE_ADMIN")) {
-				Long userGroupId = Long.parseLong(ugId);
-				UserGroupHomePageEditData result = ugServices.getGroupHomePageEditData(userGroupId);
-				if (result != null)
-					return Response.status(Status.OK).entity(result).build();
-
-				return Response.status(Status.NOT_FOUND).build();
-			}
-
-			return Response.status(Status.NOT_ACCEPTABLE).build();
+			Long userGroupId = Long.parseLong(ugId);
+			UserGroupHomePageEditData result = ugServices.getGroupHomePageEditData(request, userGroupId);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -995,17 +988,12 @@ public class UserGroupController {
 	public Response removeGalleryData(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId,
 			@PathParam("galleryId") String galleryId) {
 		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			if (roles.contains("ROLE_ADMIN")) {
-				Long userGroupId = Long.parseLong(ugId);
-				Long groupGalleryId = Long.parseLong(galleryId);
-				GroupHomePageData result = ugServices.removeHomePage(userGroupId, groupGalleryId);
-				if (result != null)
-					return Response.status(Status.OK).entity(result).build();
-				return Response.status(Status.NOT_FOUND).build();
-			}
-			return Response.status(Status.NOT_ACCEPTABLE).build();
+			Long userGroupId = Long.parseLong(ugId);
+			Long groupGalleryId = Long.parseLong(galleryId);
+			GroupHomePageData result = ugServices.removeHomePage(request, userGroupId, groupGalleryId);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -1025,16 +1013,33 @@ public class UserGroupController {
 	public Response updateGalleryData(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId,
 			@ApiParam(name = "editData") UserGroupHomePageEditData editData) {
 		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			if (roles.contains("ROLE_ADMIN")) {
-				Long userGroupId = Long.parseLong(ugId);
-				GroupHomePageData result = ugServices.updateGroupHomePage(userGroupId, editData);
-				if (result != null)
-					return Response.status(Status.OK).entity(result).build();
-				return Response.status(Status.NOT_FOUND).build();
-			}
-			return Response.status(Status.NOT_ACCEPTABLE).build();
+			Long userGroupId = Long.parseLong(ugId);
+			GroupHomePageData result = ugServices.updateGroupHomePage(request, userGroupId, editData);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.HOMEPAGE + ApiConstants.REORDERING + "/{userGroupId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	public Response reorderingHomePageGallerySlider(@Context HttpServletRequest request,
+			@PathParam("userGroupId") String ugId,
+			@ApiParam(name = "reorderingHomePage") List<ReorderingHomePage> reorderingHomePage) {
+		try {
+			Long userGroupId = Long.parseLong(ugId);
+			GroupHomePageData result = ugServices.reorderingHomePageSlider(request, userGroupId, reorderingHomePage);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

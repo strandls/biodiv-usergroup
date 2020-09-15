@@ -55,6 +55,7 @@ import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.GroupGallerySlider;
 import com.strandls.userGroup.pojo.GroupHomePageData;
 import com.strandls.userGroup.pojo.InvitaionMailData;
+import com.strandls.userGroup.pojo.ReorderingHomePage;
 import com.strandls.userGroup.pojo.Stats;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
@@ -145,6 +146,18 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
 		UserGroup userGroup = userGroupDao.findById(id);
+		List<UserGroupSpeciesGroup> ugSpeciesGroups = ugSGroupDao.findByUserGroupId(id);
+		List<UserGroupHabitat> ugHabitats = ugHabitatDao.findByUserGroupId(id);
+		List<Long> speciesGroupId = new ArrayList<Long>();
+		List<Long> habitatId = new ArrayList<Long>();
+		for (UserGroupSpeciesGroup ugSpeciesGroup : ugSpeciesGroups) {
+			speciesGroupId.add(ugSpeciesGroup.getSpeciesGroupId());
+		}
+		for (UserGroupHabitat ugHabitat : ugHabitats) {
+			habitatId.add(ugHabitat.getHabitatId());
+		}
+		userGroup.setHabitatIds(habitatId);
+		userGroup.setSpeciesGroupIds(speciesGroupId);
 		return userGroup;
 	}
 
@@ -1453,17 +1466,26 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public UserGroupHomePageEditData getGroupHomePageEditData(Long userGroupId) {
+	public UserGroupHomePageEditData getGroupHomePageEditData(HttpServletRequest request, Long userGroupId) {
 		try {
-			UserGroup userGroup = userGroupDao.findById(userGroupId);
 
-			List<GroupGallerySlider> gallerySlider = groupGallerySliderDao.findByUsergroupId(userGroupId);
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				UserGroup userGroup = userGroupDao.findById(userGroupId);
 
-			UserGroupHomePageEditData result = new UserGroupHomePageEditData(userGroup.getShowGallery(),
-					userGroup.getShowStats(), userGroup.getShowRecentObservations(), userGroup.getShowGridMap(),
-					userGroup.getShowPartners(), userGroup.getShowDesc(), userGroup.getDescription(), gallerySlider);
+				List<GroupGallerySlider> gallerySlider = groupGallerySliderDao.findByUsergroupId(userGroupId);
 
-			return result;
+				UserGroupHomePageEditData result = new UserGroupHomePageEditData(userGroup.getShowGallery(),
+						userGroup.getShowStats(), userGroup.getShowRecentObservations(), userGroup.getShowGridMap(),
+						userGroup.getShowPartners(), userGroup.getShowDesc(), userGroup.getDescription(),
+						gallerySlider);
+
+				return result;
+			}
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -1492,34 +1514,82 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public GroupHomePageData updateGroupHomePage(Long userGroupId, UserGroupHomePageEditData editData) {
-		UserGroup userGroup = userGroupDao.findById(userGroupId);
-		userGroup.setShowDesc(editData.getShowDesc());
-		userGroup.setShowGallery(editData.getShowGallery());
-		userGroup.setShowGridMap(editData.getShowGridMap());
-		userGroup.setShowPartners(editData.getShowPartners());
-		userGroup.setShowRecentObservations(editData.getShowRecentObservation());
-		userGroup.setShowStats(editData.getShowStats());
-		userGroup.setDescription(editData.getDescription());
+	public GroupHomePageData updateGroupHomePage(HttpServletRequest request, Long userGroupId,
+			UserGroupHomePageEditData editData) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
 
-		userGroupDao.update(userGroup);
+				UserGroup userGroup = userGroupDao.findById(userGroupId);
+				userGroup.setShowDesc(editData.getShowDesc());
+				userGroup.setShowGallery(editData.getShowGallery());
+				userGroup.setShowGridMap(editData.getShowGridMap());
+				userGroup.setShowPartners(editData.getShowPartners());
+				userGroup.setShowRecentObservations(editData.getShowRecentObservation());
+				userGroup.setShowStats(editData.getShowStats());
+				userGroup.setDescription(editData.getDescription());
+
+				userGroupDao.update(userGroup);
 
 //		update gallery slider
 
-		List<GroupGallerySlider> galleryData = editData.getGallerySlider();
-		if (galleryData != null && !galleryData.isEmpty())
-			for (GroupGallerySlider gallery : galleryData) {
-				groupGallerySliderDao.save(gallery);
-			}
+				List<GroupGallerySlider> galleryData = editData.getGallerySlider();
+				if (galleryData != null && !galleryData.isEmpty())
+					for (GroupGallerySlider gallery : galleryData) {
+						groupGallerySliderDao.save(gallery);
+					}
 
-		return getGroupHomePageData(userGroupId);
+				return getGroupHomePageData(userGroupId);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
 	@Override
-	public GroupHomePageData removeHomePage(Long userGroupId, Long groupGalleryId) {
-		GroupGallerySlider entity = groupGallerySliderDao.findById(groupGalleryId);
-		groupGallerySliderDao.delete(entity);
-		return getGroupHomePageData(userGroupId);
+	public GroupHomePageData removeHomePage(HttpServletRequest request, Long userGroupId, Long groupGalleryId) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				GroupGallerySlider entity = groupGallerySliderDao.findById(groupGalleryId);
+				groupGallerySliderDao.delete(entity);
+				return getGroupHomePageData(userGroupId);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public GroupHomePageData reorderingHomePageSlider(HttpServletRequest request, Long userGroupId,
+			List<ReorderingHomePage> reorderingHomePage) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
+			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				for (ReorderingHomePage reOrder : reorderingHomePage) {
+					GroupGallerySlider gallery = groupGallerySliderDao.findById(reOrder.getGalleryId());
+					gallery.setDisplayOrder(reOrder.getDisplayOrder());
+					groupGallerySliderDao.update(gallery);
+				}
+
+				return getGroupHomePageData(userGroupId);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
 }

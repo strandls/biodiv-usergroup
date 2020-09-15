@@ -18,6 +18,7 @@ import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
 import com.strandls.userGroup.pojo.GroupHomePageData;
+import com.strandls.userGroup.pojo.ReorderingHomePage;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
@@ -105,12 +106,16 @@ public interface UserGroupSerivce {
 
 	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp);
 
-	public UserGroupHomePageEditData getGroupHomePageEditData(Long userGroupId);
+	public UserGroupHomePageEditData getGroupHomePageEditData(HttpServletRequest request, Long userGroupId);
 
 	public GroupHomePageData getGroupHomePageData(Long userGroupId);
 
-	public GroupHomePageData updateGroupHomePage(Long userGroupId, UserGroupHomePageEditData editData);
+	public GroupHomePageData updateGroupHomePage(HttpServletRequest request, Long userGroupId,
+			UserGroupHomePageEditData editData);
 
-	public GroupHomePageData removeHomePage(Long userGroupId, Long groupGalleryId);
+	public GroupHomePageData removeHomePage(HttpServletRequest request, Long userGroupId, Long groupGalleryId);
+
+	public GroupHomePageData reorderingHomePageSlider(HttpServletRequest request, Long userGroupId,
+			List<ReorderingHomePage> reorderingHomePage);
 
 }
