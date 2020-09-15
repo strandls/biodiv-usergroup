@@ -5,12 +5,14 @@ package com.strandls.userGroup.pojo;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -58,6 +60,8 @@ public class UserGroup implements Serializable {
 	private Boolean showGridMap;
 	private Boolean showPartners;
 	private Boolean showDesc;
+	private List<Long> habitatIds;
+	private List<Long> speciesGroupIds;
 
 	/**
 	 * 
@@ -66,7 +70,6 @@ public class UserGroup implements Serializable {
 		super();
 	}
 
-	
 	/**
 	 * @param id
 	 * @param allow_members_to_make_species_call
@@ -138,7 +141,6 @@ public class UserGroup implements Serializable {
 		this.showPartners = showPartners;
 		this.showDesc = showDesc;
 	}
-
 
 	@Id
 	@GeneratedValue
@@ -410,6 +412,24 @@ public class UserGroup implements Serializable {
 
 	public void setShowDesc(Boolean showDesc) {
 		this.showDesc = showDesc;
+	}
+
+	@Transient
+	public List<Long> getHabitatIds() {
+		return habitatIds;
+	}
+
+	public void setHabitatIds(List<Long> habitatIds) {
+		this.habitatIds = habitatIds;
+	}
+
+	@Transient
+	public List<Long> getSpeciesGroupIds() {
+		return speciesGroupIds;
+	}
+
+	public void setSpeciesGroupIds(List<Long> speciesGroupIds) {
+		this.speciesGroupIds = speciesGroupIds;
 	}
 
 }

@@ -33,6 +33,7 @@ public class GroupGallerySlider {
 	private String title;
 	private String customDescripition;
 	private String moreLinks;
+	private Long displayOrder;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -124,6 +125,15 @@ public class GroupGallerySlider {
 
 	public void setMoreLinks(String moreLinks) {
 		this.moreLinks = moreLinks;
+	}
+
+	@Column(name = "display_order", nullable = false)
+	public Long getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Long displayOrder) {
+		this.displayOrder = displayOrder;
 	}
 
 }
