@@ -353,9 +353,10 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 			Boolean isCreatedOn = false;
 			Boolean isObservedOn = false;
 
-			Boolean result = false;
+			Boolean result = true;
 
 			if (ugFilter != null) {
+				 result  = false;
 				if (ugFilter.getHasSpatialRule()) {
 					isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(), ugFilterData.getLongitude());
 					if (isSpartial)
