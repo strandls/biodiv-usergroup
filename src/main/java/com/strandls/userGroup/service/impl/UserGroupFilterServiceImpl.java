@@ -361,14 +361,14 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 					if (isSpartial)
 						result = true;
 					else
-						result = false;
+						return false;
 				}
 				if (ugFilter.getHasUserRule()) {
 					isUser = checkUserRule(userGroupId, userId);
 					if (isUser)
 						result = true;
 					else
-						result = false;
+						return false;
 
 				}
 				if (ugFilter.getHasCreatedOnDateRule()) {
@@ -376,28 +376,26 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 					if (isCreatedOn)
 						result = true;
 					else
-						result = false;
+						return false;
 				}
 				if (ugFilter.getHasObservedOnDateRule()) {
 					isObservedOn = checkObservedOnDateFilter(userGroupId, ugFilterData.getObservedOnDate());
 					if (isObservedOn)
 						result = true;
 					else
-						result = false;
+						return false;
 				}
 
 				if (ugFilter.getHasTaxonomicRule()) {
 					if (ugFilterData.getTaxonomyId() != null) {
 						isTaxo = checkTaxonomicRule(userGroupId, ugFilterData.getTaxonomyId());
-						if (result && isTaxo)
-							return true;
+						if (isTaxo)
+							result = true;
 						else
 							return false;
-
 					}
 
 				}
-
 				if (ugFilter.getHasSpatialRule() == false && ugFilter.getHasTaxonomicRule() == false
 						&& ugFilter.getHasUserRule() == false && ugFilter.getHasCreatedOnDateRule() == false
 						&& ugFilter.getHasObservedOnDateRule() == false)
