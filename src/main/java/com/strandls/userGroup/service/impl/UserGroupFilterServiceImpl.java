@@ -347,35 +347,64 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	public Boolean checkUserGroupEligiblity(Long userGroupId, Long userId, UserGroupObvFilterData ugFilterData) {
 		try {
 			UserGroupFilterRule ugFilter = ugFilterRuleDao.findByUserGroupId(userGroupId);
+			Boolean isSpartial = false;
+			Boolean isTaxo = false;
+			Boolean isUser = false;
+			Boolean isCreatedOn = false;
+			Boolean isObservedOn = false;
+
+			Boolean result = false;
+
 			if (ugFilter != null) {
 				if (ugFilter.getHasSpatialRule()) {
-					Boolean isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(),
-							ugFilterData.getLongitude());
-					if (!isSpartial)
-						return false;
-				}
-				if (ugFilter.getHasTaxonomicRule()) {
-					Boolean isTaxo = checkTaxonomicRule(userGroupId, ugFilterData.getTaxonomyId());
-					if (!isTaxo)
-						return false;
+					isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(), ugFilterData.getLongitude());
+					if (isSpartial)
+						result = true;
+					else
+						result = false;
 				}
 				if (ugFilter.getHasUserRule()) {
-					Boolean isUser = checkUserRule(userGroupId, userId);
-					if (!isUser)
-						return false;
+					isUser = checkUserRule(userGroupId, userId);
+					if (isUser)
+						result = true;
+					else
+						result = false;
+
 				}
 				if (ugFilter.getHasCreatedOnDateRule()) {
-					Boolean isCreatedOn = checkCreatedOnDateFilter(userGroupId, ugFilterData.getCreatedOnDate());
-					if (!isCreatedOn)
-						return false;
+					isCreatedOn = checkCreatedOnDateFilter(userGroupId, ugFilterData.getCreatedOnDate());
+					if (isCreatedOn)
+						result = true;
+					else
+						result = false;
 				}
 				if (ugFilter.getHasObservedOnDateRule()) {
-					Boolean isObservedOn = checkObservedOnDateFilter(userGroupId, ugFilterData.getObservedOnDate());
-					if (!isObservedOn)
-						return false;
+					isObservedOn = checkObservedOnDateFilter(userGroupId, ugFilterData.getObservedOnDate());
+					if (isObservedOn)
+						result = true;
+					else
+						result = false;
 				}
+
+				if (ugFilter.getHasTaxonomicRule()) {
+					if (ugFilterData.getTaxonomyId() != null) {
+						isTaxo = checkTaxonomicRule(userGroupId, ugFilterData.getTaxonomyId());
+						if (result && isTaxo)
+							return true;
+						else
+							return false;
+
+					}
+
+				}
+
+				if (ugFilter.getHasSpatialRule() == false && ugFilter.getHasTaxonomicRule() == false
+						&& ugFilter.getHasUserRule() == false && ugFilter.getHasCreatedOnDateRule() == false
+						&& ugFilter.getHasObservedOnDateRule() == false)
+					return false;
+
 			}
-			return true;
+			return result;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
