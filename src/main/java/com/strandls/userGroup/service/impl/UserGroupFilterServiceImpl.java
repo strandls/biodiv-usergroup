@@ -45,6 +45,7 @@ import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupSpatialData;
 import com.strandls.userGroup.pojo.UserGroupTaxonomicRule;
 import com.strandls.userGroup.service.UserGroupFilterService;
+import com.strandls.userGroup.service.UserGroupMemberService;
 import com.strandls.userGroup.service.UserGroupSerivce;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -96,6 +97,9 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	@Inject
 	private LogActivities logActivity;
 
+	@Inject
+	private UserGroupMemberService ugMemberSerivce;
+
 //	check observed on date filter
 	private Boolean checkObservedOnDateFilter(Long userGroupId, Date observedOnDate) {
 		List<UserGroupObservedonDateRule> observedDateData = ugObservedDateDao.findByUserGroupIdIsEnabled(userGroupId);
@@ -143,7 +147,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 //	check user rule filter
 	private Boolean checkUserRule(Long userGroupId, Long userId) {
 		try {
-			Boolean result = userService.checkGroupMemberByUserId(userGroupId.toString(), userId.toString());
+			Boolean result = ugMemberSerivce.checkUserGroupMember(userId, userGroupId);
 			return result;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -343,35 +347,64 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	public Boolean checkUserGroupEligiblity(Long userGroupId, Long userId, UserGroupObvFilterData ugFilterData) {
 		try {
 			UserGroupFilterRule ugFilter = ugFilterRuleDao.findByUserGroupId(userGroupId);
+			Boolean isSpartial = false;
+			Boolean isTaxo = false;
+			Boolean isUser = false;
+			Boolean isCreatedOn = false;
+			Boolean isObservedOn = false;
+
+			Boolean result = true;
+
 			if (ugFilter != null) {
+				 result  = false;
 				if (ugFilter.getHasSpatialRule()) {
-					Boolean isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(),
-							ugFilterData.getLongitude());
-					if (!isSpartial)
-						return false;
-				}
-				if (ugFilter.getHasTaxonomicRule()) {
-					Boolean isTaxo = checkTaxonomicRule(userGroupId, ugFilterData.getTaxonomyId());
-					if (!isTaxo)
+					isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(), ugFilterData.getLongitude());
+					if (isSpartial)
+						result = true;
+					else
 						return false;
 				}
 				if (ugFilter.getHasUserRule()) {
-					Boolean isUser = checkUserRule(userGroupId, userId);
-					if (!isUser)
+					isUser = checkUserRule(userGroupId, userId);
+					if (isUser)
+						result = true;
+					else
 						return false;
+
 				}
 				if (ugFilter.getHasCreatedOnDateRule()) {
-					Boolean isCreatedOn = checkCreatedOnDateFilter(userGroupId, ugFilterData.getCreatedOnDate());
-					if (!isCreatedOn)
+					isCreatedOn = checkCreatedOnDateFilter(userGroupId, ugFilterData.getCreatedOnDate());
+					if (isCreatedOn)
+						result = true;
+					else
 						return false;
 				}
 				if (ugFilter.getHasObservedOnDateRule()) {
-					Boolean isObservedOn = checkObservedOnDateFilter(userGroupId, ugFilterData.getObservedOnDate());
-					if (!isObservedOn)
+					isObservedOn = checkObservedOnDateFilter(userGroupId, ugFilterData.getObservedOnDate());
+					if (isObservedOn)
+						result = true;
+					else
 						return false;
 				}
+
+				if (ugFilter.getHasTaxonomicRule()) {
+					if (ugFilterData.getTaxonomyId() != null) {
+						isTaxo = checkTaxonomicRule(userGroupId, ugFilterData.getTaxonomyId());
+						if (isTaxo)
+							result = true;
+						else
+							return false;
+					}
+
+				}
+
+				if (ugFilter.getHasSpatialRule() == false && ugFilter.getHasTaxonomicRule() == false
+						&& ugFilter.getHasUserRule() == false && ugFilter.getHasCreatedOnDateRule() == false
+						&& ugFilter.getHasObservedOnDateRule() == false)
+					return false;
+
 			}
-			return true;
+			return result;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
