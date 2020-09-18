@@ -227,7 +227,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 
 			for (Long ugid : ugIdFilterList) {
 				if (!ugIdObvList.contains(ugid)) {
-					Boolean isEligible = checkUserGroupEligiblity(ugid, userId, ugFilterData);
+					Boolean isEligible = checkUserGroupEligiblity(ugid, userId, ugFilterData, false);
 					if (isEligible) {
 						UserGroupObservation ugObv = new UserGroupObservation(ugid, ugFilterData.getObservationId());
 						ugObv = ugObvDao.save(ugObv);
@@ -295,7 +295,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 			for (Long ugid : ugIdObvList) {
 				if (ugIdFilterList.contains(ugid)) {
 
-					Boolean isEligible = checkUserGroupEligiblity(ugid, userId, ugObvFilterData);
+					Boolean isEligible = checkUserGroupEligiblity(ugid, userId, ugObvFilterData, false);
 					if (!isEligible) {
 						UserGroupObservation ugObvMapping = ugObvDao
 								.checkObservationUGMApping(ugObvFilterData.getObservationId(), ugid);
@@ -344,7 +344,8 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	}
 
 	@Override
-	public Boolean checkUserGroupEligiblity(Long userGroupId, Long userId, UserGroupObvFilterData ugFilterData) {
+	public Boolean checkUserGroupEligiblity(Long userGroupId, Long userId, UserGroupObvFilterData ugFilterData,
+			Boolean isPosting) {
 		try {
 			UserGroupFilterRule ugFilter = ugFilterRuleDao.findByUserGroupId(userGroupId);
 			Boolean isSpartial = false;
@@ -356,7 +357,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 			Boolean result = true;
 
 			if (ugFilter != null) {
-				 result  = false;
+				result = false;
 				if (ugFilter.getHasSpatialRule()) {
 					isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(), ugFilterData.getLongitude());
 					if (isSpartial)
@@ -388,6 +389,8 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				}
 
 				if (ugFilter.getHasTaxonomicRule()) {
+					if (isPosting)
+						result = true;
 					if (ugFilterData.getTaxonomyId() != null) {
 						isTaxo = checkTaxonomicRule(userGroupId, ugFilterData.getTaxonomyId());
 						if (isTaxo)
@@ -755,7 +758,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				UserGroupObservation ugObvMapping = ugObvDao.checkObservationUGMApping(ugFilterData.getObservationId(),
 						userGroupId);
 				if (ugObvMapping == null) {
-					Boolean isEligible = checkUserGroupEligiblity(userGroupId, userId, ugFilterData);
+					Boolean isEligible = checkUserGroupEligiblity(userGroupId, userId, ugFilterData, false);
 					if (isEligible) {
 						UserGroupObservation ugObv = new UserGroupObservation(userGroupId,
 								ugFilterData.getObservationId());
@@ -815,7 +818,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				UserGroupObservation ugObvMapping = ugObvDao.checkObservationUGMApping(ugFilterData.getObservationId(),
 						userGroupId);
 				if (ugObvMapping != null) {
-					Boolean isEligible = checkUserGroupEligiblity(userGroupId, userId, ugFilterData);
+					Boolean isEligible = checkUserGroupEligiblity(userGroupId, userId, ugFilterData, false);
 					if (!isEligible) {
 						ugObvDao.delete(ugObvMapping);
 

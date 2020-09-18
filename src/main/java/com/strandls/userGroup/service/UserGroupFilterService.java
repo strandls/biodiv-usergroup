@@ -19,7 +19,8 @@ import com.strandls.userGroup.pojo.UserGroupObvFilterData;
  */
 public interface UserGroupFilterService {
 
-	public Boolean checkUserGroupEligiblity(Long userGroupId, Long userId, UserGroupObvFilterData ugFilterData);
+	public Boolean checkUserGroupEligiblity(Long userGroupId, Long userId, UserGroupObvFilterData ugFilterData,
+			Boolean isPosting);
 
 	public void bgFiltureRule(HttpServletRequest request, UserGroupObvFilterData ugObvFilterData);
 
