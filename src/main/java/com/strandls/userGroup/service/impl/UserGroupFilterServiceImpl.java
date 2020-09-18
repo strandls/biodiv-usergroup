@@ -295,7 +295,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 			for (Long ugid : ugIdObvList) {
 				if (ugIdFilterList.contains(ugid)) {
 
-					Boolean isEligible = checkUserGroupEligiblity(ugid, userId, ugObvFilterData, false);
+					Boolean isEligible = checkUserGroupEligiblity(ugid, userId, ugObvFilterData, true);
 					if (!isEligible) {
 						UserGroupObservation ugObvMapping = ugObvDao
 								.checkObservationUGMApping(ugObvFilterData.getObservationId(), ugid);
@@ -817,7 +817,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				UserGroupObservation ugObvMapping = ugObvDao.checkObservationUGMApping(ugFilterData.getObservationId(),
 						userGroupId);
 				if (ugObvMapping != null) {
-					Boolean isEligible = checkUserGroupEligiblity(userGroupId, userId, ugFilterData, false);
+					Boolean isEligible = checkUserGroupEligiblity(userGroupId, userId, ugFilterData, true);
 					if (!isEligible) {
 						ugObvDao.delete(ugObvMapping);
 
