@@ -189,7 +189,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		for (Long userGroup : userGroups.getUserGroups()) {
 
 			Boolean isEligible = ugFilterService.checkUserGroupEligiblity(userGroup, userId,
-					userGroups.getUgFilterData(), true);
+					userGroups.getUgFilterData());
 			if (isEligible) {
 				UserGroupObservation userGroupObs = new UserGroupObservation(userGroup, observationId);
 				UserGroupObservation result = userGroupObvDao.save(userGroupObs);
@@ -257,7 +257,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (!(previousUserGroup.contains(userGroupId))) {
 
 				Boolean isEligible = ugFilterService.checkUserGroupEligiblity(userGroupId, userId,
-						userGorups.getUgFilterData(), true);
+						userGorups.getUgFilterData());
 				if (isEligible) {
 					UserGroupObservation userGroupMapping = new UserGroupObservation(userGroupId, observationId);
 					userGroupObvDao.save(userGroupMapping);
@@ -968,8 +968,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						if (isAlreadyMapped != null)
 							continue;
 
-						Boolean isEligible = ugFilterService.checkUserGroupEligiblity(userGroupId, userId, ugObvData,
-								false);
+						Boolean isEligible = ugFilterService.checkUserGroupEligiblity(userGroupId, userId, ugObvData);
 
 						if (isEligible) {
 
