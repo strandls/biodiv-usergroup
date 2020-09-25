@@ -139,6 +139,18 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
 		UserGroup userGroup = userGroupDao.findById(id);
+		List<UserGroupSpeciesGroup> ugSpeciesGroups = ugSGroupDao.findByUserGroupId(id);
+		List<UserGroupHabitat> ugHabitats = ugHabitatDao.findByUserGroupId(id);
+		List<Long> speciesGroupId = new ArrayList<Long>();
+		List<Long> habitatId = new ArrayList<Long>();
+		for (UserGroupSpeciesGroup ugSpeciesGroup : ugSpeciesGroups) {
+			speciesGroupId.add(ugSpeciesGroup.getSpeciesGroupId());
+		}
+		for (UserGroupHabitat ugHabitat : ugHabitats) {
+			habitatId.add(ugHabitat.getHabitatId());
+		}
+		userGroup.setHabitatIds(habitatId);
+		userGroup.setSpeciesGroupIds(speciesGroupId);
 		return userGroup;
 	}
 
