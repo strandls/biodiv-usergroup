@@ -995,4 +995,26 @@ public class UserGroupController {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
+
+	@GET
+	@Path(ApiConstants.ENABLE + ApiConstants.EDIT + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "check eligiblity for edit button", notes = "Returns true and false", response = Boolean.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to find the data", response = String.class) })
+
+	public Response enableEdit(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId) {
+		try {
+			Long userGroupId = Long.parseLong(ugId);
+			Boolean result = ugServices.enableEdit(request, userGroupId);
+			return Response.status(Status.OK).entity(result).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
 }
