@@ -1465,7 +1465,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		Boolean isModerator = ugMemberService.checkModeratorRole(userId, userGroupId);
 		if (roles.contains("ROLE_ADMIN") || isFounder || isModerator)
 			return true;
-		return null;
+		return false;
 	}
 
 }
