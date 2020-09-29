@@ -17,6 +17,7 @@ public class UserGroupObvFilterData {
 	private Date createdOnDate;
 	private Date observedOnDate;
 	private Long taxonomyId;
+	private Long authorId;
 
 	/**
 	 * 
@@ -25,16 +26,8 @@ public class UserGroupObvFilterData {
 		super();
 	}
 
-	/**
-	 * @param observationId
-	 * @param latitude
-	 * @param longitude
-	 * @param createdOnDate
-	 * @param observedOnDate
-	 * @param taxonomyId
-	 */
 	public UserGroupObvFilterData(Long observationId, Double latitude, Double longitude, Date createdOnDate,
-			Date observedOnDate, Long taxonomyId) {
+			Date observedOnDate, Long taxonomyId, Long authorId) {
 		super();
 		this.observationId = observationId;
 		this.latitude = latitude;
@@ -42,6 +35,7 @@ public class UserGroupObvFilterData {
 		this.createdOnDate = createdOnDate;
 		this.observedOnDate = observedOnDate;
 		this.taxonomyId = taxonomyId;
+		this.authorId = authorId;
 	}
 
 	public Long getObservationId() {
@@ -90,6 +84,14 @@ public class UserGroupObvFilterData {
 
 	public void setTaxonomyId(Long taxonomyId) {
 		this.taxonomyId = taxonomyId;
+	}
+
+	public Long getAuthorId() {
+		return authorId;
+	}
+
+	public void setAuthorId(Long authorId) {
+		this.authorId = authorId;
 	}
 
 }

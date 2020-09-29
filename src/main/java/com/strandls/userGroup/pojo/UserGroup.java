@@ -431,5 +431,4 @@ public class UserGroup implements Serializable {
 	public void setSpeciesGroupIds(List<Long> speciesGroupIds) {
 		this.speciesGroupIds = speciesGroupIds;
 	}
-
 }

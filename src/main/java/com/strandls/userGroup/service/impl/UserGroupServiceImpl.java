@@ -994,8 +994,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						if (isAlreadyMapped != null)
 							continue;
 
-						Boolean isEligible = ugFilterService.checkUserGroupEligiblity(userGroupId, userId, ugObvData,
-								false);
+						Boolean isEligible = ugFilterService.checkUserGroupEligiblity(userGroupId,
+								ugObvData.getAuthorId(), ugObvData, false);
 
 						if (isEligible) {
 
@@ -1492,6 +1492,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		return fetchByDocumentId(ugDocCreate.getDocumentId());
 	}
 
+	@Override
 	public UserGroupHomePageEditData getGroupHomePageEditData(HttpServletRequest request, Long userGroupId) {
 		try {
 
@@ -1616,6 +1617,19 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			logger.error(e.getMessage());
 		}
 		return null;
+	}
+
+	@Override
+	public Boolean enableEdit(HttpServletRequest request, Long userGroupId) {
+
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		Long userId = Long.parseLong(profile.getId());
+		JSONArray roles = (JSONArray) profile.getAttribute("roles");
+		Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
+		Boolean isModerator = ugMemberService.checkModeratorRole(userId, userGroupId);
+		if (roles.contains("ROLE_ADMIN") || isFounder || isModerator)
+			return true;
+		return false;
 	}
 
 }
