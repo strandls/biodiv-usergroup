@@ -878,7 +878,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						Boolean isMember = ugMemberService.checkUserGroupMember(originalObject.getUserId(),
 								originalObject.getUserGroupId());
 						if (!isMember) {
-							ugMemberService.addMemberUG(userId, memberId, originalObject.getUserGroupId());
+							ugMemberService.addMemberUG(originalObject.getUserId(), memberId, originalObject.getUserGroupId());
 							String desc = "Joined Group with Role: Member";
 							logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc,
 									originalObject.getUserGroupId(), originalObject.getUserGroupId(), "userGroup",
