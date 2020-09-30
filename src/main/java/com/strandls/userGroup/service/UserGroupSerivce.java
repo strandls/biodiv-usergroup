@@ -106,4 +106,6 @@ public interface UserGroupSerivce {
 
 	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp);
 
+	public Boolean enableEdit(HttpServletRequest request, Long userGroupId);
+
 }
