@@ -878,7 +878,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						Boolean isMember = ugMemberService.checkUserGroupMember(originalObject.getUserId(),
 								originalObject.getUserGroupId());
 						if (!isMember) {
-							ugMemberService.addMemberUG(originalObject.getUserId(), memberId, originalObject.getUserGroupId());
+							ugMemberService.addMemberUG(originalObject.getUserId(), memberId,
+									originalObject.getUserGroupId());
 							String desc = "Joined Group with Role: Member";
 							logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc,
 									originalObject.getUserGroupId(), originalObject.getUserGroupId(), "userGroup",
@@ -1525,6 +1526,13 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			UserGroup userGroup = userGroupDao.findById(userGroupId);
 
 			List<GroupGallerySlider> gallerySlider = groupGallerySliderDao.findByUsergroupId(userGroupId);
+			for (GroupGallerySlider slider : gallerySlider) {
+				UserIbp userIbp = userService.getUserIbp(slider.getAuthorId().toString());
+				if (userIbp != null) {
+					slider.setAuthorImage(userIbp.getProfilePic());
+					slider.setAuthorName(userIbp.getName());
+				}
+			}
 
 			Stats stats = statsDao.fetchStats(userGroupId);
 

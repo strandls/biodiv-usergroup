@@ -1019,7 +1019,6 @@ public class UserGroupController {
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_FOUND).build();
-
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
@@ -1082,6 +1081,7 @@ public class UserGroupController {
 
 	@ApiOperation(value = "update group homepage gallery data", notes = "return group home page data", response = GroupHomePageData.class)
 	@ApiResponses(value = {
+
 			@ApiResponse(code = 400, message = "unable to retrieve the data", response = String.class) })
 	public Response updateGalleryData(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId,
 			@ApiParam(name = "editData") UserGroupHomePageEditData editData) {

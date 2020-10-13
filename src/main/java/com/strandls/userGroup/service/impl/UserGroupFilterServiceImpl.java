@@ -340,7 +340,6 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	}
 
 	@Override
-
 	public Boolean checkUserGroupEligiblity(Long userGroupId, Long authorId, UserGroupObvFilterData ugFilterData,
 			Boolean isPosting) {
 		try {
