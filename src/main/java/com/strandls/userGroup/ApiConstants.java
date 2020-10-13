@@ -32,6 +32,7 @@ public class ApiConstants {
 	public static final String ADD = "/add";
 	public static final String SPECIESGROUP = "speciesGroup";
 	public static final String NEWSLETTER = "/newsletter";
+	public static final String MEMBER = "/member";
 	public static final String MEMBERS = "/members";
 	public static final String VALIDATE = "/validate";
 	public static final String LEAVE = "/leave";

@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import com.strandls.activity.pojo.MailData;
 import com.strandls.authentication_utility.util.AuthUtil;
-import com.strandls.user.controller.UserServiceApi;
-import com.strandls.userGroup.Headers;
 import com.strandls.userGroup.dao.CustomFieldDao;
 import com.strandls.userGroup.dao.CustomFieldUG18Dao;
 import com.strandls.userGroup.dao.CustomFieldUG37Dao;
@@ -55,6 +53,7 @@ import com.strandls.userGroup.pojo.UserGroupCustomFieldMapping;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.service.CustomFieldServices;
+import com.strandls.userGroup.service.UserGroupMemberService;
 import com.strandls.userGroup.service.UserGroupSerivce;
 
 import net.minidev.json.JSONArray;
@@ -75,9 +74,6 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 	@Inject
 	private UserGroupObservationDao userGroupObvDao;
-
-	@Inject
-	private UserServiceApi userService;
 
 	@Inject
 	private CustomFieldDao cfDao;
@@ -104,7 +100,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	private LogActivities logActivity;
 
 	@Inject
-	private Headers headers;
+	private UserGroupMemberService ugMemberService;
 
 	@Override
 	public void migrateCustomField() {
@@ -379,8 +375,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					return true;
 				} else {
 //					close group
-					userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-					Boolean isMember = userService.checkMemberRoleUG(userGroupId.toString());
+					Boolean isMember = ugMemberService.checkUserGroupMember(userId, userGroupId);
 					return isMember;
 				}
 
@@ -394,8 +389,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 					}
 				} else {
 //					closer group
-					userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-					Boolean isMember = userService.checkMemberRoleUG(userGroupId.toString());
+					Boolean isMember = ugMemberService.checkUserGroupMember(userId, userGroupId);
 					return isMember;
 				}
 			}
@@ -431,8 +425,8 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 				}
 
 				JSONArray roles = (JSONArray) profile.getAttribute("roles");
-				userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-				Boolean isFounder = userService.checkFounderRole(customFieldCreateData.getUserGroupId().toString());
+				Long userId = Long.parseLong(profile.getId());
+				Boolean isFounder = ugMemberService.checkFounderRole(userId, customFieldCreateData.getUserGroupId());
 				if (roles.contains("ROLE_ADMIN") || isFounder) {
 
 					Long authorId = Long.parseLong(profile.getId());
@@ -784,6 +778,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	public List<CustomFieldDetails> getCustomField(HttpServletRequest request, CommonProfile profile,
 			Long userGroupId) {
 		try {
+
 			List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
 			List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
 			List<UserGroupCustomFieldMapping> ugCFMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
@@ -812,8 +807,8 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		try {
 
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			Long userId = Long.parseLong(profile.getId());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				UserGroupCustomFieldMapping ugCFMapping = ugCFMappingDao.findByUserGroupCustomFieldId(userGroupId,
 						customFieldId);
@@ -862,8 +857,7 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		try {
 
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				for (CustomFieldUGData customFieldUGData : customFieldUGDataList) {
 					UserGroupCustomFieldMapping ugCFMapping = new UserGroupCustomFieldMapping(null, userId, userGroupId,
@@ -892,8 +886,8 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		try {
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			Long userId = Long.parseLong(profile.getId());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				List<UserGroupCustomFieldMapping> ugCFMappings = ugCFMappingDao.findByUserGroupId(userGroupId);
 				Map<Long, Long> displayOrder = new HashMap<Long, Long>();
@@ -938,8 +932,8 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			userService = headers.addUserHeader(userService, request.getHeader(HttpHeaders.AUTHORIZATION));
-			Boolean isFounder = userService.checkFounderRole(userGroupId.toString());
+			Long userId = Long.parseLong(profile.getId());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
 			if (roles.contains("ROLE_ADMIN") || isFounder) {
 				Long authorId = Long.parseLong(profile.getId());
 				CustomFieldValues cfValues = new CustomFieldValues(null, customFieldId, cfVCreateData.getValue(),

@@ -14,13 +14,11 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strandls.activity.pojo.UserGroupActivity;
-import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.taxonomy.pojo.BreadCrumb;
 import com.strandls.user.controller.UserServiceApi;
@@ -45,6 +43,7 @@ import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupSpatialData;
 import com.strandls.userGroup.pojo.UserGroupTaxonomicRule;
 import com.strandls.userGroup.service.UserGroupFilterService;
+import com.strandls.userGroup.service.UserGroupMemberService;
 import com.strandls.userGroup.service.UserGroupSerivce;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -96,6 +95,9 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	@Inject
 	private LogActivities logActivity;
 
+	@Inject
+	private UserGroupMemberService ugMemberSerivce;
+
 //	check observed on date filter
 	private Boolean checkObservedOnDateFilter(Long userGroupId, Date observedOnDate) {
 		List<UserGroupObservedonDateRule> observedDateData = ugObservedDateDao.findByUserGroupIdIsEnabled(userGroupId);
@@ -143,7 +145,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 //	check user rule filter
 	private Boolean checkUserRule(Long userGroupId, Long userId) {
 		try {
-			Boolean result = userService.checkGroupMemberByUserId(userGroupId.toString(), userId.toString());
+			Boolean result = ugMemberSerivce.checkUserGroupMember(userId, userGroupId);
 			return result;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -210,8 +212,6 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 
 		try {
 
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			Long userId = Long.parseLong(profile.getId());
 			List<UserGroupFilterRule> ugFilterList = ugFilterRuleDao.findAll();
 			List<UserGroupObservation> ugObservation = ugObvDao.findByObservationId(ugFilterData.getObservationId());
 			List<Long> ugIdFilterList = new ArrayList<Long>();
@@ -223,7 +223,8 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 
 			for (Long ugid : ugIdFilterList) {
 				if (!ugIdObvList.contains(ugid)) {
-					Boolean isEligible = checkUserGroupEligiblity(ugid, userId, ugFilterData);
+					Boolean isEligible = checkUserGroupEligiblity(ugid, ugFilterData.getAuthorId(), ugFilterData,
+							false);
 					if (isEligible) {
 						UserGroupObservation ugObv = new UserGroupObservation(ugid, ugFilterData.getObservationId());
 						ugObv = ugObvDao.save(ugObv);
@@ -276,8 +277,6 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	public void bgUnPostingUG(HttpServletRequest request, UserGroupObvFilterData ugObvFilterData) {
 
 		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			Long userId = Long.parseLong(profile.getId());
 
 			List<UserGroupFilterRule> ugFilterList = ugFilterRuleDao.findAll();
 			List<UserGroupObservation> ugObservation = ugObvDao.findByObservationId(ugObvFilterData.getObservationId());
@@ -291,7 +290,8 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 			for (Long ugid : ugIdObvList) {
 				if (ugIdFilterList.contains(ugid)) {
 
-					Boolean isEligible = checkUserGroupEligiblity(ugid, userId, ugObvFilterData);
+					Boolean isEligible = checkUserGroupEligiblity(ugid, ugObvFilterData.getAuthorId(), ugObvFilterData,
+							true);
 					if (!isEligible) {
 						UserGroupObservation ugObvMapping = ugObvDao
 								.checkObservationUGMApping(ugObvFilterData.getObservationId(), ugid);
@@ -319,8 +319,8 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						ugActivity.setUserGroupId(ugIbp.getId());
 						ugActivity.setUserGroupName(ugIbp.getName());
 						ugActivity.setWebAddress(ugIbp.getWebAddress());
-						ugActivity
-								.setReason("Removed Through Filter Rules" + findReason(ugid, userId, ugObvFilterData));
+						ugActivity.setReason("Removed Through Filter Rules"
+								+ findReason(ugid, ugObvFilterData.getAuthorId(), ugObvFilterData));
 						try {
 							description = objectMapper.writeValueAsString(ugActivity);
 						} catch (Exception e) {
@@ -340,45 +340,76 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	}
 
 	@Override
-	public Boolean checkUserGroupEligiblity(Long userGroupId, Long userId, UserGroupObvFilterData ugFilterData) {
+	public Boolean checkUserGroupEligiblity(Long userGroupId, Long authorId, UserGroupObvFilterData ugFilterData,
+			Boolean isPosting) {
 		try {
 			UserGroupFilterRule ugFilter = ugFilterRuleDao.findByUserGroupId(userGroupId);
+			Boolean isSpartial = false;
+			Boolean isTaxo = false;
+			Boolean isUser = false;
+			Boolean isCreatedOn = false;
+			Boolean isObservedOn = false;
+
+			Boolean result = true;
+
 			if (ugFilter != null) {
+				result = false;
 				if (ugFilter.getHasSpatialRule()) {
-					Boolean isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(),
-							ugFilterData.getLongitude());
-					if (!isSpartial)
-						return false;
-				}
-				if (ugFilter.getHasTaxonomicRule()) {
-					Boolean isTaxo = checkTaxonomicRule(userGroupId, ugFilterData.getTaxonomyId());
-					if (!isTaxo)
+					isSpartial = checkSpatialRule(userGroupId, ugFilterData.getLatitude(), ugFilterData.getLongitude());
+					if (isSpartial)
+						result = true;
+					else
 						return false;
 				}
 				if (ugFilter.getHasUserRule()) {
-					Boolean isUser = checkUserRule(userGroupId, userId);
-					if (!isUser)
+					isUser = checkUserRule(userGroupId, authorId);
+					if (isUser)
+						result = true;
+					else
 						return false;
+
 				}
 				if (ugFilter.getHasCreatedOnDateRule()) {
-					Boolean isCreatedOn = checkCreatedOnDateFilter(userGroupId, ugFilterData.getCreatedOnDate());
-					if (!isCreatedOn)
+					isCreatedOn = checkCreatedOnDateFilter(userGroupId, ugFilterData.getCreatedOnDate());
+					if (isCreatedOn)
+						result = true;
+					else
 						return false;
 				}
 				if (ugFilter.getHasObservedOnDateRule()) {
-					Boolean isObservedOn = checkObservedOnDateFilter(userGroupId, ugFilterData.getObservedOnDate());
-					if (!isObservedOn)
+					isObservedOn = checkObservedOnDateFilter(userGroupId, ugFilterData.getObservedOnDate());
+					if (isObservedOn)
+						result = true;
+					else
 						return false;
 				}
+
+				if (ugFilter.getHasTaxonomicRule()) {
+					if (ugFilterData.getTaxonomyId() != null) {
+						isTaxo = checkTaxonomicRule(userGroupId, ugFilterData.getTaxonomyId());
+						if (isTaxo)
+							result = true;
+						else
+							return false;
+					} else if (isPosting)
+						result = true;
+
+				}
+
+				if (ugFilter.getHasSpatialRule() == false && ugFilter.getHasTaxonomicRule() == false
+						&& ugFilter.getHasUserRule() == false && ugFilter.getHasCreatedOnDateRule() == false
+						&& ugFilter.getHasObservedOnDateRule() == false)
+					return false;
+
 			}
-			return true;
+			return result;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
 		return false;
 	}
 
-	private String findReason(Long userGroupId, Long userId, UserGroupObvFilterData ugObvFilterData) {
+	private String findReason(Long userGroupId, Long authorId, UserGroupObvFilterData ugObvFilterData) {
 
 		try {
 
@@ -397,7 +428,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						reason = reason + " taxonomic Rule ,";
 				}
 				if (ugFilter.getHasUserRule()) {
-					Boolean isUser = checkUserRule(userGroupId, userId);
+					Boolean isUser = checkUserRule(userGroupId, authorId);
 					if (!isUser)
 						reason = reason + " User Rule ,";
 				}
@@ -716,13 +747,12 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	public void bulkFilteringIn(HttpServletRequest request, Long userGroupId,
 			List<UserGroupObvFilterData> ugObvFilterDataList) {
 		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			Long userId = Long.parseLong(profile.getId());
 			for (UserGroupObvFilterData ugFilterData : ugObvFilterDataList) {
 				UserGroupObservation ugObvMapping = ugObvDao.checkObservationUGMApping(ugFilterData.getObservationId(),
 						userGroupId);
 				if (ugObvMapping == null) {
-					Boolean isEligible = checkUserGroupEligiblity(userGroupId, userId, ugFilterData);
+					Boolean isEligible = checkUserGroupEligiblity(userGroupId, ugFilterData.getAuthorId(), ugFilterData,
+							false);
 					if (isEligible) {
 						UserGroupObservation ugObv = new UserGroupObservation(userGroupId,
 								ugFilterData.getObservationId());
@@ -774,15 +804,13 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	public void bulkFilteringOut(HttpServletRequest request, Long userGroupId,
 			List<UserGroupObvFilterData> ugObvFilterDataList) {
 		try {
-			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			Long userId = Long.parseLong(profile.getId());
-
 			for (UserGroupObvFilterData ugFilterData : ugObvFilterDataList) {
 
 				UserGroupObservation ugObvMapping = ugObvDao.checkObservationUGMApping(ugFilterData.getObservationId(),
 						userGroupId);
 				if (ugObvMapping != null) {
-					Boolean isEligible = checkUserGroupEligiblity(userGroupId, userId, ugFilterData);
+					Boolean isEligible = checkUserGroupEligiblity(userGroupId, ugFilterData.getAuthorId(), ugFilterData,
+							true);
 					if (!isEligible) {
 						ugObvDao.delete(ugObvMapping);
 
@@ -808,8 +836,8 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						ugActivity.setUserGroupId(ugIbp.getId());
 						ugActivity.setUserGroupName(ugIbp.getName());
 						ugActivity.setWebAddress(ugIbp.getWebAddress());
-						ugActivity.setReason(
-								"Removed Through Filter Rules " + findReason(userGroupId, userId, ugFilterData));
+						ugActivity.setReason("Removed Through Filter Rules "
+								+ findReason(userGroupId, ugFilterData.getAuthorId(), ugFilterData));
 						try {
 							description = objectMapper.writeValueAsString(ugActivity);
 						} catch (Exception e) {

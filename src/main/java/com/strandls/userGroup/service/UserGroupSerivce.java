@@ -118,4 +118,6 @@ public interface UserGroupSerivce {
 	public GroupHomePageData reorderingHomePageSlider(HttpServletRequest request, Long userGroupId,
 			List<ReorderingHomePage> reorderingHomePage);
 
+	public Boolean enableEdit(HttpServletRequest request, Long userGroupId);
+
 }

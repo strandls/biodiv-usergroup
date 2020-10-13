@@ -53,9 +53,11 @@ import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupObvFilterData;
+import com.strandls.userGroup.pojo.UserGroupPermissions;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
+import com.strandls.userGroup.service.UserGroupMemberService;
 import com.strandls.userGroup.service.UserGroupSerivce;
 import com.strandls.userGroup.util.AppUtil;
 
@@ -80,6 +82,9 @@ public class UserGroupController {
 
 	@Inject
 	private UserGroupFilterService ugFilterService;
+
+	@Inject
+	private UserGroupMemberService ugMemberService;
 
 	@GET
 	@Path("/ping")
@@ -968,6 +973,26 @@ public class UserGroupController {
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_FOUND).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.PERMISSION + ApiConstants.OBSERVATION)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+	@ApiOperation(value = "get usergroup observation permission", notes = "returns the usergroup for each user", response = UserGroupPermissions.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to get the usergroup", response = String.class) })
+
+	public Response getUserGroupObservationPermission(@Context HttpServletRequest request) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			UserGroupPermissions result = ugMemberService.getUserGroupObservationPermissions(userId);
+			return Response.status(Status.OK).entity(result).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -1009,6 +1034,7 @@ public class UserGroupController {
 
 	@ApiOperation(value = "update group homepage gallery data", notes = "return group home page data", response = GroupHomePageData.class)
 	@ApiResponses(value = {
+
 			@ApiResponse(code = 400, message = "unable to retrieve the data", response = String.class) })
 	public Response updateGalleryData(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId,
 			@ApiParam(name = "editData") UserGroupHomePageEditData editData) {
@@ -1024,12 +1050,39 @@ public class UserGroupController {
 		}
 	}
 
+	@GET
+	@Path(ApiConstants.MEMBER + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+	@ApiOperation(value = "check user is a member of the group or not", notes = "returns true and false", response = Boolean.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response checkUserMember(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			Long userGroupId = Long.parseLong(ugId);
+			Boolean result = ugMemberService.checkUserGroupMember(userId, userGroupId);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
 	@PUT
 	@Path(ApiConstants.HOMEPAGE + ApiConstants.REORDERING + "/{userGroupId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
+	
+	
 
 	public Response reorderingHomePageGallerySlider(@Context HttpServletRequest request,
 			@PathParam("userGroupId") String ugId,
@@ -1040,6 +1093,26 @@ public class UserGroupController {
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_FOUND).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.ENABLE + ApiConstants.EDIT + "/{userGroupId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+	@ApiOperation(value = "check eligiblity for edit button", notes = "Returns true and false", response = Boolean.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to find the data", response = String.class) })
+
+	public Response enableEdit(@Context HttpServletRequest request, @PathParam("userGroupId") String ugId) {
+		try {
+			Long userGroupId = Long.parseLong(ugId);
+			Boolean result = ugServices.enableEdit(request, userGroupId);
+			return Response.status(Status.OK).entity(result).build();
 
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
