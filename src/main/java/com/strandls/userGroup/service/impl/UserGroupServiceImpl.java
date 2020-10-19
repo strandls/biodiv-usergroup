@@ -1527,10 +1527,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 			List<GroupGallerySlider> gallerySlider = groupGallerySliderDao.findByUsergroupId(userGroupId);
 			for (GroupGallerySlider slider : gallerySlider) {
-				UserIbp userIbp = userService.getUserIbp(slider.getAuthorId().toString());
-				if (userIbp != null) {
-					slider.setAuthorImage(userIbp.getProfilePic());
-					slider.setAuthorName(userIbp.getName());
+				if (slider.getAuthorId() != null) {
+					UserIbp userIbp = userService.getUserIbp(slider.getAuthorId().toString());
+					if (userIbp != null) {
+						slider.setAuthorImage(userIbp.getProfilePic());
+						slider.setAuthorName(userIbp.getName());
+					}
 				}
 			}
 
