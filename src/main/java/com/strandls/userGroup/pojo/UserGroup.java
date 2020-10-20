@@ -70,7 +70,6 @@ public class UserGroup implements Serializable {
 		super();
 	}
 
-	
 	/**
 	 * @param id
 	 * @param allow_members_to_make_species_call
@@ -142,7 +141,6 @@ public class UserGroup implements Serializable {
 		this.showPartners = showPartners;
 		this.showDesc = showDesc;
 	}
-
 
 	@Id
 	@GeneratedValue
@@ -416,7 +414,6 @@ public class UserGroup implements Serializable {
 		this.showDesc = showDesc;
 	}
 
-	
 	@Transient
 	public List<Long> getHabitatIds() {
 		return habitatIds;

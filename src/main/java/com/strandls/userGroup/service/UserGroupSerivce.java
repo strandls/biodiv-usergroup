@@ -17,11 +17,13 @@ import com.strandls.userGroup.pojo.BulkGroupPostingData;
 import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
+import com.strandls.userGroup.pojo.GroupHomePageData;
+import com.strandls.userGroup.pojo.ReorderingHomePage;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
 import com.strandls.userGroup.pojo.UserGroupEditData;
-import com.strandls.userGroup.pojo.UserGroupHomePage;
+import com.strandls.userGroup.pojo.UserGroupHomePageEditData;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
@@ -94,8 +96,6 @@ public interface UserGroupSerivce {
 
 	public Boolean addMemberDirectly(HttpServletRequest request, Long userGroupId, UserGroupAddMemebr memberList);
 
-	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId);
-
 	public UserGroupIbp validateJoinRequest(HttpServletRequest request, String token);
 
 	public AdministrationList getAdminMembers(String userGroupId);
@@ -105,6 +105,18 @@ public interface UserGroupSerivce {
 	public Map<String, Object> signupProxy(HttpServletRequest request, String userName, String password, String mode);
 
 	public Map<String, Object> verifyOTPProxy(HttpServletRequest request, Long id, String otp);
+
+	public UserGroupHomePageEditData getGroupHomePageEditData(HttpServletRequest request, Long userGroupId);
+
+	public GroupHomePageData getGroupHomePageData(Long userGroupId);
+
+	public GroupHomePageData updateGroupHomePage(HttpServletRequest request, Long userGroupId,
+			UserGroupHomePageEditData editData);
+
+	public GroupHomePageData removeHomePage(HttpServletRequest request, Long userGroupId, Long groupGalleryId);
+
+	public GroupHomePageData reorderingHomePageSlider(HttpServletRequest request, Long userGroupId,
+			List<ReorderingHomePage> reorderingHomePage);
 
 	public Boolean enableEdit(HttpServletRequest request, Long userGroupId);
 

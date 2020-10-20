@@ -32,6 +32,7 @@ import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.User;
 import com.strandls.user.pojo.UserIbp;
 import com.strandls.userGroup.dao.FeaturedDao;
+import com.strandls.userGroup.dao.GroupGallerySliderDao;
 import com.strandls.userGroup.dao.StatsDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupHabitatDao;
@@ -48,15 +49,18 @@ import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
+import com.strandls.userGroup.pojo.GroupGallerySlider;
+import com.strandls.userGroup.pojo.GroupHomePageData;
 import com.strandls.userGroup.pojo.GroupAddMember;
 import com.strandls.userGroup.pojo.InvitaionMailData;
+import com.strandls.userGroup.pojo.ReorderingHomePage;
 import com.strandls.userGroup.pojo.Stats;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
 import com.strandls.userGroup.pojo.UserGroupEditData;
 import com.strandls.userGroup.pojo.UserGroupHabitat;
-import com.strandls.userGroup.pojo.UserGroupHomePage;
+import com.strandls.userGroup.pojo.UserGroupHomePageEditData;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitation;
 import com.strandls.userGroup.pojo.UserGroupInvitationData;
@@ -133,6 +137,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Inject
 	private AuthenticationServiceApi authenticationApi;
 
+	@Inject
+	private GroupGallerySliderDao groupGallerySliderDao;
 	@Inject
 	private UserGroupMemberService ugMemberService;
 
@@ -864,7 +870,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 						Boolean isMember = ugMemberService.checkUserGroupMember(originalObject.getUserId(),
 								originalObject.getUserGroupId());
 						if (!isMember) {
-							ugMemberService.addMemberUG(originalObject.getUserId(), memberId, originalObject.getUserGroupId());
+							ugMemberService.addMemberUG(originalObject.getUserId(), memberId,
+									originalObject.getUserGroupId());
 							String desc = "Joined Group with Role: Member";
 							logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc,
 									originalObject.getUserGroupId(), originalObject.getUserGroupId(), "userGroup",
@@ -1338,15 +1345,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
-	public UserGroupHomePage getUserGroupHomePageData(Long userGroupId) {
-		UserGroup userGroup = userGroupDao.findById(userGroupId);
-		Stats stats = statsDao.fetchStats(userGroupId);
-		UserGroupHomePage result = new UserGroupHomePage(userGroup.getShowGallery(), userGroup.getShowStats(),
-				userGroup.getShowRecentObservations(), userGroup.getShowGridMap(), userGroup.getShowPartners(), stats);
-		return result;
-	}
-
-	@Override
 	public AdministrationList getAdminMembers(String userGroupId) {
 		try {
 			List<UserIbp> founderList = ugMemberService.getFounderList(Long.parseLong(userGroupId));
@@ -1453,6 +1451,142 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			logger.error(ex.getMessage());
 		}
 		return userData;
+	}
+
+	@Override
+	public UserGroupHomePageEditData getGroupHomePageEditData(HttpServletRequest request, Long userGroupId) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Long userId = Long.parseLong(profile.getId());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				UserGroup userGroup = userGroupDao.findById(userGroupId);
+
+				List<GroupGallerySlider> gallerySlider = groupGallerySliderDao.findByUsergroupId(userGroupId);
+
+				UserGroupHomePageEditData result = new UserGroupHomePageEditData(userGroup.getShowGallery(),
+						userGroup.getShowStats(), userGroup.getShowRecentObservations(), userGroup.getShowGridMap(),
+						userGroup.getShowPartners(), userGroup.getShowDesc(), userGroup.getDescription(),
+						gallerySlider);
+
+				return result;
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public GroupHomePageData getGroupHomePageData(Long userGroupId) {
+		try {
+			UserGroup userGroup = userGroupDao.findById(userGroupId);
+
+			List<GroupGallerySlider> gallerySlider = groupGallerySliderDao.findByUsergroupId(userGroupId);
+			for (GroupGallerySlider slider : gallerySlider) {
+				if (slider.getAuthorId() != null) {
+					UserIbp userIbp = userService.getUserIbp(slider.getAuthorId().toString());
+					if (userIbp != null) {
+						slider.setAuthorImage(userIbp.getProfilePic());
+						slider.setAuthorName(userIbp.getName());
+					}
+				}
+			}
+
+			Stats stats = statsDao.fetchStats(userGroupId);
+
+			GroupHomePageData result = new GroupHomePageData(userGroup.getShowGallery(), userGroup.getShowStats(),
+					userGroup.getShowRecentObservations(), userGroup.getShowGridMap(), userGroup.getShowPartners(),
+					userGroup.getShowDesc(), userGroup.getDescription(), stats, gallerySlider);
+
+			return result;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public GroupHomePageData updateGroupHomePage(HttpServletRequest request, Long userGroupId,
+			UserGroupHomePageEditData editData) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Long userId = Long.parseLong(profile.getId());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+
+				UserGroup userGroup = userGroupDao.findById(userGroupId);
+				userGroup.setShowDesc(editData.getShowDesc());
+				userGroup.setShowGallery(editData.getShowGallery());
+				userGroup.setShowGridMap(editData.getShowGridMap());
+				userGroup.setShowPartners(editData.getShowPartners());
+				userGroup.setShowRecentObservations(editData.getShowRecentObservation());
+				userGroup.setShowStats(editData.getShowStats());
+				userGroup.setDescription(editData.getDescription());
+
+				userGroupDao.update(userGroup);
+
+//		update gallery slider
+
+				List<GroupGallerySlider> galleryData = editData.getGallerySlider();
+				if (galleryData != null && !galleryData.isEmpty())
+					for (GroupGallerySlider gallery : galleryData) {
+						groupGallerySliderDao.save(gallery);
+					}
+
+				return getGroupHomePageData(userGroupId);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public GroupHomePageData removeHomePage(HttpServletRequest request, Long userGroupId, Long groupGalleryId) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Long userId = Long.parseLong(profile.getId());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				GroupGallerySlider entity = groupGallerySliderDao.findById(groupGalleryId);
+				groupGallerySliderDao.delete(entity);
+				return getGroupHomePageData(userGroupId);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public GroupHomePageData reorderingHomePageSlider(HttpServletRequest request, Long userGroupId,
+			List<ReorderingHomePage> reorderingHomePage) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Long userId = Long.parseLong(profile.getId());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				for (ReorderingHomePage reOrder : reorderingHomePage) {
+					GroupGallerySlider gallery = groupGallerySliderDao.findById(reOrder.getGalleryId());
+					gallery.setDisplayOrder(reOrder.getDisplayOrder());
+					groupGallerySliderDao.update(gallery);
+				}
+
+				return getGroupHomePageData(userGroupId);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
 	@Override
