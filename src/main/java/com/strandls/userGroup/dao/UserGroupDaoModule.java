@@ -36,6 +36,7 @@ public class UserGroupDaoModule extends AbstractModule {
 		bind(UserGroupJoinRequestDao.class).in(Scopes.SINGLETON);
 		bind(GroupGallerySliderDao.class).in(Scopes.SINGLETON);
 		bind(UserGroupMemberRoleDao.class).in(Scopes.SINGLETON);
+		bind(UserGroupSpeciesDao.class).in(Scopes.SINGLETON);
 	}
 
 }

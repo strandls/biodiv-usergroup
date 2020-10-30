@@ -1081,8 +1081,6 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
-	
-	
 
 	public Response reorderingHomePageGallerySlider(@Context HttpServletRequest request,
 			@PathParam("userGroupId") String ugId,
@@ -1112,6 +1110,26 @@ public class UserGroupController {
 		try {
 			Long userGroupId = Long.parseLong(ugId);
 			Boolean result = ugServices.enableEdit(request, userGroupId);
+			return Response.status(Status.OK).entity(result).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.SPECIES + "/{speciesId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "fetch by speciesId", notes = "return the usergroup associated with the species", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch the user group", response = String.class) })
+
+	public Response getSpeciesUserGroup(@PathParam("speciesId") String speciesId) {
+		try {
+			Long SpeciesId = Long.parseLong(speciesId);
+			List<UserGroupIbp> result = ugServices.fetchBySpeciesId(SpeciesId);
 			return Response.status(Status.OK).entity(result).build();
 
 		} catch (Exception e) {

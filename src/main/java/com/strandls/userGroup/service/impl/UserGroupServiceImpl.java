@@ -39,6 +39,7 @@ import com.strandls.userGroup.dao.UserGroupHabitatDao;
 import com.strandls.userGroup.dao.UserGroupInvitaionDao;
 import com.strandls.userGroup.dao.UserGroupJoinRequestDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
+import com.strandls.userGroup.dao.UserGroupSpeciesDao;
 import com.strandls.userGroup.dao.UserGroupSpeciesGroupDao;
 import com.strandls.userGroup.dao.UserGroupUserRequestDAO;
 import com.strandls.userGroup.dto.AuthenticationDTO;
@@ -69,6 +70,7 @@ import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupMembersCount;
 import com.strandls.userGroup.pojo.UserGroupObservation;
 import com.strandls.userGroup.pojo.UserGroupObvFilterData;
+import com.strandls.userGroup.pojo.UserGroupSpecies;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupUserJoinRequest;
 import com.strandls.userGroup.pojo.UserGroupWKT;
@@ -139,8 +141,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private GroupGallerySliderDao groupGallerySliderDao;
+
 	@Inject
 	private UserGroupMemberService ugMemberService;
+
+	@Inject
+	private UserGroupSpeciesDao ugSpeciesDao;
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -1600,6 +1606,19 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		if (roles.contains("ROLE_ADMIN") || isFounder || isModerator)
 			return true;
 		return false;
+	}
+
+	@Override
+	public List<UserGroupIbp> fetchBySpeciesId(Long speciesId) {
+
+		List<UserGroupSpecies> ugSpeciesList = ugSpeciesDao.findBySpeciesId(speciesId);
+
+		List<UserGroupIbp> userGroup = new ArrayList<UserGroupIbp>();
+		for (UserGroupSpecies ugSpecies : ugSpeciesList) {
+			userGroup.add(fetchByGroupIdIbp(ugSpecies.getUserGroupId()));
+		}
+		return userGroup;
+
 	}
 
 }
