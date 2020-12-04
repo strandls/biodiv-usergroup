@@ -125,4 +125,6 @@ public interface UserGroupSerivce {
 
 	public Boolean enableEdit(HttpServletRequest request, Long userGroupId);
 
+	public List<UserGroupIbp> fetchBySpeciesId(Long speciesId);
+
 }

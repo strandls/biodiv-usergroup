@@ -1029,7 +1029,6 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
-
 	@ApiOperation(value = "get usergroup observation permission", notes = "returns the usergroup for each user", response = UserGroupPermissions.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "unable to get the usergroup", response = String.class) })
@@ -1125,7 +1124,6 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
-
 	@ApiOperation(value = "check user is a member of the group or not", notes = "returns true and false", response = Boolean.class)
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
@@ -1151,7 +1149,6 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
-
 	@ApiOperation(value = "check eligiblity for edit button", notes = "Returns true and false", response = Boolean.class)
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to find the data", response = String.class) })
 
@@ -1159,6 +1156,26 @@ public class UserGroupController {
 		try {
 			Long userGroupId = Long.parseLong(ugId);
 			Boolean result = ugServices.enableEdit(request, userGroupId);
+			return Response.status(Status.OK).entity(result).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.SPECIES + "/{speciesId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "fetch by speciesId", notes = "return the usergroup associated with the species", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch the user group", response = String.class) })
+
+	public Response getSpeciesUserGroup(@PathParam("speciesId") String speciesId) {
+		try {
+			Long SpeciesId = Long.parseLong(speciesId);
+			List<UserGroupIbp> result = ugServices.fetchBySpeciesId(SpeciesId);
 			return Response.status(Status.OK).entity(result).build();
 
 		} catch (Exception e) {
