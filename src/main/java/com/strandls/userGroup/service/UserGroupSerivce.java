@@ -111,6 +111,8 @@ public interface UserGroupSerivce {
 
 	public List<UserGroupIbp> createUGDocMapping(HttpServletRequest request, UserGroupDocCreateData ugDocCreate);
 
+	public List<UserGroupIbp> updateUGDocMapping(HttpServletRequest request, UserGroupDocCreateData ugDocCreate);
+
 	public UserGroupHomePageEditData getGroupHomePageEditData(HttpServletRequest request, Long userGroupId);
 
 	public GroupHomePageData getGroupHomePageData(Long userGroupId);

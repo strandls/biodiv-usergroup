@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.activity.pojo.ActivityLoggingData;
+import com.strandls.activity.pojo.DocumentActivityLogging;
 import com.strandls.activity.pojo.MailData;
 import com.strandls.activity.pojo.UserGroupActivityLogging;
 import com.strandls.userGroup.Headers;
@@ -62,6 +63,28 @@ public class LogActivities {
 
 			activityService = headers.addActivityHeader(activityService, authHeader);
 			activityService.logUserGroupActivity(ugActivityLogging);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+	}
+
+	public void LogDocumentActivities(String authHeader, String activityDescription, Long rootObjectId,
+			Long subRootObjectId, String rootObjectType, Long activityId, String activityType, MailData mailData) {
+		try {
+
+			DocumentActivityLogging loggingData = new DocumentActivityLogging();
+			loggingData.setActivityDescription(activityDescription);
+			loggingData.setActivityId(activityId);
+			loggingData.setActivityType(activityType);
+			loggingData.setRootObjectId(rootObjectId);
+			loggingData.setRootObjectType(rootObjectType);
+			loggingData.setSubRootObjectId(subRootObjectId);
+			loggingData.setMailData(mailData);
+
+			activityService = headers.addActivityHeader(activityService, authHeader);
+			activityService.logDocumentActivity(loggingData);
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

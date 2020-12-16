@@ -372,6 +372,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			Featured featured;
 			if (featuredCreate.getObjectType().equalsIgnoreCase("observation"))
 				featuredCreate.setObjectType("species.participation.Observation");
+			else if (featuredCreate.getObjectType().equalsIgnoreCase("document"))
+				featuredCreate.setObjectType("content.eml.Document");
 
 			List<Featured> featuredList = featuredDao.fetchAllFeatured(featuredCreate.getObjectType(),
 					featuredCreate.getObjectId());
@@ -435,10 +437,19 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					logger.error(e.getMessage());
 				}
 
-				MailData mailData = updateMailData(featuredCreate.getObjectId(), featuredCreateData.getMailData());
-				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
-						featuredCreate.getObjectId(), featuredCreate.getObjectId(), "observation", activityId,
-						"Featured", mailData);
+				if (featuredCreate.getObjectType().equalsIgnoreCase("species.participation.Observation")) {
+
+					MailData mailData = updateMailData(featuredCreate.getObjectId(), featuredCreateData.getMailData());
+					logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+							featuredCreate.getObjectId(), featuredCreate.getObjectId(), "observation", activityId,
+							"Featured", mailData);
+				} else if (featuredCreate.getObjectType().equalsIgnoreCase("content.eml.Document")) {
+					MailData mailData = updateDocumentMailData(featuredCreate.getObjectId(),
+							featuredCreateData.getMailData());
+					logActivity.LogDocumentActivities(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+							featuredCreate.getObjectId(), featuredCreate.getObjectId(), "document", activityId,
+							"Featured", mailData);
+				}
 
 			}
 
@@ -459,6 +470,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		try {
 			if (objectType.equalsIgnoreCase("observation"))
 				objectType = "species.participation.Observation";
+			else if (objectType.equalsIgnoreCase("document"))
+				objectType = "content.eml.Document";
 			List<Featured> featuredList = featuredDao.fetchAllFeatured(objectType, objectId);
 
 			for (Long userGroupId : userGroupList.getUserGroups()) {
@@ -504,9 +517,16 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 							logger.error(e.getMessage());
 						}
 
-						MailData mailData = updateMailData(objectId, userGroupList.getMailData());
-						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
-								objectId, "observation", activityId, "UnFeatured", mailData);
+						if (objectType.equalsIgnoreCase("species.participation.Observation")) {
+
+							MailData mailData = updateMailData(objectId, userGroupList.getMailData());
+							logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
+									objectId, "observation", activityId, "UnFeatured", mailData);
+						} else if (objectType.equalsIgnoreCase("content.eml.Documen")) {
+							MailData mailData = updateDocumentMailData(objectId, userGroupList.getMailData());
+							logActivity.LogDocumentActivities(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+									objectId, objectId, objectType, activityId, "UnFeatured", mailData);
+						}
 
 						break;
 					}
@@ -1370,6 +1390,128 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		return null;
 	}
 
+	@Override
+	public List<UserGroupIbp> fetchByDocumentId(Long documentId) {
+		List<UserGroupDocument> UserGroupDocuments = ugDocumentDao.findByDocumentId(documentId);
+		List<UserGroupIbp> userGroupIbp = new ArrayList<UserGroupIbp>();
+		for (UserGroupDocument ugDoc : UserGroupDocuments) {
+			userGroupIbp.add(fetchByGroupIdIbp(ugDoc.getUserGroupId()));
+		}
+		return userGroupIbp;
+	}
+
+	@Override
+	public List<UserGroupIbp> createUGDocMapping(HttpServletRequest request, UserGroupDocCreateData ugDocCreate) {
+		List<Long> resultList = new ArrayList<Long>();
+		for (Long ugId : ugDocCreate.getUserGroupIds()) {
+			UserGroupDocument ugDoc = new UserGroupDocument(ugId, ugDocCreate.getDocumentId());
+			ugDoc = ugDocumentDao.save(ugDoc);
+			if (ugDoc != null) {
+				resultList.add(ugDoc.getUserGroupId());
+				UserGroupActivity ugActivity = new UserGroupActivity();
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(ugId);
+				String description = null;
+				ugActivity.setFeatured(null);
+				ugActivity.setUserGroupId(ugIbp.getId());
+				ugActivity.setUserGroupName(ugIbp.getName());
+				ugActivity.setWebAddress(ugIbp.getWebAddress());
+				try {
+					description = objectMapper.writeValueAsString(ugActivity);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+				MailData mailData = null;
+				if (ugDocCreate.getMailData() != null) {
+					mailData = updateDocumentMailData(ugDocCreate.getDocumentId(), ugDocCreate.getMailData());
+				}
+				logActivity.LogDocumentActivities(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+						ugDocCreate.getDocumentId(), ugDocCreate.getDocumentId(), "document", ugDoc.getUserGroupId(),
+						"Posted resource", mailData);
+			}
+		}
+
+		return fetchByDocumentId(ugDocCreate.getDocumentId());
+	}
+
+	@Override
+	public List<UserGroupIbp> updateUGDocMapping(HttpServletRequest request, UserGroupDocCreateData ugDocCreate) {
+
+		List<Long> previousUserGroup = new ArrayList<Long>();
+		List<UserGroupDocument> previousMapping = ugDocumentDao.findByDocumentId(ugDocCreate.getDocumentId());
+		for (UserGroupDocument ug : previousMapping) {
+			if (!(ugDocCreate.getUserGroupIds().contains(ug.getUserGroupId()))) {
+				ugDocumentDao.delete(ug);
+
+				UserGroupActivity ugActivity = new UserGroupActivity();
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(ug.getUserGroupId());
+				String description = null;
+				ugActivity.setFeatured(null);
+				ugActivity.setUserGroupId(ugIbp.getId());
+				ugActivity.setUserGroupName(ugIbp.getName());
+				ugActivity.setWebAddress(ugIbp.getWebAddress());
+				try {
+					description = objectMapper.writeValueAsString(ugActivity);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+
+				MailData mailData = updateDocumentMailData(ugDocCreate.getDocumentId(), ugDocCreate.getMailData());
+
+				logActivity.LogDocumentActivities(request.getHeader(HttpHeaders.AUTHORIZATION), description,
+						ugDocCreate.getDocumentId(), ugDocCreate.getDocumentId(), "document", ug.getUserGroupId(),
+						"Removed resoruce", mailData);
+			}
+			previousUserGroup.add(ug.getUserGroupId());
+		}
+
+		for (Long userGroupId : ugDocCreate.getUserGroupIds()) {
+			if (!(previousUserGroup.contains(userGroupId))) {
+
+				UserGroupDocument ugDoc = new UserGroupDocument(userGroupId, ugDocCreate.getDocumentId());
+				ugDoc = ugDocumentDao.save(ugDoc);
+
+				UserGroupActivity ugActivity = new UserGroupActivity();
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
+				String description = null;
+				ugActivity.setFeatured(null);
+				ugActivity.setUserGroupId(ugIbp.getId());
+				ugActivity.setUserGroupName(ugIbp.getName());
+				ugActivity.setWebAddress(ugIbp.getWebAddress());
+				try {
+					description = objectMapper.writeValueAsString(ugActivity);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+
+				MailData mailData = updateDocumentMailData(ugDocCreate.getDocumentId(), ugDocCreate.getMailData());
+				logActivity.LogDocumentActivities((request.getHeader(HttpHeaders.AUTHORIZATION)), description,
+						ugDocCreate.getDocumentId(), ugDocCreate.getDocumentId(), "document", userGroupId,
+						"Posted resource", mailData);
+
+			}
+		}
+
+		return fetchByDocumentId(ugDocCreate.getDocumentId());
+
+	}
+
+	private MailData updateDocumentMailData(Long documentId, MailData mailData) {
+		List<UserGroupMailData> userGroup = new ArrayList<UserGroupMailData>();
+		List<UserGroupIbp> updatedUG = fetchByDocumentId(documentId);
+
+		for (UserGroupIbp ug : updatedUG) {
+			UserGroupMailData ugMail = new UserGroupMailData();
+			ugMail.setIcon(ug.getIcon());
+			ugMail.setId(ug.getId());
+			ugMail.setName(ug.getName());
+			ugMail.setWebAddress(ug.getWebAddress());
+
+			userGroup.add(ugMail);
+		}
+		mailData.setUserGroupData(userGroup);
+		return mailData;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> registerUserProxy(HttpServletRequest request, AuthenticationDTO authDTO) {
@@ -1475,27 +1617,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			logger.error(ex.getMessage());
 		}
 		return userData;
-	}
-
-	@Override
-	public List<UserGroupIbp> fetchByDocumentId(Long documentId) {
-		List<UserGroupDocument> UserGroupDocuments = ugDocumentDao.findByDocumentId(documentId);
-		List<UserGroupIbp> userGroupIbp = new ArrayList<UserGroupIbp>();
-		for (UserGroupDocument ugDoc : UserGroupDocuments) {
-			userGroupIbp.add(fetchByGroupIdIbp(ugDoc.getUserGroupId()));
-		}
-		return userGroupIbp;
-	}
-
-	@Override
-	public List<UserGroupIbp> createUGDocMapping(HttpServletRequest request, UserGroupDocCreateData ugDocCreate) {
-
-		for (Long ugId : ugDocCreate.getUserGroupIds()) {
-			UserGroupDocument ugDoc = new UserGroupDocument(ugId, ugDocCreate.getDocumentId());
-			ugDocumentDao.save(ugDoc);
-		}
-
-		return fetchByDocumentId(ugDocCreate.getDocumentId());
 	}
 
 	@Override
