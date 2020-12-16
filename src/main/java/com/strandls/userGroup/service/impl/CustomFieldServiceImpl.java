@@ -507,8 +507,11 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 						observationCFDao.update(observationCF.get(0));
 
 //						logging activity for signle categorical
+
+						CustomFieldValues cfValue = cfValueDao.findById(factsCreateData.getSingleCategorical());
+
 						String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + " : "
-								+ factsCreateData.getSingleCategorical();
+								+ cfValue.getValues();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
 						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
@@ -610,8 +613,9 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 						observationCFDao.save(obvCF);
 
 //						logging activity for multiple categorical
+						CustomFieldValues cfValue = cfValueDao.findById(factsCreateData.getSingleCategorical());
 						String description = cfsDao.findById(factsCreateData.getCustomFieldId()).getName() + " : "
-								+ factsCreateData.getSingleCategorical();
+								+ cfValue.getValues();
 						MailData mailData = ugService.updateMailData(factsCreateData.getObservationId(),
 								factsInsertData.getMailData());
 						logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description,
@@ -773,30 +777,24 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	@Override
 	public List<CustomFieldDetails> getCustomField(HttpServletRequest request, CommonProfile profile,
 			Long userGroupId) {
-
 		try {
-			JSONArray roles = (JSONArray) profile.getAttribute("roles");
-			Long userId = Long.parseLong(profile.getId());
-			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
-			if (roles.contains("ROLE_ADMIN") || isFounder) {
 
-				List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
-				List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
-				List<UserGroupCustomFieldMapping> ugCFMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
-				for (UserGroupCustomFieldMapping ugCFMapping : ugCFMappingList) {
-					CustomFields customField = cfsDao.findById(ugCFMapping.getCustomFieldId());
-					if (customField.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
-							|| customField.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
-						cfValues = cfValueDao.findByCustomFieldId(customField.getId());
+			List<CustomFieldDetails> result = new ArrayList<CustomFieldDetails>();
+			List<CustomFieldValues> cfValues = new ArrayList<CustomFieldValues>();
+			List<UserGroupCustomFieldMapping> ugCFMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
+			for (UserGroupCustomFieldMapping ugCFMapping : ugCFMappingList) {
+				CustomFields customField = cfsDao.findById(ugCFMapping.getCustomFieldId());
+				if (customField.getFieldType().equalsIgnoreCase("SINGLE CATEGORICAL")
+						|| customField.getFieldType().equalsIgnoreCase("MULTIPLE CATEGORICAL")) {
+					cfValues = cfValueDao.findByCustomFieldId(customField.getId());
 
-					}
-
-					result.add(new CustomFieldDetails(customField, cfValues, ugCFMapping.getDefaultValue(),
-							ugCFMapping.getDisplayOrder(), ugCFMapping.getIsMandatory(),
-							ugCFMapping.getAllowedParticipation()));
 				}
-				return result;
+
+				result.add(new CustomFieldDetails(customField, cfValues, ugCFMapping.getDefaultValue(),
+						ugCFMapping.getDisplayOrder(), ugCFMapping.getIsMandatory(),
+						ugCFMapping.getAllowedParticipation()));
 			}
+			return result;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -924,6 +922,31 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
+		return null;
+	}
+
+	@Override
+	public List<CustomFieldDetails> addCustomFieldValues(HttpServletRequest request, Long customFieldId,
+			Long userGroupId, CustomFieldValuesCreateData cfVCreateData) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Long userId = Long.parseLong(profile.getId());
+			Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
+			if (roles.contains("ROLE_ADMIN") || isFounder) {
+				Long authorId = Long.parseLong(profile.getId());
+				CustomFieldValues cfValues = new CustomFieldValues(null, customFieldId, cfVCreateData.getValue(),
+						authorId, cfVCreateData.getIconURL(), cfVCreateData.getNotes());
+				cfValues = cfValueDao.save(cfValues);
+				if (cfValues.getId() != null)
+					return getCustomField(request, profile, userGroupId);
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
 		return null;
 	}
 
