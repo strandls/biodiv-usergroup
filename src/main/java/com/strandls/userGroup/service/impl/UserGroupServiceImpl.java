@@ -169,15 +169,24 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Override
 	public UserGroupIbp fetchByGroupIdIbp(Long id) {
-		UserGroup ug = userGroupDao.findById(id);
-		UserGroupIbp ibp;
-		if (ug.getDomianName() != null)
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName(), ug.getAllowUserToJoin());
-		else {
-			String webAddress = "/group/" + ug.getWebAddress();
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress, ug.getAllowUserToJoin());
+		try {
+
+			UserGroup ug = userGroupDao.findById(id);
+			UserGroupIbp ibp;
+			if (ug != null) {
+				if (ug.getDomianName() != null)
+					ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName(),
+							ug.getAllowUserToJoin());
+				else {
+					String webAddress = "/group/" + ug.getWebAddress();
+					ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress, ug.getAllowUserToJoin());
+				}
+				return ibp;
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
-		return ibp;
+		return null;
 	}
 
 	@Override
@@ -1386,12 +1395,20 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Override
 	public List<UserGroupIbp> fetchByDocumentId(Long documentId) {
-		List<UserGroupDocument> UserGroupDocuments = ugDocumentDao.findByDocumentId(documentId);
-		List<UserGroupIbp> userGroupIbp = new ArrayList<UserGroupIbp>();
-		for (UserGroupDocument ugDoc : UserGroupDocuments) {
-			userGroupIbp.add(fetchByGroupIdIbp(ugDoc.getUserGroupId()));
+		try {
+			List<UserGroupDocument> UserGroupDocuments = ugDocumentDao.findByDocumentId(documentId);
+			List<UserGroupIbp> userGroupIbp = new ArrayList<UserGroupIbp>();
+			for (UserGroupDocument ugDoc : UserGroupDocuments) {
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(ugDoc.getUserGroupId());
+				if (ugIbp != null)
+					userGroupIbp.add(ugIbp);
+			}
+			return userGroupIbp;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
-		return userGroupIbp;
+		return null;
+
 	}
 
 	@Override
