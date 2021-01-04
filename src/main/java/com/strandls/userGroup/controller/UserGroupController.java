@@ -1158,6 +1158,7 @@ public class UserGroupController {
 		}
 	}
 
+	@GET
 	@Path(ApiConstants.DOCUMENT + "/{documentId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
