@@ -1411,12 +1411,20 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Override
 	public List<UserGroupIbp> fetchByDocumentId(Long documentId) {
-		List<UserGroupDocument> UserGroupDocuments = ugDocumentDao.findByDocumentId(documentId);
-		List<UserGroupIbp> userGroupIbp = new ArrayList<UserGroupIbp>();
-		for (UserGroupDocument ugDoc : UserGroupDocuments) {
-			userGroupIbp.add(fetchByGroupIdIbp(ugDoc.getUserGroupId()));
+		try {
+			List<UserGroupDocument> UserGroupDocuments = ugDocumentDao.findByDocumentId(documentId);
+			List<UserGroupIbp> userGroupIbp = new ArrayList<UserGroupIbp>();
+			for (UserGroupDocument ugDoc : UserGroupDocuments) {
+				UserGroupIbp ugIbp = fetchByGroupIdIbp(ugDoc.getUserGroupId());
+				if (ugIbp != null)
+					userGroupIbp.add(ugIbp);
+			}
+			return userGroupIbp;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
-		return userGroupIbp;
+		return null;
+
 	}
 
 	@Override
