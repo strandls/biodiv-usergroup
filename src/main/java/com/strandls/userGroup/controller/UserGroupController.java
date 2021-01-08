@@ -54,6 +54,7 @@ import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupPermissions;
+import com.strandls.userGroup.pojo.UserGroupSpeciesCreateData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
@@ -1132,6 +1133,52 @@ public class UserGroupController {
 			List<UserGroupIbp> result = ugServices.fetchBySpeciesId(SpeciesId);
 			return Response.status(Status.OK).entity(result).build();
 
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.SPECIES + ApiConstants.CREATE + "/{speciesId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "post species to usergroup", notes = "return the usergroup associated with the species", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch the user group", response = String.class) })
+
+	public Response createUserGroupSpeciesMapping(@Context HttpServletRequest request,
+			@PathParam("speciesId") String speciesId,
+			@ApiParam(name = "ugSpeciesCreateData") UserGroupSpeciesCreateData ugSpeciesCreateData) {
+		try {
+			Long spId = Long.parseLong(speciesId);
+			List<UserGroupIbp> result = ugServices.createUGSpeciesMapping(request, spId, ugSpeciesCreateData);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.SPECIES + ApiConstants.UPDATE + "/{speciesId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "update userGroup in species Page", notes = "return the usergroup associated with the species", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch the user group", response = String.class) })
+
+	public Response updateUserGroupSpeciesMapping(@Context HttpServletRequest request,
+			@PathParam("speciesId") String speciesId,
+			@ApiParam(name = "ugSpeciesCreateData") UserGroupSpeciesCreateData ugSpeciesCreateData) {
+		try {
+			Long spId = Long.parseLong(speciesId);
+			List<UserGroupIbp> result = ugServices.updateUGSpeciesMapping(request, spId, ugSpeciesCreateData);
+			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}

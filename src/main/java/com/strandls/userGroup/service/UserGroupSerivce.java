@@ -27,6 +27,7 @@ import com.strandls.userGroup.pojo.UserGroupHomePageEditData;
 import com.strandls.userGroup.pojo.UserGroupIbp;
 import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
+import com.strandls.userGroup.pojo.UserGroupSpeciesCreateData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 
@@ -121,5 +122,11 @@ public interface UserGroupSerivce {
 	public Boolean enableEdit(HttpServletRequest request, Long userGroupId);
 
 	public List<UserGroupIbp> fetchBySpeciesId(Long speciesId);
+
+	public List<UserGroupIbp> createUGSpeciesMapping(HttpServletRequest request, Long speciesId,
+			UserGroupSpeciesCreateData ugSpeciesCreateData);
+
+	public List<UserGroupIbp> updateUGSpeciesMapping(HttpServletRequest request, Long speciesId,
+			UserGroupSpeciesCreateData ugSpeciesCreateData);
 
 }
