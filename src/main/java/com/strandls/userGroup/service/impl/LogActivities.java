@@ -12,6 +12,7 @@ import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.activity.pojo.ActivityLoggingData;
 import com.strandls.activity.pojo.DocumentActivityLogging;
 import com.strandls.activity.pojo.MailData;
+import com.strandls.activity.pojo.SpeciesActivityLogging;
 import com.strandls.activity.pojo.UserGroupActivityLogging;
 import com.strandls.userGroup.Headers;
 
@@ -84,7 +85,26 @@ public class LogActivities {
 
 			activityService = headers.addActivityHeader(activityService, authHeader);
 			activityService.logDocumentActivity(loggingData);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
 
+	}
+
+	public void logSpeciesActivities(String authHeader, String activityDescription, Long rootObjectId,
+			Long subRootObjectId, String rootObjectType, Long activityId, String activityType, MailData mailData) {
+		try {
+			SpeciesActivityLogging speciesActivity = new SpeciesActivityLogging();
+			speciesActivity.setActivityDescription(activityDescription);
+			speciesActivity.setActivityId(activityId);
+			speciesActivity.setActivityType(activityType);
+			speciesActivity.setMailData(mailData);
+			speciesActivity.setRootObjectId(rootObjectId);
+			speciesActivity.setRootObjectType(rootObjectType);
+			speciesActivity.setSubRootObjectId(subRootObjectId);
+
+			activityService = headers.addActivityHeader(activityService, authHeader);
+			activityService.logSpeciesActivities(speciesActivity);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
