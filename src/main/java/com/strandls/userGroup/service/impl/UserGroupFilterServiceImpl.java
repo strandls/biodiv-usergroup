@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strandls.activity.pojo.UserGroupActivity;
-import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
+import com.strandls.taxonomy.controllers.TaxonomyTreeServicesApi;
 import com.strandls.taxonomy.pojo.BreadCrumb;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.userGroup.TokenGenerator;
@@ -87,7 +87,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	private UserGroupObservationDao ugObvDao;
 
 	@Inject
-	private TaxonomyServicesApi taxonomyService;
+	private TaxonomyTreeServicesApi taxonomyTreeService;
 
 	@Inject
 	private TokenGenerator tokenGenerator;
@@ -162,7 +162,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 
 			List<UserGroupTaxonomicRule> taxonomicRule = ugtaxonomicDao.findByUserGroupIdIsEnabled(userGroupId);
 			if (taxonomicRule != null && !taxonomicRule.isEmpty()) {
-				List<BreadCrumb> breadCrumbs = taxonomyService.getTaxonomyBreadCrumb(taxonomyId.toString());
+				List<BreadCrumb> breadCrumbs = taxonomyTreeService.getTaxonomyBreadCrumb(taxonomyId.toString());
 				List<Long> taxonomyPath = new ArrayList<Long>();
 				for (BreadCrumb breadCrumb : breadCrumbs) {
 					taxonomyPath.add(breadCrumb.getId());
