@@ -162,25 +162,44 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Override
 	public UserGroupIbp fetchByGroupIdIbp(Long id) {
-		UserGroup ug = userGroupDao.findById(id);
-		UserGroupIbp ibp;
-		if (ug.getDomianName() != null)
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName(), ug.getAllowUserToJoin());
-		else {
-			String webAddress = "/group/" + ug.getWebAddress();
-			ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress, ug.getAllowUserToJoin());
+		try {
+
+			UserGroup ug = userGroupDao.findById(id);
+			UserGroupIbp ibp;
+			if (ug != null) {
+				if (ug.getDomianName() != null)
+					ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), ug.getDomianName(),
+							ug.getAllowUserToJoin());
+				else {
+					String webAddress = "/group/" + ug.getWebAddress();
+					ibp = new UserGroupIbp(ug.getId(), ug.getName(), ug.getIcon(), webAddress, ug.getAllowUserToJoin());
+				}
+				return ibp;
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
-		return ibp;
+		return null;
 	}
 
 	@Override
 	public List<UserGroupIbp> fetchByObservationId(Long id) {
-		List<UserGroupObservation> userGroupObv = userGroupObvDao.findByObservationId(id);
-		List<UserGroupIbp> userGroup = new ArrayList<UserGroupIbp>();
-		for (UserGroupObservation ugObv : userGroupObv) {
-			userGroup.add(fetchByGroupIdIbp(ugObv.getUserGroupId()));
+		try {
+			List<UserGroupObservation> userGroupObv = userGroupObvDao.findByObservationId(id);
+			List<UserGroupIbp> userGroup = new ArrayList<UserGroupIbp>();
+			if (userGroupObv != null && !userGroupObv.isEmpty()) {
+				for (UserGroupObservation ugObv : userGroupObv) {
+					userGroup.add(fetchByGroupIdIbp(ugObv.getUserGroupId()));
+				}
+			}
+			if (!userGroup.isEmpty())
+				return userGroup;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
-		return userGroup;
+		return null;
+
 	}
 
 	@Override
