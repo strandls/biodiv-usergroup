@@ -553,14 +553,16 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		List<UserGroupMailData> userGroup = new ArrayList<UserGroupMailData>();
 		List<UserGroupIbp> updatedUG = fetchByObservationId(observationId);
 
-		for (UserGroupIbp ug : updatedUG) {
-			UserGroupMailData ugMail = new UserGroupMailData();
-			ugMail.setIcon(ug.getIcon());
-			ugMail.setId(ug.getId());
-			ugMail.setName(ug.getName());
-			ugMail.setWebAddress(ug.getWebAddress());
+		if (updatedUG != null && !updatedUG.isEmpty()) {
+			for (UserGroupIbp ug : updatedUG) {
+				UserGroupMailData ugMail = new UserGroupMailData();
+				ugMail.setIcon(ug.getIcon());
+				ugMail.setId(ug.getId());
+				ugMail.setName(ug.getName());
+				ugMail.setWebAddress(ug.getWebAddress());
 
-			userGroup.add(ugMail);
+				userGroup.add(ugMail);
+			}
 		}
 
 		mailData.setUserGroupData(userGroup);

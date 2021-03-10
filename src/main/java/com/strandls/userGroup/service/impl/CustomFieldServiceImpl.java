@@ -754,22 +754,25 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 		List<UserGroupIbp> userGroupListIbp = ugService.fetchByObservationId(Long.parseLong(observationId));
 		List<Long> userGroupList = new ArrayList<Long>();
-		for (UserGroupIbp ugIBP : userGroupListIbp)
-			userGroupList.add(ugIBP.getId());
+		if (userGroupListIbp != null && !userGroupListIbp.isEmpty()) {
+			for (UserGroupIbp ugIBP : userGroupListIbp)
+				userGroupList.add(ugIBP.getId());
 
-		for (Long userGroupId : userGroupList) {
-			List<UserGroupCustomFieldMapping> ugcfMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
-			if (!ugcfMappingList.isEmpty()) {
-				allowedCFId = new ArrayList<Long>();
-				for (UserGroupCustomFieldMapping ugCFMapping : ugcfMappingList) {
-					Boolean isAllowed = checkCustomFieldPermissions(request, profile, observationId,
-							ugCFMapping.getCustomFieldId(), userGroupId);
-					if (isAllowed)
-						allowedCFId.add(ugCFMapping.getCustomFieldId());
+			for (Long userGroupId : userGroupList) {
+				List<UserGroupCustomFieldMapping> ugcfMappingList = ugCFMappingDao.findByUserGroupId(userGroupId);
+				if (!ugcfMappingList.isEmpty()) {
+					allowedCFId = new ArrayList<Long>();
+					for (UserGroupCustomFieldMapping ugCFMapping : ugcfMappingList) {
+						Boolean isAllowed = checkCustomFieldPermissions(request, profile, observationId,
+								ugCFMapping.getCustomFieldId(), userGroupId);
+						if (isAllowed)
+							allowedCFId.add(ugCFMapping.getCustomFieldId());
+					}
+					cfPermissionList.add(new CustomFieldPermission(userGroupId, allowedCFId));
 				}
-				cfPermissionList.add(new CustomFieldPermission(userGroupId, allowedCFId));
 			}
 		}
+
 		return cfPermissionList;
 
 	}
