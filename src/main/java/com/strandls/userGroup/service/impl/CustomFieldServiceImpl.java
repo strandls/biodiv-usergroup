@@ -22,16 +22,12 @@ import org.slf4j.LoggerFactory;
 
 import com.strandls.activity.pojo.MailData;
 import com.strandls.authentication_utility.util.AuthUtil;
-import com.strandls.userGroup.dao.CustomFieldDao;
-import com.strandls.userGroup.dao.CustomFieldUG18Dao;
-import com.strandls.userGroup.dao.CustomFieldUG37Dao;
 import com.strandls.userGroup.dao.CustomFieldValuesDao;
 import com.strandls.userGroup.dao.CustomFieldsDao;
 import com.strandls.userGroup.dao.ObservationCustomFieldDao;
 import com.strandls.userGroup.dao.UserGroupCustomFieldMappingDao;
 import com.strandls.userGroup.dao.UserGroupDao;
 import com.strandls.userGroup.dao.UserGroupObservationDao;
-import com.strandls.userGroup.pojo.CustomField;
 import com.strandls.userGroup.pojo.CustomFieldCreateData;
 import com.strandls.userGroup.pojo.CustomFieldData;
 import com.strandls.userGroup.pojo.CustomFieldDetails;
@@ -40,8 +36,6 @@ import com.strandls.userGroup.pojo.CustomFieldFactsInsertData;
 import com.strandls.userGroup.pojo.CustomFieldObservationData;
 import com.strandls.userGroup.pojo.CustomFieldPermission;
 import com.strandls.userGroup.pojo.CustomFieldReordering;
-import com.strandls.userGroup.pojo.CustomFieldUG18;
-import com.strandls.userGroup.pojo.CustomFieldUG37;
 import com.strandls.userGroup.pojo.CustomFieldUGData;
 import com.strandls.userGroup.pojo.CustomFieldValues;
 import com.strandls.userGroup.pojo.CustomFieldValuesCreateData;
@@ -76,9 +70,6 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	private UserGroupObservationDao userGroupObvDao;
 
 	@Inject
-	private CustomFieldDao cfDao;
-
-	@Inject
 	private CustomFieldsDao cfsDao;
 
 	@Inject
@@ -88,12 +79,6 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 	private UserGroupCustomFieldMappingDao ugCFMappingDao;
 
 	@Inject
-	private CustomFieldUG18Dao cf18Dao;
-
-	@Inject
-	private CustomFieldUG37Dao cf37Dao;
-
-	@Inject
 	private ObservationCustomFieldDao observationCFDao;
 
 	@Inject
@@ -101,141 +86,6 @@ public class CustomFieldServiceImpl implements CustomFieldServices {
 
 	@Inject
 	private UserGroupMemberService ugMemberService;
-
-	@Override
-	public void migrateCustomField() {
-		try {
-
-			Map<Long, Long> previousToNew = new HashMap<Long, Long>();
-			List<CustomField> cfList = cfDao.findAll();
-			for (CustomField customField : cfList) {
-
-				String dataType = "";
-				if (customField.getDataType().equalsIgnoreCase("PARAGRAPH_TEXT")
-						|| customField.getDataType().equalsIgnoreCase("TEXT"))
-					dataType = "STRING";
-				else if (customField.getDataType().equalsIgnoreCase("Integer"))
-					dataType = "INTEGER";
-				else if (customField.getDataType().equalsIgnoreCase("decimal"))
-					dataType = "DECIMAL";
-				else if (customField.getDataType().equalsIgnoreCase("date"))
-					dataType = "DATE";
-
-				String fieldType = "";
-				if (customField.getDataType().equalsIgnoreCase("PARAGRAPH_TEXT")
-						|| customField.getDataType().equalsIgnoreCase("TEXT"))
-					fieldType = "FIELD TEXT";
-
-				if (customField.getOptions() != null && customField.getOptions().trim().length() != 0) {
-					if (customField.getAllowedMultiple())
-						fieldType = "MULTIPLE CATEGORICAL";
-					else
-						fieldType = "SINGLE CATEGORICAL";
-				}
-
-				CustomFields cfs = new CustomFields(null, customField.getAuthorId(), customField.getName(), dataType,
-						fieldType, null, null, customField.getNotes());
-				cfs = cfsDao.save(cfs);
-				previousToNew.put(customField.getId(), cfs.getId());
-
-				if (customField.getOptions() != null) {
-					CustomFieldValues cfValues = null;
-					String options[] = customField.getOptions().split(",");
-					for (String option : options) {
-						cfValues = new CustomFieldValues(null, cfs.getId(), option.trim(), cfs.getAuthorId(), null,
-								null);
-						cfValues = cfValueDao.save(cfValues);
-					}
-				}
-
-				UserGroupCustomFieldMapping ugCFMapping = new UserGroupCustomFieldMapping(null,
-						customField.getAuthorId(), customField.getUserGroupId(), cfs.getId(),
-						customField.getDefaultValue(), customField.getDisplayOrder(), customField.getIsMandatory(),
-						customField.getAllowedPaticipation());
-
-				ugCFMappingDao.save(ugCFMapping);
-			}
-			observationCustomFieldDataMigration(previousToNew);
-
-			System.out.println("-------!!!!!!Custom field Migration Completed!!!!!!!!!!!!-----------");
-
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		}
-
-	}
-
-	private void observationCustomFieldDataMigration(Map<Long, Long> preciousToNew) {
-		try {
-
-			List<CustomFieldUG18> cf18DataList = cf18Dao.findAll();
-			ObservationCustomField observationCF = null;
-			Date date = new Date(0);
-			for (CustomFieldUG18 cf18Data : cf18DataList) {
-				Long authorId = userGroupDao.getObservationAuthor(cf18Data.getObservationId().toString());
-				if (cf18Data.getCf5() != null && cf18Data.getCf5().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf18Data.getObservationId(), 18L,
-							preciousToNew.get(5L), null, date, date, cf18Data.getCf5(), null, null);
-					observationCFDao.save(observationCF);
-				}
-				if (cf18Data.getCf6() != null && cf18Data.getCf6().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf18Data.getObservationId(), 18L,
-							preciousToNew.get(6L), null, date, date, cf18Data.getCf6(), null, null);
-					observationCFDao.save(observationCF);
-				}
-			}
-
-			List<CustomFieldUG37> cf37DataList = cf37Dao.findAll();
-			for (CustomFieldUG37 cf37Data : cf37DataList) {
-				Long authorId = userGroupDao.getObservationAuthor(cf37Data.getObservationId().toString());
-				if (cf37Data.getCf_14501638() != null && cf37Data.getCf_14501638().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
-							preciousToNew.get(14501638L), null, date, date, cf37Data.getCf_14501638(), null, null);
-					observationCFDao.save(observationCF);
-				}
-				if (cf37Data.getCf_14501655() != null && cf37Data.getCf_14501655().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
-							preciousToNew.get(14501655L), null, date, date, cf37Data.getCf_14501655(), null, null);
-					observationCFDao.save(observationCF);
-				}
-				if (cf37Data.getCf_14501656() != null && cf37Data.getCf_14501656().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
-							preciousToNew.get(14501656L), null, date, date, cf37Data.getCf_14501656(), null, null);
-					observationCFDao.save(observationCF);
-				}
-				if (cf37Data.getCf_14501657() != null && cf37Data.getCf_14501657().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
-							preciousToNew.get(14501657L), null, date, date, cf37Data.getCf_14501657(), null, null);
-					observationCFDao.save(observationCF);
-				}
-				if (cf37Data.getCf_14501658() != null && cf37Data.getCf_14501658().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
-							preciousToNew.get(14501658L), null, date, date, cf37Data.getCf_14501658(), null, null);
-					observationCFDao.save(observationCF);
-				}
-				if (cf37Data.getCf_14501659() != null && cf37Data.getCf_14501659().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
-							preciousToNew.get(14501659L), null, date, date, cf37Data.getCf_14501659(), null, null);
-					observationCFDao.save(observationCF);
-				}
-				if (cf37Data.getCf_14501660() != null && cf37Data.getCf_14501660().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
-							preciousToNew.get(14501660L), null, date, date, cf37Data.getCf_14501660(), null, null);
-					observationCFDao.save(observationCF);
-				}
-				if (cf37Data.getCf_14501661() != null && cf37Data.getCf_14501661().trim().length() != 0) {
-					observationCF = new ObservationCustomField(null, authorId, cf37Data.getObservationId(), 37L,
-							preciousToNew.get(14501661L), null, date, date, cf37Data.getCf_14501661(), null, null);
-					observationCFDao.save(observationCF);
-				}
-
-			}
-
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		}
-
-	}
 
 	@Override
 	public List<CustomFieldObservationData> getObservationCustomFields(Long observationId) {

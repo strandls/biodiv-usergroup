@@ -34,7 +34,6 @@ import com.strandls.userGroup.pojo.CustomFieldUGData;
 import com.strandls.userGroup.pojo.CustomFieldValues;
 import com.strandls.userGroup.pojo.CustomFieldValuesCreateData;
 import com.strandls.userGroup.service.CustomFieldServices;
-import com.strandls.userGroup.service.impl.CustomFieldMigrationThread;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,26 +51,7 @@ import io.swagger.annotations.ApiResponses;
 public class CustomFieldController {
 
 	@Inject
-	private CustomFieldMigrationThread cfMigrationThread;
-
-	@Inject
 	private CustomFieldServices cfService;
-
-	@POST
-	@Path(ApiConstants.MIGRATE)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	public Response migrateCustomField() {
-		try {
-			Thread customFieldMigrationThread = new Thread(cfMigrationThread);
-			customFieldMigrationThread.start();
-			return Response.status(Status.OK).entity("Custom Field migration has started").build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-		}
-
-	}
 
 	@GET
 	@Path(ApiConstants.OBSERVATION + "/{observationId}")
