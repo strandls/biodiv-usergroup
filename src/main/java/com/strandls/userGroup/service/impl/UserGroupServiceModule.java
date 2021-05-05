@@ -22,7 +22,6 @@ public class UserGroupServiceModule extends AbstractModule {
 		bind(UserGroupSerivce.class).to(UserGroupServiceImpl.class).in(Scopes.SINGLETON);
 		bind(CustomFieldServices.class).to(CustomFieldServiceImpl.class).in(Scopes.SINGLETON);
 		bind(LogActivities.class).in(Scopes.SINGLETON);
-		bind(CustomFieldMigrationThread.class).in(Scopes.SINGLETON);
 		bind(RabbitMQProducer.class).in(Scopes.SINGLETON);
 		bind(NewsletterSerivce.class).to(NewsletterServiceImpl.class).in(Scopes.SINGLETON);
 		bind(EncryptionUtils.class).in(Scopes.SINGLETON);

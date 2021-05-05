@@ -399,7 +399,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				if (ugFilter.getHasSpatialRule() == false && ugFilter.getHasTaxonomicRule() == false
 						&& ugFilter.getHasUserRule() == false && ugFilter.getHasCreatedOnDateRule() == false
 						&& ugFilter.getHasObservedOnDateRule() == false)
-					return false;
+					return true;
 
 			}
 			return result;
