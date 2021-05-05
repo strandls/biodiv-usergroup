@@ -35,11 +35,6 @@
 		<mapping class="com.strandls.userGroup.pojo.UserGroup" />
 		<mapping class="com.strandls.userGroup.pojo.UserGroupObservation" />
 		<mapping class="com.strandls.userGroup.pojo.Featured" />
-		
-		<mapping class="com.strandls.userGroup.pojo.CustomField"/>
-		<mapping class="com.strandls.userGroup.pojo.CustomFieldUG18"/>
-		<mapping class="com.strandls.userGroup.pojo.CustomFieldUG37"/>
-		
 		<mapping class="com.strandls.userGroup.pojo.CustomFields"/>
 		<mapping class="com.strandls.userGroup.pojo.CustomFieldValues"/>
 		<mapping class="com.strandls.userGroup.pojo.ObservationCustomField"/>
