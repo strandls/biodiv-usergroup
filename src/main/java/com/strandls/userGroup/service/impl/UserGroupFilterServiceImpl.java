@@ -399,7 +399,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				if (ugFilter.getHasSpatialRule() == false && ugFilter.getHasTaxonomicRule() == false
 						&& ugFilter.getHasUserRule() == false && ugFilter.getHasCreatedOnDateRule() == false
 						&& ugFilter.getHasObservedOnDateRule() == false)
-					return true;
+					return false;
 
 			}
 			return result;
@@ -624,6 +624,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				}
 			}
 
+			updateUGFilter(userGroupId);
 			return showAllFilter(userGroupId);
 
 		} catch (Exception e) {
@@ -655,7 +656,13 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 			ugFilter.setHasCreatedOnDateRule(false);
 			if (createdOnData != null && !createdOnData.isEmpty())
 				ugFilter.setHasCreatedOnDateRule(true);
-			ugFilterRuleDao.update(ugFilter);
+			ugFilter = ugFilterRuleDao.update(ugFilter);
+
+			if (ugFilter.getHasSpatialRule() == false && ugFilter.getHasTaxonomicRule() == false
+					&& ugFilter.getHasUserRule() == false && ugFilter.getHasCreatedOnDateRule() == false
+					&& ugFilter.getHasObservedOnDateRule() == false)
+				ugFilterRuleDao.delete(ugFilter);
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
