@@ -25,8 +25,6 @@ import com.strandls.userGroup.pojo.CustomFieldValuesCreateData;
  */
 public interface CustomFieldServices {
 
-	public void migrateCustomField();
-
 	public List<CustomFieldObservationData> getObservationCustomFields(Long observationId);
 
 	public List<CustomFieldValues> getCustomFieldOptions(HttpServletRequest request, CommonProfile profile,
