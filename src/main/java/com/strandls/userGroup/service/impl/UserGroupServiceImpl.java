@@ -159,6 +159,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	private Long defaultLanguageId = Long
 			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
 
+	private Long defaultLanguageId = Long
+			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
+
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
 		UserGroup userGroup = userGroupDao.findById(id);
