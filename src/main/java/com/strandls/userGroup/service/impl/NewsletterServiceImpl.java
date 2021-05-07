@@ -16,6 +16,7 @@ import com.strandls.userGroup.pojo.NewsletterArrayList;
 import com.strandls.userGroup.pojo.NewsletterWithParentChildRelationship;
 import com.strandls.userGroup.service.NewsletterSerivce;
 import com.strandls.userGroup.util.AbstractService;
+import com.strandls.userGroup.util.PropertyFileUtil;
 
 /**
  * 
@@ -24,6 +25,9 @@ import com.strandls.userGroup.util.AbstractService;
  */
 public class NewsletterServiceImpl extends AbstractService<Newsletter> implements NewsletterSerivce {
 
+	private Long defaultLanguageId = Long
+			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
+
 	@Inject
 	public NewsletterServiceImpl(NewsletterDao dao) {
 		super(dao);
@@ -31,6 +35,8 @@ public class NewsletterServiceImpl extends AbstractService<Newsletter> implement
 
 	@Override
 	public List<NewsletterWithParentChildRelationship> getByUserGroupAndLanguage(Long userGroupId, Long languageId) {
+		if (languageId == null)
+			languageId = defaultLanguageId;
 		List<Newsletter> newsletters = ((NewsletterDao) dao).getByUserGroupAndLanguage(userGroupId, languageId);
 		Map<Long, NewsletterWithParentChildRelationship> newsletterWithParentChildRelationships = new HashMap<Long, NewsletterWithParentChildRelationship>();
 		for (Newsletter newsletter : newsletters) {
@@ -50,7 +56,6 @@ public class NewsletterServiceImpl extends AbstractService<Newsletter> implement
 			Map<Long, NewsletterWithParentChildRelationship> newsletterWithParentChildRelationships) {
 
 		List<NewsletterWithParentChildRelationship> result = new NewsletterArrayList();
-		
 
 		for (Entry<Long, NewsletterWithParentChildRelationship> e : newsletterWithParentChildRelationships.entrySet()) {
 			NewsletterWithParentChildRelationship value = e.getValue();

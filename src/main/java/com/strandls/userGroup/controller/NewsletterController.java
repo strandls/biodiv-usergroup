@@ -5,7 +5,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -31,10 +30,9 @@ import io.swagger.annotations.ApiResponses;
 @Path(ApiConstants.V1 + ApiConstants.NEWSLETTER)
 public class NewsletterController {
 
-	private static final String ENGLISH_LANGAUAGE_ID = "205";
 	@Inject
 	private NewsletterSerivce newsletterSerivce;
-	
+
 	@GET
 	@Path("ping")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -65,8 +63,8 @@ public class NewsletterController {
 	@ApiOperation(value = "Find Newsletter by ID", notes = "Returns Newsletter details", response = Newsletter.class)
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "Newsletter not found", response = String.class) })
 	public Response getNewslettersByGroup(@Context HttpServletRequest request,
-			@QueryParam("userGroupId") Long userGroupId,
-			@QueryParam("languageId") @DefaultValue(ENGLISH_LANGAUAGE_ID) Long languageId) throws ApiException {
+			@QueryParam("userGroupId") Long userGroupId, @QueryParam("languageId") Long languageId)
+			throws ApiException {
 		try {
 			List<NewsletterWithParentChildRelationship> newsletter = newsletterSerivce
 					.getByUserGroupAndLanguage(userGroupId, languageId);
