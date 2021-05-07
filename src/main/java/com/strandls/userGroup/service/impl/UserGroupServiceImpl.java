@@ -49,9 +49,9 @@ import com.strandls.userGroup.pojo.BulkGroupUnPostingData;
 import com.strandls.userGroup.pojo.Featured;
 import com.strandls.userGroup.pojo.FeaturedCreate;
 import com.strandls.userGroup.pojo.FeaturedCreateData;
+import com.strandls.userGroup.pojo.GroupAddMember;
 import com.strandls.userGroup.pojo.GroupGallerySlider;
 import com.strandls.userGroup.pojo.GroupHomePageData;
-import com.strandls.userGroup.pojo.GroupAddMember;
 import com.strandls.userGroup.pojo.InvitaionMailData;
 import com.strandls.userGroup.pojo.ReorderingHomePage;
 import com.strandls.userGroup.pojo.Stats;
@@ -75,6 +75,7 @@ import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
 import com.strandls.userGroup.service.UserGroupMemberService;
 import com.strandls.userGroup.service.UserGroupSerivce;
+import com.strandls.userGroup.util.PropertyFileUtil;
 
 import net.minidev.json.JSONArray;
 
@@ -139,8 +140,12 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private GroupGallerySliderDao groupGallerySliderDao;
+
 	@Inject
 	private UserGroupMemberService ugMemberService;
+
+	private Long defaultLanguageId = Long
+			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -398,7 +403,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				if (flag == 0) {
 					featured = new Featured(null, 0L, userId, new Date(), featuredCreate.getNotes(),
-							featuredCreate.getObjectId(), featuredCreate.getObjectType(), userGroupId, 205L, null);
+							featuredCreate.getObjectId(), featuredCreate.getObjectType(), userGroupId,
+							defaultLanguageId, null);
 					featured = featuredDao.save(featured);
 
 				}
