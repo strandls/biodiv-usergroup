@@ -81,6 +81,7 @@ import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
 import com.strandls.userGroup.service.UserGroupMemberService;
 import com.strandls.userGroup.service.UserGroupSerivce;
+import com.strandls.userGroup.util.PropertyFileUtil;
 
 import net.minidev.json.JSONArray;
 
@@ -154,6 +155,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupSpeciesDao ugSpeciesDao;
+
+	private Long defaultLanguageId = Long
+			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
 
 	@Override
 	public UserGroup fetchByGroupId(Long id) {
@@ -422,7 +426,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				if (flag == 0) {
 					featured = new Featured(null, 0L, userId, new Date(), featuredCreate.getNotes(),
-							featuredCreate.getObjectId(), featuredCreate.getObjectType(), userGroupId, 205L, null);
+							featuredCreate.getObjectId(), featuredCreate.getObjectType(), userGroupId,
+							defaultLanguageId, null);
 					featured = featuredDao.save(featured);
 
 				}
