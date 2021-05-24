@@ -1119,4 +1119,24 @@ public class UserGroupController {
 		}
 	}
 
+	
+	@GET
+	@Path(ApiConstants.DATATABLE + "/{dataTableId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find UserGroup by dataTable ID", notes = "Returns UserGroup Details", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup not found", response = String.class) })
+
+	public Response getDataTableUserGroup(@PathParam("dataTableId") String dataTableId) {
+		try {
+			Long id = Long.parseLong(dataTableId);
+			List<UserGroupIbp> userGroup = ugServices.fetchByDataTableId(id);
+			return Response.status(Status.OK).entity(userGroup).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+
+	}
+
 }
