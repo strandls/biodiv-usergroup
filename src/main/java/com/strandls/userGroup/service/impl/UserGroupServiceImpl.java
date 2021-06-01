@@ -158,9 +158,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	@Inject 
 	private UserGroupDataTableDao userGroupDataTableDao;
 
-	private Long defaultLanguageId = Long
-			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
-
 	@Inject
 	private UserGroupSpeciesDao ugSpeciesDao;
 
@@ -1844,6 +1841,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			logger.error(e.getMessage());
 		}
 		return null;	
+	}
 	public List<UserGroupIbp> fetchBySpeciesId(Long speciesId) {
 
 		List<UserGroupSpecies> ugSpeciesList = ugSpeciesDao.findBySpeciesId(speciesId);

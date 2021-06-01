@@ -1156,6 +1156,7 @@ public class UserGroupController {
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
+	}
 
 	@GET
 	@Path(ApiConstants.DOCUMENT + "/{documentId}")
@@ -1163,7 +1164,7 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "finds all the usergroup for a document", notes = "returns the usergroup in which the document is posted", response = UserGroupIbp.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to find the groups", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup not found", response = String.class) })
 
 	public Response getUserGroupByDocId(@PathParam("documentId") String documentId) {
 		try {
