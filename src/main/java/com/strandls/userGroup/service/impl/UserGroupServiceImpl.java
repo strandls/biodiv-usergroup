@@ -35,6 +35,7 @@ import com.strandls.userGroup.dao.FeaturedDao;
 import com.strandls.userGroup.dao.GroupGallerySliderDao;
 import com.strandls.userGroup.dao.StatsDao;
 import com.strandls.userGroup.dao.UserGroupDao;
+import com.strandls.userGroup.dao.UserGroupDataTableDao;
 import com.strandls.userGroup.dao.UserGroupDocumentDao;
 import com.strandls.userGroup.dao.UserGroupHabitatDao;
 import com.strandls.userGroup.dao.UserGroupInvitaionDao;
@@ -60,6 +61,7 @@ import com.strandls.userGroup.pojo.Stats;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
+import com.strandls.userGroup.pojo.UserGroupDataTable;
 import com.strandls.userGroup.pojo.UserGroupDocCreateData;
 import com.strandls.userGroup.pojo.UserGroupDocument;
 import com.strandls.userGroup.pojo.UserGroupEditData;
@@ -152,6 +154,9 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 	@Inject
 	private UserGroupMemberService ugMemberService;
+	
+	@Inject 
+	private UserGroupDataTableDao userGroupDataTableDao;
 
 	@Inject
 	private UserGroupSpeciesDao ugSpeciesDao;
@@ -1820,6 +1825,23 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 	}
 
 	@Override
+	public List<UserGroupIbp> fetchByDataTableId(Long id) {
+		try {
+			List<UserGroupDataTable> userGroupDataTable = userGroupDataTableDao.findByDataTableId(id);
+			List<UserGroupIbp> userGroup = new ArrayList<UserGroupIbp>();
+			if (userGroupDataTable != null && !userGroupDataTable.isEmpty()) {
+				for (UserGroupDataTable ugObv : userGroupDataTable) {
+					userGroup.add(fetchByGroupIdIbp(ugObv.getUserGroupId()));
+				}
+			}
+			if (!userGroup.isEmpty())
+				return userGroup;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;	
+	}
 	public List<UserGroupIbp> fetchBySpeciesId(Long speciesId) {
 
 		List<UserGroupSpecies> ugSpeciesList = ugSpeciesDao.findBySpeciesId(speciesId);

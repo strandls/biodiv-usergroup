@@ -127,6 +127,8 @@ public interface UserGroupSerivce {
 			List<ReorderingHomePage> reorderingHomePage);
 
 	public Boolean enableEdit(HttpServletRequest request, Long userGroupId);
+	
+	public List<UserGroupIbp> fetchByDataTableId(Long id);
 
 	public List<UserGroupIbp> fetchBySpeciesId(Long speciesId);
 

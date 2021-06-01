@@ -55,6 +55,7 @@ public class ApiConstants {
 	public static final String VERIFY_USER = "/verify-user";
 	public static final String REORDERING = "/reordering";
 	public static final String VALUES = "/values";
+	public static final String  DATATABLE  = "data-table";
 	public static final String SPECIES = "/species";
 
 }

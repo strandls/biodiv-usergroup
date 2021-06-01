@@ -1139,13 +1139,32 @@ public class UserGroupController {
 		}
 	}
 
+	
+	@GET
+	@Path(ApiConstants.DATATABLE + "/{dataTableId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find UserGroup by dataTable ID", notes = "Returns UserGroup Details", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup not found", response = String.class) })
+
+	public Response getDataTableUserGroup(@PathParam("dataTableId") String dataTableId) {
+		try {
+			Long id = Long.parseLong(dataTableId);
+			List<UserGroupIbp> userGroup = ugServices.fetchByDataTableId(id);
+			return Response.status(Status.OK).entity(userGroup).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
 	@GET
 	@Path(ApiConstants.DOCUMENT + "/{documentId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "finds all the usergroup for a document", notes = "returns the usergroup in which the document is posted", response = UserGroupIbp.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to find the groups", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "UserGroup not found", response = String.class) })
 
 	public Response getUserGroupByDocId(@PathParam("documentId") String documentId) {
 		try {

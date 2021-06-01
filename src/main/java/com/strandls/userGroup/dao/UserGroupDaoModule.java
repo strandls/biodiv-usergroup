@@ -5,6 +5,7 @@ package com.strandls.userGroup.dao;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.strandls.userGroup.pojo.UserGroupDataTable;
 
 /**
  * @author Abhishek Rudra
@@ -33,6 +34,7 @@ public class UserGroupDaoModule extends AbstractModule {
 		bind(UserGroupJoinRequestDao.class).in(Scopes.SINGLETON);
 		bind(GroupGallerySliderDao.class).in(Scopes.SINGLETON);
 		bind(UserGroupMemberRoleDao.class).in(Scopes.SINGLETON);
+		bind(UserGroupDataTable.class).in(Scopes.SINGLETON);
 		bind(UserGroupSpeciesDao.class).in(Scopes.SINGLETON);
 	}
 
