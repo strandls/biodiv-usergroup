@@ -44,6 +44,7 @@ import com.strandls.userGroup.pojo.ShowFilterRule;
 import com.strandls.userGroup.pojo.UserGroup;
 import com.strandls.userGroup.pojo.UserGroupAddMemebr;
 import com.strandls.userGroup.pojo.UserGroupCreateData;
+import com.strandls.userGroup.pojo.UserGroupDocCreateData;
 import com.strandls.userGroup.pojo.UserGroupEditData;
 import com.strandls.userGroup.pojo.UserGroupFilterEnable;
 import com.strandls.userGroup.pojo.UserGroupFilterRemove;
@@ -54,6 +55,7 @@ import com.strandls.userGroup.pojo.UserGroupInvitationData;
 import com.strandls.userGroup.pojo.UserGroupMappingCreateData;
 import com.strandls.userGroup.pojo.UserGroupObvFilterData;
 import com.strandls.userGroup.pojo.UserGroupPermissions;
+import com.strandls.userGroup.pojo.UserGroupSpeciesCreateData;
 import com.strandls.userGroup.pojo.UserGroupSpeciesGroup;
 import com.strandls.userGroup.pojo.UserGroupWKT;
 import com.strandls.userGroup.service.UserGroupFilterService;
@@ -960,7 +962,6 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
-
 	@ApiOperation(value = "find group edit homepage data", notes = "return group home page data", response = UserGroupHomePageEditData.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "unable to retrieve the data", response = String.class) })
@@ -1025,6 +1026,27 @@ public class UserGroupController {
 		}
 	}
 
+	@GET
+	@Path(ApiConstants.PERMISSION)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+	@ApiOperation(value = "get usergroup observation permission", notes = "returns the usergroup for each user", response = UserGroupPermissions.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to get the usergroup", response = String.class) })
+
+	public Response getUserGroupPermission(@Context HttpServletRequest request) {
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			Long userId = Long.parseLong(profile.getId());
+			UserGroupPermissions result = ugMemberService.getUserGroupObservationPermissions(userId);
+			return Response.status(Status.OK).entity(result).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
 	@PUT
 	@Path(ApiConstants.HOMEPAGE + ApiConstants.UPDATE + "/{userGroupId}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -1081,8 +1103,6 @@ public class UserGroupController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
-	
-	
 
 	public Response reorderingHomePageGallerySlider(@Context HttpServletRequest request,
 			@PathParam("userGroupId") String ugId,
@@ -1137,6 +1157,136 @@ public class UserGroupController {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 
+	@GET
+	@Path(ApiConstants.DOCUMENT + "/{documentId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "finds all the usergroup for a document", notes = "returns the usergroup in which the document is posted", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to find the groups", response = String.class) })
+
+	public Response getUserGroupByDocId(@PathParam("documentId") String documentId) {
+		try {
+			Long docId = Long.parseLong(documentId);
+			List<UserGroupIbp> result = ugServices.fetchByDocumentId(docId);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.DOCUMENT)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "create usegroup to doc mapping", notes = "returns all the group in which document is posted", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to create the mapping", response = String.class) })
+
+	public Response createUGDocMapping(@Context HttpServletRequest request,
+			@ApiParam(name = "groupDocCreateData") UserGroupDocCreateData groupDocCreateData) {
+		try {
+			List<UserGroupIbp> result = ugServices.createUGDocMapping(request, groupDocCreateData);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_FOUND).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.UPDATE + ApiConstants.DOCUMENT)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "update the usergroup document mapping", notes = "returns the udpate set of usergroup", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to update the data", response = String.class) })
+
+	public Response updateUGDocMapping(@Context HttpServletRequest request,
+			@ApiParam(name = "ugDocMapping") UserGroupDocCreateData ugDocMapping) {
+		try {
+
+			List<UserGroupIbp> result = ugServices.updateUGDocMapping(request, ugDocMapping);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.SPECIES + "/{speciesId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "fetch by speciesId", notes = "return the usergroup associated with the species", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch the user group", response = String.class) })
+
+	public Response getSpeciesUserGroup(@PathParam("speciesId") String speciesId) {
+		try {
+			Long SpeciesId = Long.parseLong(speciesId);
+			List<UserGroupIbp> result = ugServices.fetchBySpeciesId(SpeciesId);
+			return Response.status(Status.OK).entity(result).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.SPECIES + ApiConstants.CREATE + "/{speciesId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "post species to usergroup", notes = "return the usergroup associated with the species", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch the user group", response = String.class) })
+
+	public Response createUserGroupSpeciesMapping(@Context HttpServletRequest request,
+			@PathParam("speciesId") String speciesId,
+			@ApiParam(name = "ugSpeciesCreateData") UserGroupSpeciesCreateData ugSpeciesCreateData) {
+		try {
+			Long spId = Long.parseLong(speciesId);
+			List<UserGroupIbp> result = ugServices.createUGSpeciesMapping(request, spId, ugSpeciesCreateData);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.SPECIES + ApiConstants.UPDATE + "/{speciesId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "update userGroup in species Page", notes = "return the usergroup associated with the species", response = UserGroupIbp.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch the user group", response = String.class) })
+
+	public Response updateUserGroupSpeciesMapping(@Context HttpServletRequest request,
+			@PathParam("speciesId") String speciesId,
+			@ApiParam(name = "ugSpeciesCreateData") UserGroupSpeciesCreateData ugSpeciesCreateData) {
+		try {
+			Long spId = Long.parseLong(speciesId);
+			List<UserGroupIbp> result = ugServices.updateUGSpeciesMapping(request, spId, ugSpeciesCreateData);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
 	}
 
 }

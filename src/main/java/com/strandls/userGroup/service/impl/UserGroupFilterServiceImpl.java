@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strandls.activity.pojo.UserGroupActivity;
-import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
+import com.strandls.taxonomy.controllers.TaxonomyTreeServicesApi;
 import com.strandls.taxonomy.pojo.BreadCrumb;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.userGroup.TokenGenerator;
@@ -87,7 +87,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 	private UserGroupObservationDao ugObvDao;
 
 	@Inject
-	private TaxonomyServicesApi taxonomyService;
+	private TaxonomyTreeServicesApi taxonomyTreeService;
 
 	@Inject
 	private TokenGenerator tokenGenerator;
@@ -162,7 +162,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 
 			List<UserGroupTaxonomicRule> taxonomicRule = ugtaxonomicDao.findByUserGroupIdIsEnabled(userGroupId);
 			if (taxonomicRule != null && !taxonomicRule.isEmpty()) {
-				List<BreadCrumb> breadCrumbs = taxonomyService.getTaxonomyBreadCrumb(taxonomyId.toString());
+				List<BreadCrumb> breadCrumbs = taxonomyTreeService.getTaxonomyBreadCrumb(taxonomyId.toString());
 				List<Long> taxonomyPath = new ArrayList<Long>();
 				for (BreadCrumb breadCrumb : breadCrumbs) {
 					taxonomyPath.add(breadCrumb.getId());
@@ -399,7 +399,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 				if (ugFilter.getHasSpatialRule() == false && ugFilter.getHasTaxonomicRule() == false
 						&& ugFilter.getHasUserRule() == false && ugFilter.getHasCreatedOnDateRule() == false
 						&& ugFilter.getHasObservedOnDateRule() == false)
-					return false;
+					return true;
 
 			}
 			return result;
@@ -529,7 +529,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 							: new Date(0).toString();
 					String toDate = observedOnDate.getToDate() != null ? observedOnDate.getToDate().toString()
 							: "Presently";
-					String desc = "Observed Date Rule Added :" + fromDate + " to " + toDate;
+					String desc = "Observed Date Rule Removed :" + fromDate + " to " + toDate;
 					logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc, userGroupId,
 							userGroupId, "userGroup", ugFilter.getId(), "Removed Filter Rule");
 				}
@@ -542,7 +542,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 							: new Date(0).toString();
 					String toDate = createdOnDate.getToDate() != null ? createdOnDate.getToDate().toString()
 							: "Presently";
-					String desc = "CreatedOn Date Rule Added :" + fromDate + " to " + toDate;
+					String desc = "CreatedOn Date Rule Removed :" + fromDate + " to " + toDate;
 					logActivity.logUserGroupActivities(request.getHeader(HttpHeaders.AUTHORIZATION), desc, userGroupId,
 							userGroupId, "userGroup", ugFilter.getId(), "Removed Filter Rule");
 				}

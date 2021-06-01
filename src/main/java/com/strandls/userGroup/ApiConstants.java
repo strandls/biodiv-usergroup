@@ -49,11 +49,13 @@ public class ApiConstants {
 	public static final String HOMEPAGE = "/homePage";
 	public static final String REQUEST = "/request";
 	public static final String ADMINSTRATION = "/adminstration";
+	public static final String DOCUMENT = "/document";
 	public static final String LOGIN = "/login";
 	public static final String REGISTER = "/register";
 	public static final String VERIFY_USER = "/verify-user";
 	public static final String REORDERING = "/reordering";
 	public static final String VALUES = "/values";
 	public static final String  DATATABLE  = "data-table";
+	public static final String SPECIES = "/species";
 
 }
