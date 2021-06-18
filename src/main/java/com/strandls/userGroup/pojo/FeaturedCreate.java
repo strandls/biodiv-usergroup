@@ -15,6 +15,7 @@ public class FeaturedCreate {
 	private Long objectId;
 	private String objectType;
 	private List<Long> userGroup;
+	private Long languageId;
 
 	/**
 	 * 
@@ -28,13 +29,15 @@ public class FeaturedCreate {
 	 * @param objectId
 	 * @param objectType
 	 * @param userGroup
+	 * @param languageId
 	 */
-	public FeaturedCreate(String notes, Long objectId, String objectType, List<Long> userGroup) {
+	public FeaturedCreate(String notes, Long objectId, String objectType, List<Long> userGroup, Long languageId) {
 		super();
 		this.notes = notes;
 		this.objectId = objectId;
 		this.objectType = objectType;
 		this.userGroup = userGroup;
+		this.languageId = languageId;
 	}
 
 	public String getNotes() {
@@ -67,6 +70,14 @@ public class FeaturedCreate {
 
 	public void setUserGroup(List<Long> userGroup) {
 		this.userGroup = userGroup;
+	}
+
+	public Long getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(Long languageId) {
+		this.languageId = languageId;
 	}
 
 }
