@@ -8,7 +8,7 @@
 	<artifactId>userGroup-api</artifactId>
 	<version>1.0.0</version>
 	<packaging>war</packaging>
-	<name>biodiv-userGroup-api</name>
+	<name>biodiv-userGroup</name>
 	<url>https://github.com/strandls/biodiv-usergroup</url>
 
 	<properties>
