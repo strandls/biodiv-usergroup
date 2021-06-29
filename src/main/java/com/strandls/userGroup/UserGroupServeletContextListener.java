@@ -131,7 +131,7 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 	}
 
 	private static ArrayList<String> getClassNamesFromPackage(final String packageName)
-			throws URISyntaxException {
+			throws URISyntaxException, IOException {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		ArrayList<String> names = new ArrayList<String>();
@@ -139,10 +139,11 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 
 		URI uri = new URI(packageURL.toString());
 		File folder = new File(uri.getPath());
-		Stream<Path> StreamPath = null;
-		try {
-			StreamPath = Files.find(Paths.get(folder.getAbsolutePath()), 999, (p, bfa) -> bfa.isRegularFile());
-			StreamPath.forEach(file -> {
+
+		try (Stream<Path> files = Files.find(Paths.get(folder.getAbsolutePath()), 999,
+				(p, bfa) -> bfa.isRegularFile())) {
+
+			files.forEach(file -> {
 				String name = file.toFile().getAbsolutePath()
 						.replaceAll(folder.getAbsolutePath() + File.separatorChar, "").replace(File.separatorChar, '.');
 				if (name.indexOf('.') != -1) {
@@ -150,10 +151,6 @@ public class UserGroupServeletContextListener extends GuiceServletContextListene
 					names.add(name);
 				}
 			});
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		} finally {
-			StreamPath.close();
 		}
 
 		return names;

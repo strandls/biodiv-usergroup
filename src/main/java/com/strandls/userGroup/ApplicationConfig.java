@@ -151,10 +151,9 @@ public class ApplicationConfig extends Application {
 
 		URI uri = new URI(packageURL.toString());
 		File folder = new File(uri.getPath());
-		Stream<Path> streamPath = null;
-		try {
-			streamPath = Files.find(Paths.get(folder.getAbsolutePath()), 999, (p, bfa) -> bfa.isRegularFile());
-			streamPath.forEach(file -> {
+		try (Stream<Path> files = Files.find(Paths.get(folder.getAbsolutePath()), 999,
+				(p, bfa) -> bfa.isRegularFile())) {
+			files.forEach(file -> {
 				String name = file.toFile().getAbsolutePath()
 						.replaceAll(folder.getAbsolutePath() + File.separatorChar, "").replace(File.separatorChar, '.');
 				if (name.indexOf('.') != -1) {
@@ -162,12 +161,7 @@ public class ApplicationConfig extends Application {
 					names.add(name);
 				}
 			});
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		} finally {
-			streamPath.close();
 		}
-
 		return names;
 	}
 }

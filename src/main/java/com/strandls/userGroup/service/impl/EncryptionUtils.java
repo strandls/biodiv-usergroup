@@ -48,8 +48,8 @@ public class EncryptionUtils {
 		String strData = "";
 
 		try {
-			SecretKeySpec skeyspec = new SecretKeySpec(key.getBytes("UTF-8"), "Blowfish");
-			Cipher cipher = Cipher.getInstance("Blowfish");
+			SecretKeySpec skeyspec = new SecretKeySpec(key.getBytes("UTF-8"), "AES/GCM/NoPadding");
+			Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 			cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
 			byte[] encrypted = cipher.doFinal(plainText.getBytes("UTF-8"));
 			strData = DatatypeConverter.printBase64Binary(encrypted);
@@ -64,8 +64,8 @@ public class EncryptionUtils {
 		String strData = "";
 
 		try {
-			SecretKeySpec skeyspec = new SecretKeySpec(key.getBytes("UTF-8"), "Blowfish");
-			Cipher cipher = Cipher.getInstance("Blowfish");
+			SecretKeySpec skeyspec = new SecretKeySpec(key.getBytes("UTF-8"), "AES/GCM/NoPadding");
+			Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 			cipher.init(Cipher.DECRYPT_MODE, skeyspec);
 			byte[] decrypted = cipher.doFinal(DatatypeConverter.parseBase64Binary(encryptedText));
 			strData = new String(decrypted, "UTF-8");
