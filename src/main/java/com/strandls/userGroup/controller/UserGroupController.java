@@ -876,11 +876,9 @@ public class UserGroupController {
 			if (Boolean.parseBoolean(data.get("status").toString())
 					&& !Boolean.parseBoolean(data.get("verificationRequired").toString())) {
 				NewCookie accessToken = new NewCookie("BAToken", data.get("access_token").toString(), "/",
-						accessToken.setSecure(true);
-						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, true);
 				NewCookie refreshToken = new NewCookie("BRToken", data.get("refresh_token").toString(), "/",
-						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
-						refreshToken.setSecure(true)
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, true);
 				response.cookie(accessToken).cookie(refreshToken);
 			}
 			return response.build();
@@ -901,11 +899,9 @@ public class UserGroupController {
 			if (Boolean.parseBoolean(data.get("status").toString())
 					&& !Boolean.parseBoolean(data.get("verificationRequired").toString())) {
 				NewCookie accessToken = new NewCookie("BAToken", data.get("access_token").toString(), "/",
-						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
-				accessToken.setSecure(true)
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, true);
 				NewCookie refreshToken = new NewCookie("BRToken", data.get("refresh_token").toString(), "/",
-						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
-				refreshToken.setSecure(true)
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, true);
 				response.cookie(accessToken).cookie(refreshToken);
 			}
 			return response.build();
@@ -925,11 +921,9 @@ public class UserGroupController {
 			ResponseBuilder response = Response.ok();
 			if (Boolean.parseBoolean(data.get("status").toString())) {
 				NewCookie accessToken = new NewCookie("BAToken", data.get("access_token").toString(), "/",
-						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
-				accessToken.setSecure(true)
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, true);
 				NewCookie refreshToken = new NewCookie("BRToken", data.get("refresh_token").toString(), "/",
-						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, false);
-				refreshToken.setSecure(true)
+						AppUtil.getDomain(request), "", 10 * 24 * 60 * 60, true);
 				response.cookie(accessToken).cookie(refreshToken);
 			}
 			return response.entity(data).build();
