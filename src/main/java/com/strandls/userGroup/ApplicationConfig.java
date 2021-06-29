@@ -11,12 +11,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Application;
 
@@ -54,7 +56,7 @@ public class ApplicationConfig extends Application {
 		try {
 			properties.load(in);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		BeanConfig beanConfig = new BeanConfig();
@@ -149,15 +151,22 @@ public class ApplicationConfig extends Application {
 
 		URI uri = new URI(packageURL.toString());
 		File folder = new File(uri.getPath());
-
-		Files.find(Paths.get(folder.getAbsolutePath()), 999, (p, bfa) -> bfa.isRegularFile()).forEach(file -> {
-			String name = file.toFile().getAbsolutePath().replaceAll(folder.getAbsolutePath() + File.separatorChar, "")
-					.replace(File.separatorChar, '.');
-			if (name.indexOf('.') != -1) {
-				name = packageName + '.' + name.substring(0, name.lastIndexOf('.'));
-				names.add(name);
-			}
-		});
+		Stream<Path> streamPath = null;
+		try {
+			streamPath = Files.find(Paths.get(folder.getAbsolutePath()), 999, (p, bfa) -> bfa.isRegularFile());
+			streamPath.forEach(file -> {
+				String name = file.toFile().getAbsolutePath()
+						.replaceAll(folder.getAbsolutePath() + File.separatorChar, "").replace(File.separatorChar, '.');
+				if (name.indexOf('.') != -1) {
+					name = packageName + '.' + name.substring(0, name.lastIndexOf('.'));
+					names.add(name);
+				}
+			});
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			streamPath.close();
+		}
 
 		return names;
 	}

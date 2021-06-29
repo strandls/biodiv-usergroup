@@ -68,9 +68,10 @@ public class UserGroupDao extends AbstractDAO<UserGroup, Long> {
 	public List<UserGroup> findFilterRuleGroupWise(String groupIds) {
 		Session session = sessionFactory.openSession();
 		List<UserGroup> result = null;
-		String qry = "from UserGroup where id in (" + groupIds + ") newFilterRule is not null";
+		String qry = "from UserGroup where id IN (:groupIds) newFilterRule is not null";
 		try {
 			Query<UserGroup> query = session.createQuery(qry);
+			query.setParameter("groupIds", groupIds);
 			result = query.getResultList();
 
 		} catch (Exception e) {
@@ -83,10 +84,11 @@ public class UserGroupDao extends AbstractDAO<UserGroup, Long> {
 
 	@SuppressWarnings("unchecked")
 	public Long getObservationAuthor(String observationId) {
-		String qry = "SELECT author_id from observation where id =" + observationId;
+		String qry = "SELECT author_id from observation where id = :observationId";
 		Session session = sessionFactory.openSession();
 		try {
 			Query<Object> query = session.createNativeQuery(qry);
+			query.setParameter("observationId", observationId);
 			Object resultObject = query.getSingleResult();
 			Long authorId = Long.parseLong(resultObject.toString());
 			return authorId;

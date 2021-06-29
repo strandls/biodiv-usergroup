@@ -392,7 +392,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 				int flag = 0;
 				for (Featured alreadyFeatured : featuredList) {
-					if (alreadyFeatured.getUserGroup() == userGroupId) {
+					if (alreadyFeatured.getUserGroup().equals(userGroupId)) {
 						alreadyFeatured.setCreatedOn(new Date());
 						alreadyFeatured.setNotes(featuredCreate.getNotes());
 						alreadyFeatured.setAuthorId(userId);
@@ -477,7 +477,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			for (Long userGroupId : userGroupList.getUserGroups()) {
 
 				for (Featured featured : featuredList) {
-					if (featured.getUserGroup() == userGroupId) {
+					if (featured.getUserGroup().equals(userGroupId)) {
 						featuredDao.delete(featured);
 						Long activityId = userGroupId;
 						if (userGroupId == null)
@@ -586,7 +586,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			try {
 				properties.load(in);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 			}
 
 			String serverUrl = properties.getProperty("serverUrl");
@@ -663,7 +663,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 
 			if (ugInvite != null) {
 				String desc = "Sent invitation for Role: " + role;
-				if (inviteeId == null) {
+				if (inviteeId == null && email != null) {
 					String emailsplit[] = email.split("@");
 					desc = "Sent Invitaion to a NON-registred user : " + emailsplit[0] + " for role : " + role;
 				}
@@ -704,7 +704,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			try {
 				properties.load(in);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 			}
 
 			Long founderId = Long.parseLong(properties.getProperty("userGroupFounder"));
@@ -837,7 +837,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				try {
 					properties.load(in);
 				} catch (IOException e) {
-					e.printStackTrace();
+					logger.error(e.getMessage());
 				}
 				String serverUrl = properties.getProperty("serverUrl");
 				in.close();
@@ -877,7 +877,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			try {
 				properties.load(in);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 			}
 			Long memberId = Long.parseLong(properties.getProperty("userGroupMember"));
 			in.close();
@@ -930,7 +930,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			try {
 				properties.load(in);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 			}
 			Long memberId = Long.parseLong(properties.getProperty("userGroupMember"));
 			String serverUrl = properties.getProperty("serverUrl");
@@ -1300,7 +1300,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				try {
 					properties.load(in);
 				} catch (IOException e) {
-					e.printStackTrace();
+				logger.error(e.getMessage());
 				}
 				Long founderId = Long.parseLong(properties.getProperty("userGroupFounder"));
 				Long moderatorId = Long.parseLong(properties.getProperty("userGroupExpert"));
@@ -1420,7 +1420,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
 			logger.error(ex.getMessage());
 		}
 		return userData;
@@ -1474,7 +1473,6 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				}
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
 			logger.error(ex.getMessage());
 		}
 		return userData;

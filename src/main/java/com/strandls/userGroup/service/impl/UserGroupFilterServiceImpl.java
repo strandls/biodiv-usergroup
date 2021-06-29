@@ -236,7 +236,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 							try {
 								properties.load(in);
 							} catch (IOException e) {
-								e.printStackTrace();
+							logger.error(e.getMessage());
 							}
 
 							String adminId = properties.getProperty("portalAdminId");
@@ -303,7 +303,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						try {
 							properties.load(in);
 						} catch (IOException e) {
-							e.printStackTrace();
+							logger.error(e.getMessage());
 						}
 
 						String adminId = properties.getProperty("portalAdminId");
@@ -771,7 +771,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						try {
 							properties.load(in);
 						} catch (IOException e) {
-							e.printStackTrace();
+							logger.error(e.getMessage());
 						}
 
 						String adminId = properties.getProperty("portalAdminId");
@@ -827,7 +827,7 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 						try {
 							properties.load(in);
 						} catch (IOException e) {
-							e.printStackTrace();
+							logger.error(e.getMessage());
 						}
 
 						String adminId = properties.getProperty("portalAdminId");
