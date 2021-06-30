@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
+import com.strandls.userGroup.pojo.UserGroupCreatedOnDateRule;
 import com.strandls.userGroup.pojo.UserGroupSpatialData;
 import com.strandls.userGroup.util.AbstractDAO;
 
@@ -46,26 +47,19 @@ public class UserGroupSpatialDataDao extends AbstractDAO<UserGroupSpatialData, L
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<UserGroupSpatialData> findByUserGroupIdIsEnabled(Long userGroupId) {
 		String qry = "from UserGroupSpatialData where userGroupId = :ugId and isEnabled = true";
-		Session session = sessionFactory.openSession();
-		List<UserGroupSpatialData> result = null;
-		try {
-			Query<UserGroupSpatialData> query = session.createQuery(qry);
-			query.setParameter("ugId", userGroupId);
-			result = query.getResultList();
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		} finally {
-			session.close();
-		}
-		return result;
+		return findUserGroupByQuery(userGroupId,qry);
+
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<UserGroupSpatialData> findAllByUserGroupId(Long userGroupId) {
 		String qry = "from UserGroupSpatialData where userGroupId = :ugId";
+		return findUserGroupByQuery(userGroupId,qry);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private List<UserGroupSpatialData> findUserGroupByQuery(Long userGroupId, String qry) {
 		Session session = sessionFactory.openSession();
 		List<UserGroupSpatialData> result = null;
 		try {

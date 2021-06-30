@@ -46,26 +46,18 @@ public class UserGroupCreatedOnDateRuleDao extends AbstractDAO<UserGroupCreatedO
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<UserGroupCreatedOnDateRule> findByUserGroupIdIsEnabled(Long userGroupId) {
 		String qry = "from UserGroupCreatedOnDateRule where userGroupId = :ugId and isEnabled = true";
-		Session session = sessionFactory.openSession();
-		List<UserGroupCreatedOnDateRule> result = null;
-		try {
-			Query<UserGroupCreatedOnDateRule> query = session.createQuery(qry);
-			query.setParameter("ugId", userGroupId);
-			result = query.getResultList();
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		} finally {
-			session.close();
-		}
-		return result;
+		return findUserGroupByQuery(userGroupId, qry);
+	}
+
+	public List<UserGroupCreatedOnDateRule> findAllByUserGroupId(Long userGroupId) {
+		String qry = "from UserGroupCreatedOnDateRule where userGroupId = :ugId ";
+		return findUserGroupByQuery(userGroupId, qry);
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<UserGroupCreatedOnDateRule> findAllByUserGroupId(Long userGroupId) {
-		String qry = "from UserGroupCreatedOnDateRule where userGroupId = :ugId ";
+	private List<UserGroupCreatedOnDateRule> findUserGroupByQuery(Long userGroupId, String qry) {
 		Session session = sessionFactory.openSession();
 		List<UserGroupCreatedOnDateRule> result = null;
 		try {

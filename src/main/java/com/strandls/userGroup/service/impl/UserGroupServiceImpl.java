@@ -237,18 +237,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				UserGroupObservation result = userGroupObvDao.save(userGroupObs);
 				if (result != null) {
 					resultList.add(result.getUserGroupId());
-					UserGroupActivity ugActivity = new UserGroupActivity();
 					UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroup);
-					String description = null;
-					ugActivity.setFeatured(null);
-					ugActivity.setUserGroupId(ugIbp.getId());
-					ugActivity.setUserGroupName(ugIbp.getName());
-					ugActivity.setWebAddress(ugIbp.getWebAddress());
-					try {
-						description = objectMapper.writeValueAsString(ugActivity);
-					} catch (Exception e) {
-						logger.error(e.getMessage());
-					}
+					String description = createUgDescription(ugIbp);
 					MailData mailData = null;
 					if (userGroups.getMailData() != null) {
 						mailData = updateMailData(observationId, userGroups.getMailData());
@@ -275,19 +265,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 			if (!(userGorups.getUserGroups().contains(ug.getUserGroupId()))) {
 				userGroupObvDao.delete(ug);
 
-				UserGroupActivity ugActivity = new UserGroupActivity();
 				UserGroupIbp ugIbp = fetchByGroupIdIbp(ug.getUserGroupId());
-				String description = null;
-				ugActivity.setFeatured(null);
-				ugActivity.setUserGroupId(ugIbp.getId());
-				ugActivity.setUserGroupName(ugIbp.getName());
-				ugActivity.setWebAddress(ugIbp.getWebAddress());
-				try {
-					description = objectMapper.writeValueAsString(ugActivity);
-				} catch (Exception e) {
-					logger.error(e.getMessage());
-				}
-
+				String description = createUgDescription(ugIbp);
 				MailData mailData = updateMailData(observationId, userGorups.getMailData());
 				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, observationId,
 						observationId, "observation", ug.getUserGroupId(), "Removed resoruce", mailData);
@@ -304,18 +283,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					UserGroupObservation userGroupMapping = new UserGroupObservation(userGroupId, observationId);
 					userGroupObvDao.save(userGroupMapping);
 
-					UserGroupActivity ugActivity = new UserGroupActivity();
 					UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
-					String description = null;
-					ugActivity.setFeatured(null);
-					ugActivity.setUserGroupId(ugIbp.getId());
-					ugActivity.setUserGroupName(ugIbp.getName());
-					ugActivity.setWebAddress(ugIbp.getWebAddress());
-					try {
-						description = objectMapper.writeValueAsString(ugActivity);
-					} catch (Exception e) {
-						logger.error(e.getMessage());
-					}
+					String description = createUgDescription(ugIbp);;
 
 					MailData mailData = updateMailData(observationId, userGorups.getMailData());
 					logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, observationId,
@@ -1003,7 +972,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				Boolean isModerator = ugMemberService.checkModeratorRole(userId, userGroupId);
 				int counter = 0;
 
-				if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
+				if (roles.contains("ROLE_ADMIN") || Boolean.TRUE.equals(isFounder) || Boolean.TRUE.equals(isModerator)) {
 
 					UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
 					UserGroupObservation result;
@@ -1077,7 +1046,7 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				Boolean isModerator = ugMemberService.checkModeratorRole(userId, userGroupId);
 				int counter = 0;
 
-				if (roles.contains("ROLE_ADMIN") || isFounder || isModerator) {
+				if (roles.contains("ROLE_ADMIN") || Boolean.TRUE.equals(isFounder) || Boolean.TRUE.equals(isModerator)) {
 					UserGroupIbp ugIbp = fetchByGroupIdIbp(userGroupId);
 					UserGroupObservation result;
 					for (Long obvId : observationList) {
@@ -1622,9 +1591,24 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 		JSONArray roles = (JSONArray) profile.getAttribute("roles");
 		Boolean isFounder = ugMemberService.checkFounderRole(userId, userGroupId);
 		Boolean isModerator = ugMemberService.checkModeratorRole(userId, userGroupId);
-		if (roles.contains("ROLE_ADMIN") || isFounder || isModerator)
+		if (roles.contains("ROLE_ADMIN") || Boolean.TRUE.equals(isFounder) || Boolean.TRUE.equals(isModerator))
 			return true;
 		return false;
+	}
+	
+	private String createUgDescription(	UserGroupIbp ugIbp) {
+		UserGroupActivity ugActivity = new UserGroupActivity();
+		String description = null;
+		ugActivity.setFeatured(null);
+		ugActivity.setUserGroupId(ugIbp.getId());
+		ugActivity.setUserGroupName(ugIbp.getName());
+		ugActivity.setWebAddress(ugIbp.getWebAddress());
+		try {
+			 description = objectMapper.writeValueAsString(ugActivity);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return description;
 	}
 
 }

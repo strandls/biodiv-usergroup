@@ -57,7 +57,7 @@ public class NewsletterDao extends AbstractDAO<Newsletter, Long>{
 						+ " order by displayOrder";
 		
 		Session session = sessionFactory.openSession();
-		Query<Newsletter> query = session.createQuery(queryStr);
+		Query<Newsletter> query = session.createQuery(queryStr,Newsletter.class);
 		query.setParameter("userGroupId", userGroupId);
 		query.setParameter("languageId", languageId);
 		
