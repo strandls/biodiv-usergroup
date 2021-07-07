@@ -373,7 +373,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 				if (flag == 0) {
 					featured = new Featured(null, 0L, userId, new Date(), featuredCreate.getNotes(),
 							featuredCreate.getObjectId(), featuredCreate.getObjectType(), userGroupId,
-							defaultLanguageId, null);
+							featuredCreate.getLanguageId() != null ? featuredCreate.getLanguageId() : defaultLanguageId,
+							null);
 					featured = featuredDao.save(featured);
 
 				}
@@ -1099,7 +1100,8 @@ public class UserGroupServiceImpl implements UserGroupSerivce {
 					ugCreateData.getDescription(), ugCreateData.getDomainName(), new Date(), ugCreateData.getHomePage(),
 					ugCreateData.getIcon(), false, ugCreateData.getName(), ugCreateData.getNeLatitude(),
 					ugCreateData.getNeLongitude(), ugCreateData.getSwLatitude(), ugCreateData.getSwLongitude(),
-					ugCreateData.getTheme(), 1L, webAddress, ugCreateData.getLanguageId(),
+					ugCreateData.getTheme(), 1L, webAddress,
+					ugCreateData.getLanguageId() != null ? ugCreateData.getLanguageId() : defaultLanguageId,
 					ugCreateData.getSendDigestMail(), new Date(), null, ugCreateData.getNewFilterRule(), true, true,
 					true, true, true, true);
 
