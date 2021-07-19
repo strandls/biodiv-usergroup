@@ -391,8 +391,8 @@ public class UserGroupFilterServiceImpl implements UserGroupFilterService {
 							result = true;
 						else
 							return false;
-					} else if (isPosting)
-						result = true;
+					} else if (!isPosting)
+						return false;
 
 				}
 
